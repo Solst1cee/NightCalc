@@ -10,3 +10,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# AI agent session/transcript data (keep local; AGENTS.md and MEMORY.md are tracked)
+.claude/
