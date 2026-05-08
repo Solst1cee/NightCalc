@@ -282,10 +282,16 @@ select {
   color: var(--ink);
   height: 46px;
   line-height: normal;
+  max-width: 100%;
   min-height: 46px;
+  min-width: 0;
   outline: none;
   padding: 10px 12px;
   width: 100%;
+}
+
+.field select {
+  text-overflow: ellipsis;
 }
 
 .search-wrap input:focus,
@@ -606,7 +612,9 @@ select {
 .field {
   display: grid;
   gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 16px 46px minmax(14px, auto);
+  min-width: 0;
 }
 
 .field label {
