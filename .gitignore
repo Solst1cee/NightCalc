@@ -11,5 +11,7 @@ Thumbs.db
 # Logs
 *.log
 
-# AI agent session/transcript data (keep local; AGENTS.md and MEMORY.md are tracked)
+# AI agent context files (local only, AGENTS.md is the public canonical context file)
+CLAUDE.md
+MEMORY.md
 .claude/
