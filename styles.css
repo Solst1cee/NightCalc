@@ -530,11 +530,13 @@ select {
 .form-grid {
   display: grid;
   gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .renal-dose-grid {
   display: grid;
   gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .search-match-list {
@@ -585,16 +587,19 @@ select {
 .infusion-form-grid {
   display: grid;
   gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .fe-form-grid {
   display: grid;
   gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .form-row {
   display: grid;
   gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .form-row.value-unit-row {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "medcalc-v54";
+const CACHE_NAME = "medcalc-v55";
 const ASSETS = [
   "./",
   "./index.html",
