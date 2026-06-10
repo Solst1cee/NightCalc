@@ -92,6 +92,13 @@
           assertClose("IBW 175cm male", bw.ibw, 70.47, 0.05);
           assertClose("AdjBW 175cm male 90kg", bw.adjusted, 78.28, 0.05);
           assertClose("IBW 160cm female", calcBodyWeight({ heightCm: 160, sex: "female" }).ibw, 52.38, 0.05);
+
+          // --- Scores: CURB-65, CHA2DS2-VASc, GCS ---
+          assertClose("CURB-65 conf+urea+age", calcScore(SCORES.curb65, { confusion: "y", urea: "y", rr: "n", bp: "n", age65: "y" }), 3, 1e-9);
+          assertClose("CHA2DS2-VASc age65+F+HTN", calcScore(SCORES.chadsvasc, { age: "1", sex: "f", chf: "n", htn: "y", dm: "n", stroke: "n", vasc: "n" }), 3, 1e-9);
+          assertClose("CHA2DS2-VASc age75+stroke", calcScore(SCORES.chadsvasc, { age: "2", sex: "m", chf: "n", htn: "n", dm: "n", stroke: "y", vasc: "n" }), 4, 1e-9);
+          assertClose("GCS E2V4M5 = 11", calcScore(SCORES.gcs, { eye: "2", verbal: "4", motor: "5" }), 11, 1e-9);
+          assertClose("GCS best = 15", calcScore(SCORES.gcs, { eye: "4", verbal: "5", motor: "6" }), 15, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

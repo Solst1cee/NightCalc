@@ -127,6 +127,27 @@ const tools = [
     tags: ["ibw", "ideal body weight", "adjusted body weight", "devine", "dosing", "weight"],
   },
   {
+    id: "curb65",
+    title: "CURB-65",
+    description: "Pneumonia severity score (0-5).",
+    status: "ready",
+    tags: ["curb-65", "curb65", "pneumonia", "cap", "severity"],
+  },
+  {
+    id: "chadsvasc",
+    title: "CHA₂DS₂-VASc",
+    description: "AF stroke-risk score (0-9).",
+    status: "ready",
+    tags: ["cha2ds2-vasc", "chadsvasc", "af", "atrial fibrillation", "stroke"],
+  },
+  {
+    id: "gcs",
+    title: "Glasgow Coma Scale",
+    description: "Conscious level E/V/M (3-15).",
+    status: "ready",
+    tags: ["gcs", "glasgow", "coma", "consciousness", "neuro"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -673,6 +694,94 @@ SCORES.qsofa = {
     { test: (t) => t < 2, text: "<2: lower qSOFA risk — does not rule out sepsis; use clinical judgement." },
   ],
   notice: "Clinical check: qSOFA is a screening prompt, not a diagnosis, and is less sensitive than NEWS2/SIRS for early sepsis.",
+};
+
+SCORES.curb65 = {
+  id: "curb65",
+  title: "CURB-65",
+  description: "Community-acquired pneumonia severity (0-5).",
+  maxLabel: "5",
+  tags: ["curb-65", "curb65", "pneumonia", "cap", "severity", "respiratory"],
+  criteria: [
+    { name: "confusion", label: "Confusion (new)", type: "select", options: YN(1) },
+    { name: "urea", label: "Urea > 7 mmol/L (BUN > 19 mg/dL)", type: "select", options: YN(1) },
+    { name: "rr", label: "Respiratory rate ≥ 30/min", type: "select", options: YN(1) },
+    { name: "bp", label: "SBP < 90 or DBP ≤ 60 mmHg", type: "select", options: YN(1) },
+    { name: "age65", label: "Age ≥ 65", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t <= 1, text: "0-1: low severity — outpatient management often appropriate." },
+    { test: (t) => t === 2, text: "2: moderate — consider short-stay admission or supervised care." },
+    { test: (t) => t >= 3, text: "3-5: high severity — admit; 4-5 assess for ICU/HDU." },
+  ],
+  notice: "Clinical check: combine with oxygenation, comorbidity, and social factors; CURB-65 does not capture hypoxaemia.",
+};
+
+SCORES.chadsvasc = {
+  id: "chadsvasc",
+  title: "CHA₂DS₂-VASc",
+  description: "Stroke risk in atrial fibrillation (0-9).",
+  maxLabel: "9",
+  tags: ["cha2ds2-vasc", "chadsvasc", "af", "atrial fibrillation", "stroke", "anticoagulation"],
+  criteria: [
+    { name: "age", label: "Age", type: "select", options: [
+        { label: "< 65", value: "0", points: 0 },
+        { label: "65–74", value: "1", points: 1 },
+        { label: "≥ 75", value: "2", points: 2 },
+      ] },
+    { name: "sex", label: "Sex", type: "select", options: [
+        { label: "Male", value: "m", points: 0 },
+        { label: "Female", value: "f", points: 1 },
+      ] },
+    { name: "chf", label: "Congestive heart failure / LV dysfunction", type: "select", options: YN(1) },
+    { name: "htn", label: "Hypertension", type: "select", options: YN(1) },
+    { name: "dm", label: "Diabetes mellitus", type: "select", options: YN(1) },
+    { name: "stroke", label: "Prior stroke / TIA / thromboembolism", type: "select", options: YN(2) },
+    { name: "vasc", label: "Vascular disease (MI, PAD, aortic plaque)", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t === 0, text: "0: low risk — anticoagulation generally not required." },
+    { test: (t) => t === 1, text: "1: consider oral anticoagulation (1 from female sex alone is low risk)." },
+    { test: (t) => t >= 2, text: "≥2: oral anticoagulation generally recommended, balanced against bleeding risk." },
+  ],
+  notice: "Clinical check: pair with a bleeding-risk assessment (e.g. HAS-BLED) and shared decision-making.",
+};
+
+SCORES.gcs = {
+  id: "gcs",
+  title: "Glasgow Coma Scale",
+  description: "Conscious level (3-15).",
+  maxLabel: "15",
+  tags: ["gcs", "glasgow", "coma", "consciousness", "neuro"],
+  criteria: [
+    { name: "eye", label: "Eye opening", type: "select", options: [
+        { label: "Spontaneous (4)", value: "4", points: 4 },
+        { label: "To speech (3)", value: "3", points: 3 },
+        { label: "To pain (2)", value: "2", points: 2 },
+        { label: "None (1)", value: "1", points: 1 },
+      ] },
+    { name: "verbal", label: "Verbal response", type: "select", options: [
+        { label: "Oriented (5)", value: "5", points: 5 },
+        { label: "Confused (4)", value: "4", points: 4 },
+        { label: "Inappropriate words (3)", value: "3", points: 3 },
+        { label: "Incomprehensible sounds (2)", value: "2", points: 2 },
+        { label: "None (1)", value: "1", points: 1 },
+      ] },
+    { name: "motor", label: "Motor response", type: "select", options: [
+        { label: "Obeys commands (6)", value: "6", points: 6 },
+        { label: "Localises pain (5)", value: "5", points: 5 },
+        { label: "Withdraws from pain (4)", value: "4", points: 4 },
+        { label: "Abnormal flexion (3)", value: "3", points: 3 },
+        { label: "Extension (2)", value: "2", points: 2 },
+        { label: "None (1)", value: "1", points: 1 },
+      ] },
+  ],
+  interpret: [
+    { test: (t) => t >= 13, text: "13-15: mild impairment." },
+    { test: (t) => t >= 9, text: "9-12: moderate impairment." },
+    { test: (t) => t <= 8, text: "≤8: severe — consider airway protection." },
+  ],
+  notice: "Clinical check: report the component breakdown (E/V/M), not just the total; intubation/sedation limit the verbal score.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
