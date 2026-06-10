@@ -870,8 +870,8 @@ SCORES.childpugh = {
   criteria: [
     { name: "bilirubin", label: "Bilirubin", type: "select", options: [
         { label: "< 2 mg/dL (< 34 µmol/L)", value: "1", points: 1 },
-        { label: "2–3 mg/dL (34–50 µmol/L)", value: "2", points: 2 },
-        { label: "> 3 mg/dL (> 50 µmol/L)", value: "3", points: 3 },
+        { label: "2–3 mg/dL (34–51 µmol/L)", value: "2", points: 2 },
+        { label: "> 3 mg/dL (> 51 µmol/L)", value: "3", points: 3 },
       ] },
     { name: "albumin", label: "Albumin", type: "select", options: [
         { label: "> 3.5 g/dL", value: "1", points: 1 },
