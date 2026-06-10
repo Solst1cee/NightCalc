@@ -65,6 +65,11 @@
           // --- Albumin-corrected calcium (Ca mg/dL, albumin g/dL) ---
           assertClose("Corrected Ca 8.0/alb2", calcCorrectedCalcium({ calcium: 8.0, albumin: 2 }), 9.6, 1e-6);
           assertClose("Corrected Ca normal albumin no change", calcCorrectedCalcium({ calcium: 10, albumin: 4 }), 10, 1e-6);
+
+          // --- Hyperglycemia-corrected sodium (Na mEq/L, glucose mg/dL) ---
+          var cna = calcCorrectedSodium({ sodium: 130, glucose: 600 });
+          assertClose("Corrected Na factor 1.6", cna.corrected16, 138, 1e-6);
+          assertClose("Corrected Na factor 2.4", cna.corrected24, 142, 1e-6);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

@@ -93,6 +93,13 @@ const tools = [
     tags: ["calcium", "albumin", "corrected calcium", "hypocalcemia", "electrolyte"],
   },
   {
+    id: "corrected-sodium",
+    title: "Corrected Sodium",
+    description: "Hyperglycemia-corrected serum sodium (1.6 and 2.4 factors).",
+    status: "ready",
+    tags: ["sodium", "hyperglycemia", "corrected sodium", "hyponatremia", "electrolyte", "dka"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -553,6 +560,15 @@ function calcCorrectedCalcium({ calcium, albumin }) {
   return calcium + 0.8 * (4 - albumin);
 }
 
+// Hyperglycemia-corrected sodium. Returns both the classic 1.6 and the 2.4 correction factors.
+function calcCorrectedSodium({ sodium, glucose }) {
+  const excess = (glucose - 100) / 100;
+  return {
+    corrected16: sodium + 1.6 * excess,
+    corrected24: sodium + 2.4 * excess,
+  };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -693,6 +709,7 @@ function renderCalculator() {
   if (state.activeTool === "fractional-excretion") renderFractionalExcretion();
   if (state.activeTool === "anion-gap") renderAnionGap();
   if (state.activeTool === "corrected-calcium") renderCorrectedCalcium();
+  if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
   if (state.activeTool === "reference") renderReference();
 }
 
@@ -1378,6 +1395,51 @@ function renderCorrectedCalcium() {
     saveSession({ calcium, albumin });
     showResult("Corrected calcium", `${round(corrected, 2)} mg/dL`, `Formula: measured Ca + 0.8 x (4 - albumin). Measured ${calcium} mg/dL, albumin ${albumin} g/dL.`);
   });
+}
+
+function renderCorrectedSodium() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Corrected Sodium",
+    description: "Hyperglycemia-corrected serum sodium. Shows both the 1.6 and 2.4 correction factors.",
+    body: `
+      <form id="correctedSodiumForm">
+        <div class="form-grid">
+          ${inputField({ name: "sodium", label: "Measured sodium", value: s.sodium ?? "", hint: "mEq/L" })}
+          ${inputField({ name: "glucose", label: "Serum glucose", value: s.glucose ?? "", hint: "mg/dL" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: correction applies to hyperglycemia (glucose > 100 mg/dL). The 2.4 factor better reflects severe hyperglycemia; 1.6 is the classic factor.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#correctedSodiumForm");
+  bindLiveForm(form, () => {
+    const sodium = numberValue(form, "sodium");
+    const glucose = numberValue(form, "glucose");
+    if (!positive(sodium) || !positive(glucose)) {
+      showPending("Enter measured sodium and serum glucose.");
+      return;
+    }
+    const { corrected16, corrected24 } = calcCorrectedSodium({ sodium, glucose });
+    saveSession({ sodium, glucose });
+    showCorrectedSodiumInfo({ corrected16, corrected24, glucose });
+  });
+}
+
+function showCorrectedSodiumInfo({ corrected16, corrected24, glucose }) {
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">Corrected sodium</div>
+      <div class="info-grid">
+        <div><strong>Factor 2.4 (preferred)</strong><span>${round(corrected24, 1)} mEq/L</span></div>
+        <div><strong>Factor 1.6 (classic)</strong><span>${round(corrected16, 1)} mEq/L</span></div>
+        <div><strong>Formula</strong><span>Na + factor x (glucose - 100) / 100</span></div>
+      </div>
+      ${glucose <= 100 ? `<p class="result-detail">Glucose 100 mg/dL or below — correction is not clinically needed.</p>` : ""}
+    </div>
+  `;
 }
 
 function showInfusionInfo({ drug, concentrationMgMl, doseMcgMin, rateMlHr, doseUnit, rateUnit, missing }) {
