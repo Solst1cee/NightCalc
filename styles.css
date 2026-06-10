@@ -1323,3 +1323,14 @@ select {
   }
 }
 :root[data-skin="pixel"] .skin-option { border-radius: 0; border-width: 2px; font-family: "Silkscreen", monospace; }
+
+/* ---- install guide under the pixel skin: square + thick + hard shadow ---- */
+:root[data-skin="pixel"] .install-banner,
+:root[data-skin="pixel"] .install-sheet,
+:root[data-skin="pixel"] .install-banner-main,
+:root[data-skin="pixel"] .a2hs-menu-item { border-radius: 0; }
+:root[data-skin="pixel"] .install-banner,
+:root[data-skin="pixel"] .install-sheet { border-width: 3px; }
+:root[data-skin="pixel"] .install-sheet { box-shadow: var(--shadow); }
+:root[data-skin="pixel"] .install-step-n { border-radius: 0; }
+:root[data-skin="pixel"] .a2hs-menu-item { border-width: 2px; }
