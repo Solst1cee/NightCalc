@@ -69,6 +69,9 @@ select {
 .app-shell {
   min-height: 100vh;
   overflow-x: hidden;
+  /* viewport-fit=cover lets content reach the bottom edge; keep it clear of the
+     iOS home indicator. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .topbar {
@@ -78,7 +81,12 @@ select {
   display: flex;
   gap: 16px;
   justify-content: space-between;
-  padding: 16px;
+  /* Extend the topbar background into the iOS status-bar / notch safe areas so
+     it paints behind the clock (full-screen home-screen app) instead of leaving
+     a white strip. Falls back to the original 16px when no insets are present. */
+  padding: calc(16px + env(safe-area-inset-top, 0px))
+    calc(16px + env(safe-area-inset-right, 0px)) 16px
+    calc(16px + env(safe-area-inset-left, 0px));
   position: sticky;
   top: 0;
   z-index: 10;
