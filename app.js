@@ -79,6 +79,13 @@ const tools = [
     tags: ["fe", "fractional excretion", "fena", "feurea", "aki", "electrolyte"],
   },
   {
+    id: "anion-gap",
+    title: "Anion Gap",
+    description: "Serum anion gap with optional albumin correction.",
+    status: "ready",
+    tags: ["anion gap", "acid base", "hagma", "albumin", "electrolyte", "metabolic acidosis"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -527,6 +534,13 @@ function calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUni
   );
 }
 
+// Serum anion gap (mEq/L). correctedAnionGap is null unless albumin (g/dL) is given.
+function calcAnionGap({ sodium, chloride, bicarbonate, albumin }) {
+  const anionGap = sodium - (chloride + bicarbonate);
+  const correctedAnionGap = positive(albumin) ? anionGap + 2.5 * (4 - albumin) : null;
+  return { anionGap, correctedAnionGap };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -665,6 +679,7 @@ function renderCalculator() {
   if (state.activeTool === "infusion") renderInfusion();
   if (state.activeTool === "renal-dose") renderRenalDose();
   if (state.activeTool === "fractional-excretion") renderFractionalExcretion();
+  if (state.activeTool === "anion-gap") renderAnionGap();
   if (state.activeTool === "reference") renderReference();
 }
 
@@ -1262,6 +1277,60 @@ function showFractionalExcretionInfo(meta, value, missing) {
         <div><strong>Clinical use</strong><span>${meta.clinicalUse}</span></div>
         <div><strong>Formula</strong><span>FE = (Urine electrolyte x Serum creatinine) / (Serum electrolyte x Urine creatinine) x 100</span></div>
         <div><strong>Limitations</strong><span>${meta.limitations.join(" ")}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAnionGap() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Anion Gap",
+    description: "Serum anion gap with optional albumin correction. The result updates as you type.",
+    body: `
+      <form id="anionGapForm">
+        <div class="form-grid">
+          ${inputField({ name: "sodium", label: "Sodium", value: s.sodium ?? "", hint: "mEq/L" })}
+          ${inputField({ name: "chloride", label: "Chloride", value: s.chloride ?? "", hint: "mEq/L" })}
+          ${inputField({ name: "bicarbonate", label: "Bicarbonate", value: s.bicarbonate ?? "", hint: "mEq/L (HCO3)" })}
+          ${inputField({ name: "albumin", label: "Albumin (optional)", value: s.albumin ?? "", hint: "g/dL; enables correction" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: typical normal anion gap is roughly 8-12 mEq/L (lab-dependent). Albumin correction adds 2.5 mEq/L for each 1 g/dL below 4.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#anionGapForm");
+  bindLiveForm(form, () => {
+    const sodium = numberValue(form, "sodium");
+    const chloride = numberValue(form, "chloride");
+    const bicarbonate = numberValue(form, "bicarbonate");
+    const albumin = numberValue(form, "albumin");
+
+    if (!positive(sodium) || !positive(chloride) || !positive(bicarbonate)) {
+      showPending("Enter sodium, chloride, and bicarbonate.");
+      return;
+    }
+
+    const { anionGap, correctedAnionGap } = calcAnionGap({ sodium, chloride, bicarbonate, albumin });
+    const patch = { sodium, chloride, bicarbonate };
+    if (positive(albumin)) patch.albumin = albumin;
+    saveSession(patch);
+    showAnionGapInfo({ anionGap, correctedAnionGap });
+  });
+}
+
+function showAnionGapInfo({ anionGap, correctedAnionGap }) {
+  const high = anionGap > 12;
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">Anion gap</div>
+      <div class="result-value">${round(anionGap, 1)} mEq/L</div>
+      <p class="result-detail">${high ? "Above ~12 mEq/L — consider a high anion gap metabolic acidosis." : "Around the usual 8-12 mEq/L range (lab-dependent)."}</p>
+      <div class="info-grid">
+        <div><strong>Formula</strong><span>AG = Na - (Cl + HCO3)</span></div>
+        <div><strong>Albumin-corrected</strong><span>${correctedAnionGap == null ? "Enter albumin to correct" : `${round(correctedAnionGap, 1)} mEq/L (+2.5 per 1 g/dL below 4)`}</span></div>
       </div>
     </div>
   `;

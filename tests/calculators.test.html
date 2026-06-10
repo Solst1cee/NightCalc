@@ -54,6 +54,13 @@
           assertClose("eGFR 60M SCr1.0", calculateEgfrCkdEpi2021({ age: 60, sex: "male", serumCreatinine: 1.0, serumCreatinineUnit: "mgDl" }), 86.2, 0.5);
           assertClose("eGFR 50F SCr0.8", calculateEgfrCkdEpi2021({ age: 50, sex: "female", serumCreatinine: 0.8, serumCreatinineUnit: "mgDl" }), 89.7, 0.5);
           assertClose("eGFR µmol/L conversion", calculateEgfrCkdEpi2021({ age: 60, sex: "male", serumCreatinine: 88.4, serumCreatinineUnit: "umolL" }), 86.2, 0.5);
+
+          // --- Anion gap (mEq/L), optional albumin (g/dL) correction ---
+          var ag = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24 });
+          assertClose("AG basic", ag.anionGap, 12, 1e-6);
+          assertEqual("AG corrected null without albumin", ag.correctedAnionGap, null);
+          var agc = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24, albumin: 2 });
+          assertClose("AG corrected with albumin 2", agc.correctedAnionGap, 17, 1e-6);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
