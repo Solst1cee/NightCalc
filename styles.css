@@ -1173,4 +1173,153 @@ select {
 .skin-option[aria-pressed="true"] {
   background: var(--accent); color: #fff; border-color: var(--accent);
 }
+
+/* ============================================================================
+   NightCalc — iOS "Add to Home Screen" install guide
+   Banner + modal bottom sheet + ⋯-menu row. Token-based, so it inherits
+   light/dark + accent. Shown only on iOS Safari (gated in app.js).
+   ========================================================================== */
+
+.install-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+}
+.install-banner[hidden] { display: none; }
+.install-banner-main {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--ink);
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+.install-banner-main svg { flex: 0 0 auto; color: var(--accent); }
+.install-banner-dismiss {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.install-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(2, 6, 16, 0.55);
+}
+.install-overlay[hidden] { display: none; }
+.install-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  padding: 14px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  box-shadow: var(--shadow);
+}
+.install-sheet-handle {
+  width: 38px;
+  height: 4px;
+  margin: 2px auto 12px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.install-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.install-title { margin: 0 0 4px; font-size: 18px; }
+.install-sub { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+.install-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.install-steps li { display: flex; align-items: center; gap: 10px; }
+.install-steps li > span:nth-child(2) { font-size: 14px; line-height: 1.35; }
+.install-step-n {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.install-step-glyph { flex: 0 0 auto; margin-left: auto; color: var(--muted); }
+.install-foot { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
+
+.a2hs-menu-row[hidden] { display: none; }
+.a2hs-menu-item {
+  display: block;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .install-overlay:not([hidden]) { animation: a2hs-fade 0.18s ease both; }
+  .install-sheet { animation: a2hs-rise 0.22s ease both; }
+  .install-banner:not([hidden]) { animation: a2hs-rise 0.22s ease both; }
+  @keyframes a2hs-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes a2hs-rise {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
 :root[data-skin="pixel"] .skin-option { border-radius: 0; border-width: 2px; font-family: "Silkscreen", monospace; }
