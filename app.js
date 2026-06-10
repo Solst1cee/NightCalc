@@ -1,5 +1,32 @@
-const STORAGE_KEY = "medcalc.session.v1";
-const THEME_KEY = "medcalc.theme.v1";
+const STORAGE_KEY = "nightcalc.session.v1";
+const THEME_KEY = "nightcalc.theme.v1";
+const ACCENT_KEY = "nightcalc.accent.v1";
+
+// Selectable brand accents. To add a color: append it here and add a matching
+// :root[data-accent="..."] block in styles.css. Order here = swatch order.
+const ACCENTS = ["blue", "maroon"];
+const DEFAULT_ACCENT = "blue";
+
+// One-time migration from the pre-rebrand "medcalc.*" keys so a saved theme
+// (and any in-session data) survives the NightCalc rename.
+migrateLegacyKeys();
+
+function migrateLegacyKeys() {
+  try {
+    const legacyTheme = localStorage.getItem("medcalc.theme.v1");
+    if (legacyTheme && !localStorage.getItem(THEME_KEY)) {
+      localStorage.setItem(THEME_KEY, legacyTheme);
+    }
+    localStorage.removeItem("medcalc.theme.v1");
+  } catch {}
+  try {
+    const legacySession = sessionStorage.getItem("medcalc.session.v1");
+    if (legacySession && !sessionStorage.getItem(STORAGE_KEY)) {
+      sessionStorage.setItem(STORAGE_KEY, legacySession);
+    }
+    sessionStorage.removeItem("medcalc.session.v1");
+  } catch {}
+}
 
 const toolStatuses = {
   testing: {
@@ -372,11 +399,13 @@ const els = {
   calculator: document.querySelector("#calculator"),
   sessionChip: document.querySelector("#sessionChip"),
   themeToggleButton: document.querySelector("#themeToggleButton"),
+  accentPicker: document.querySelector("#accentPicker"),
   toolSearch: document.querySelector("#toolSearch"),
 };
 
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 applyTheme(localStorage.getItem(THEME_KEY) || systemTheme);
+applyAccent(localStorage.getItem(ACCENT_KEY) || DEFAULT_ACCENT);
 
 function loadSession() {
   try {
@@ -401,7 +430,7 @@ function clearSession() {
 function applyTheme(theme) {
   const nextTheme = theme === "dark" ? "dark" : "light";
   document.documentElement.dataset.theme = nextTheme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", nextTheme === "dark" ? "#111827" : "#0f766e");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", nextTheme === "dark" ? "#0b1220" : "#ffffff");
   if (els.themeToggleButton) {
     els.themeToggleButton.setAttribute("aria-pressed", String(nextTheme === "dark"));
     els.themeToggleButton.setAttribute("aria-label", `Switch to ${nextTheme === "dark" ? "light" : "dark"} theme`);
@@ -412,6 +441,20 @@ function toggleTheme() {
   const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_KEY, nextTheme);
   applyTheme(nextTheme);
+}
+
+function applyAccent(accent) {
+  const nextAccent = ACCENTS.includes(accent) ? accent : DEFAULT_ACCENT;
+  document.documentElement.dataset.accent = nextAccent;
+  els.accentPicker?.querySelectorAll(".accent-swatch").forEach((swatch) => {
+    swatch.setAttribute("aria-pressed", String(swatch.dataset.accentValue === nextAccent));
+  });
+}
+
+function setAccent(accent) {
+  const nextAccent = ACCENTS.includes(accent) ? accent : DEFAULT_ACCENT;
+  localStorage.setItem(ACCENT_KEY, nextAccent);
+  applyAccent(nextAccent);
 }
 
 function toolFromHash() {
@@ -1414,6 +1457,11 @@ els.toolSearch.addEventListener("input", (event) => {
 });
 
 els.themeToggleButton?.addEventListener("click", toggleTheme);
+
+els.accentPicker?.addEventListener("click", (event) => {
+  const swatch = event.target.closest(".accent-swatch");
+  if (swatch) setAccent(swatch.dataset.accentValue);
+});
 
 window.addEventListener("popstate", () => {
   state.activeTool = toolFromHash() || (isDesktop() ? "crcl" : null);

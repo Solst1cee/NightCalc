@@ -1,30 +1,45 @@
 :root {
   color-scheme: light;
-  --bg: #f8fafc;
+  --bg: #f2f4f9;
   --panel: #ffffff;
   --ink: #10202a;
   --muted: #667985;
   --line: #d8e2e7;
-  --accent: #0f766e;
-  --accent-soft: #dff5f1;
+  /* brand accent — blue default (light); overridden per [data-accent] below */
+  --accent: #2563eb;
+  --accent-soft: #e6efff;
   --warn: #8a5a00;
   --warn-soft: #fff4d6;
   --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+
+  /* NightCalc logo badge tokens — a fixed dark badge that reads on any topbar;
+     only the keys follow the selected accent via --nc-accent */
+  --nc-tile: #101a30;
+  --nc-moon: #f1f5f9;
+  --nc-keyglyph: #f1f5f9;
+  --nc-accent: var(--accent);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #111827;
-  --panel: #18212f;
+  --bg: #0b1220;
+  --panel: #101a30;
   --ink: #eef4f8;
   --muted: #a8b6c2;
-  --line: #324255;
-  --accent: #2dd4bf;
-  --accent-soft: #103f3b;
+  --line: #2b3a52;
+  --accent: #2563eb;
+  --accent-soft: #16233f;
   --warn: #ffd37a;
   --warn-soft: #3f2f12;
-  --shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
 }
+
+/* ---- Selectable brand accents — add a color by copying one pair ---- */
+:root[data-accent="blue"] { --accent: #2563eb; --accent-soft: #e6efff; }
+:root[data-theme="dark"][data-accent="blue"] { --accent: #2563eb; --accent-soft: #16233f; }
+
+:root[data-accent="maroon"] { --accent: #b92d5d; --accent-soft: #fbe3ec; }
+:root[data-theme="dark"][data-accent="maroon"] { --accent: #b92d5d; --accent-soft: #2a1320; }
 
 * {
   box-sizing: border-box;
@@ -217,10 +232,56 @@ select {
   transform: rotate(0deg) scale(1);
 }
 
-.topbar h1 {
+.brand {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-mark {
+  flex: 0 0 auto;
+  height: 40px;
+  width: 40px;
+}
+
+.topbar h1,
+.wordmark {
   font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
   line-height: 1.05;
   margin: 2px 0 0;
+}
+
+.wm-night {
+  color: var(--ink);
+}
+
+.wm-calc {
+  color: var(--accent);
+}
+
+.accent-picker {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.accent-swatch {
+  background: var(--swatch);
+  border: 2px solid transparent;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: pointer;
+  height: 24px;
+  padding: 0;
+  width: 24px;
+}
+
+.accent-swatch[aria-pressed="true"] {
+  border-color: var(--panel);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .eyebrow {

@@ -1,11 +1,11 @@
 {
-  "name": "MedCalc",
-  "short_name": "MedCalc",
+  "name": "NightCalc",
+  "short_name": "NightCalc",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#0f766e",
-  "description": "Fast bedside medical calculators with session memory.",
+  "background_color": "#0B1220",
+  "theme_color": "#0B1220",
+  "description": "Fast bedside medical calculators with session memory, for night-shift ward rounds.",
   "icons": [
     {
       "src": "icons/icon.svg",
