@@ -115,11 +115,16 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 |---|---|---|
 | `age` | number | years |
 | `sex` | string | `"male"` \| `"female"` |
-| `weight` | number | kg |
+| `weightKg` | number | kg |
 | `serumCreatinine` | number | numeric value only |
-| `creatinineUnit` | string | `"mg/dL"` \| `"µmol/L"` |
-| `calculatedCrCl` | number | mL/min |
-| `infusionConcentrationChoices` | object | per-drug preset selections |
+| `serumCreatinineUnit` | string | `"mgDl"` \| `"umolL"` |
+| `crcl` | number | mL/min — Cockcroft-Gault; read by Renal Dose Adjustment |
+| `egfr` | number | mL/min/1.73m² — CKD-EPI 2021 |
+| `sodium`, `chloride`, `bicarbonate` | number | mEq/L — anion gap / corrected sodium |
+| `albumin` | number | g/dL — anion gap, corrected calcium |
+| `calcium` | number | mg/dL — corrected calcium |
+| `glucose` | number | mg/dL — corrected sodium |
+| (infusion / FE) | — | those tools persist their own keys (e.g. `infusionDrug`, `doseValue`, `rateValue`, `feType`) |
 
 **Never add patient identifiers (name, HN, ID, DOB) to session or any storage.**
 
@@ -156,10 +161,20 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 
 ## Feature Specifications
 
-### Creatinine Clearance
-- Formula: Cockcroft-Gault
-- Stores age, sex, weight, creatinine to session on change
-- Result renders automatically — no button
+### Renal Function (was Creatinine Clearance)
+- Shows both Cockcroft-Gault **CrCl** (mL/min, drug dosing — written to `state.session.crcl`, read by Renal Dose Adjustment) and race-free **CKD-EPI 2021 eGFR** (mL/min/1.73m², CKD staging)
+- Inputs: age, sex, weight (CrCl only), creatinine (+unit); eGFR computes without weight
+- Result renders automatically — no button; never interchange CrCl and eGFR
+
+### Anion Gap
+- Formula: AG = Na - (Cl + HCO3); optional albumin correction adds 2.5 mEq/L per 1 g/dL albumin below 4
+- Inputs in mEq/L; albumin g/dL (optional). Pure formula.
+
+### Corrected Calcium
+- Formula: measured Ca + 0.8 x (4 - albumin); calcium mg/dL, albumin g/dL. Pure formula.
+
+### Corrected Sodium
+- Formula: Na + factor x (glucose - 100) / 100; shows both 1.6 (classic) and 2.4 (severe hyperglycemia) factors; glucose mg/dL. Pure formula.
 
 ### IV / Inotrope Infusion
 - Drug presets + custom concentration (drug amount ÷ final volume)
@@ -226,6 +241,7 @@ After any frontend change:
 4. Test at ~390px width (iPhone)
 5. Test at ~1280px width (desktop)
 6. If cached assets changed → verify version bump in index.html + service-worker.js
+7. Pure-formula calculators: open tests/calculators.test.html → expect all PASS (tab title shows PASS n/n)
 ```
 
 ---

@@ -7,16 +7,17 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-10
-- What was done: Rebranded MedCalc → **NightCalc**. Integrated `nightcalc-brand-kit.zip` into `brand/`; added inline themeable header logo + `Night`/`Calc` wordmark; night-themed dark palette (`#0B1220`/`#101A30`); selectable brand accent (blue default, maroon) with `data-accent` + persistence and one-time migration of legacy `medcalc.*` storage keys; fixed the previously-missing `icons/icon.svg` (which had been breaking the service-worker install); favicon added. Updated manifest, service worker (`nightcalc-v57`), and all docs.
-- Files changed: `index.html`, `styles.css`, `app.js`, `manifest.webmanifest`, `service-worker.js`, `README.md`, `AGENTS.md`, `MEMORY.md`, `brand/` (new), `icons/icon.svg` + `icons/favicon.svg` (new)
-- GitHub repo renamed MedCalc → NightCalc (remote URL updated to `Solst1cee/NightCalc`; docs URLs point to `solst1cee.github.io/NightCalc`). Only the on-disk folder still uses `MedCalc` (left as-is).
+- What was done: Added the **P1 renal/electrolyte calculator slice** (v58). Renamed the renal tool **Creatinine Clearance → Renal Function**, now showing both Cockcroft-Gault CrCl (dosing) and **CKD-EPI 2021 eGFR** (staging); added pure-formula **Anion Gap** (optional albumin correction), **Corrected Calcium**, and **Corrected Sodium** (1.6 & 2.4 factors). Added a dependency-free browser unit-test harness `tests/calculators.test.html` (11 assertions, all passing headlessly). Bumped `v57 → v58` / `nightcalc-v58`. Built from the spec + plan in `docs/superpowers/`.
+- Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html` (new), `MEMORY.md`, `AGENTS.md`, `docs/superpowers/` (spec + plan)
+- Pending human check: open the app and `tests/calculators.test.html` in a browser — expect 11/11 pass, zero console errors, OK at 390px & 1280px; confirm the service worker updates to `nightcalc-v58`.
+- Earlier same day: rebrand MedCalc → NightCalc (brand kit, blue/maroon accents, v57) — see commit history.
 
 ---
 
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v57` / `nightcalc-v57`
+Last known: `v58` / `nightcalc-v58`
 
 ---
 
@@ -24,9 +25,12 @@ Last known: `v57` / `nightcalc-v57`
 
 | Tool | Status | Notes |
 |---|---|---|
-| Creatinine Clearance | ✅ Ready | Cockcroft-Gault, reusable session inputs |
+| Renal Function | ✅ Ready | Cockcroft-Gault CrCl + CKD-EPI 2021 eGFR (renamed from Creatinine Clearance) |
 | IV / Inotrope Infusion | ✅ Ready | Two-way dose/rate calc, draft drug data, warnings |
 | Fractional Excretion | ✅ Ready | FENa, FEUrea, FEK, FEMg, FEP, FECa |
+| Anion Gap | ✅ Ready | Pure formula; optional albumin correction |
+| Corrected Calcium | ✅ Ready | Pure formula (mg/dL, g/dL) |
+| Corrected Sodium | ✅ Ready | Pure formula; 1.6 and 2.4 factors |
 | Renal Dose Adjustment | 🔴 Down | Workflow ready, drug data is demo-only — do not promote to Ready without user confirmation |
 | Reference | 🔨 In progress | Becoming master maintenance view for all calculator data |
 
@@ -61,10 +65,12 @@ Reference page — build out as master data view covering all categories (infusi
 
 ## Next Up
 
-1. Complete Reference page as master data view
-2. Add all data categories to Reference (not just infusion drugs)
-3. Add verified drug data to Renal Dose Adjustment → promote status to Ready
-4. Add antibiotic dosing category to data architecture
+1. Remaining P1 calculators (QTc, CHA2DS2-VASc, CURB-65, Wells-PE, Child-Pugh, GCS, CIWA-Ar, NEWS2, qSOFA, IBW/adjusted body weight) — see `docs/superpowers/specs/2026-06-10-clinical-calculator-backlog-design.md`
+2. SI unit toggles for the new electrolyte calculators (Ca / glucose / albumin)
+3. Complete Reference page as master data view
+4. Add all data categories to Reference (not just infusion drugs)
+5. Add verified drug data to Renal Dose Adjustment → promote status to Ready
+6. Add antibiotic dosing category to data architecture
 
 ---
 
