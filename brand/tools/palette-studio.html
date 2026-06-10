@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NightCalc · Palette Studio</title>
+<style>
+  :root{
+    /* icon tokens (live-edited by JS) */
+    --i-key:#818CF8;
+    --i-keyglyph:#F1F5F9;
+    --i-moon:#F1F5F9;
+    --i-tile:#101A30;
+    --i-accent-text:#818CF8;
+    /* page tokens — dark mode default */
+    --pg-bg:#070D1A;
+    --pg-surface:#0D1526;
+    --pg-line:#1C2A47;
+    --pg-text:#EDF2F9;
+    --pg-dim:#7C8AA5;
+    --wall-a:#0B1430; --wall-b:#070D1A;
+  }
+  body.light{
+    --pg-bg:#F2F4F9;
+    --pg-surface:#FFFFFF;
+    --pg-line:#DDE3EE;
+    --pg-text:#101727;
+    --pg-dim:#67718A;
+    --wall-a:#E8ECF6; --wall-b:#F6F8FC;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--pg-bg);
+    color:var(--pg-text);
+    font-family:-apple-system,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    transition:background .35s ease, color .35s ease;
+    min-height:100vh;
+    padding:22px 18px 64px;
+    max-width:680px;
+    margin:0 auto;
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+
+  header{margin-bottom:22px;}
+  .eyebrow{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--i-accent-text); margin-bottom:8px;
+  }
+  h1{font-size:26px; font-weight:800; letter-spacing:-0.02em;}
+  .sub{color:var(--pg-dim); font-size:13.5px; margin-top:6px; line-height:1.5;}
+
+  /* ---------- controls ---------- */
+  .panel{
+    background:var(--pg-surface);
+    border:1px solid var(--pg-line);
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:18px;
+    transition:background .35s, border-color .35s;
+  }
+  .panel h2{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--pg-dim); font-weight:700; margin-bottom:12px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .mode-row{display:flex; gap:8px;}
+  .mode-btn{
+    flex:1; padding:10px 0; border-radius:10px;
+    border:1px solid var(--pg-line); background:transparent;
+    color:var(--pg-text); font-size:14px; font-weight:600; cursor:pointer;
+    transition:background .2s, border-color .2s;
+  }
+  .mode-btn[aria-pressed="true"]{
+    background:var(--i-key); border-color:var(--i-key); color:#fff;
+  }
+  .mode-btn:focus-visible{outline:2px solid var(--i-key); outline-offset:2px;}
+
+  .swatches{display:flex; flex-wrap:wrap; gap:10px;}
+  .swatch{
+    width:54px; padding:6px 0 7px; border-radius:12px; cursor:pointer;
+    border:1.5px solid var(--pg-line); background:transparent;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    transition:border-color .2s, transform .12s;
+  }
+  .swatch:active{transform:scale(.94);}
+  .swatch .dot{width:26px; height:26px; border-radius:9px;}
+  .swatch .nm{font-size:9.5px; color:var(--pg-dim); font-family:ui-monospace,Menlo,monospace; letter-spacing:.04em;}
+  .swatch[aria-pressed="true"]{border-color:var(--i-key);}
+  .swatch[aria-pressed="true"] .nm{color:var(--pg-text);}
+  .swatch:focus-visible{outline:2px solid var(--i-key); outline-offset:2px;}
+
+  .custom-row{display:flex; align-items:center; gap:10px; margin-top:12px;}
+  .custom-row label{font-size:12.5px; color:var(--pg-dim);}
+  input[type="color"]{
+    width:42px; height:30px; border:1px solid var(--pg-line); border-radius:8px;
+    background:transparent; padding:2px; cursor:pointer;
+  }
+
+  /* ---------- stage ---------- */
+  .stage{display:flex; flex-direction:column; gap:18px;}
+
+  .icon-plate{
+    display:flex; align-items:flex-end; gap:22px; justify-content:center;
+    padding:26px 14px 18px;
+  }
+  .icon-col{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .icon-col span{font-size:10px; color:var(--pg-dim); font-family:ui-monospace,Menlo,monospace;}
+  .appicon{border-radius:27%; overflow:hidden; display:block;}
+
+  /* lockups */
+  .lockup{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 18px; border-radius:14px;
+    background:var(--i-tile); border:1px solid var(--pg-line);
+    transition:background .35s;
+  }
+  .lockup .word{font-size:24px; font-weight:800; letter-spacing:-0.02em;}
+  .lockup .w1{color:var(--i-moon);}
+  .lockup .w2{color:var(--i-accent-text);}
+
+  /* home screen mock */
+  .homescreen{
+    border-radius:20px; border:1px solid var(--pg-line);
+    background:linear-gradient(160deg, var(--wall-a), var(--wall-b));
+    padding:22px 14px 16px;
+    transition:background .35s;
+  }
+  .hs-row{display:flex; justify-content:space-around;}
+  .hs-app{display:flex; flex-direction:column; align-items:center; gap:6px; width:64px;}
+  .hs-app .lbl{font-size:10px; color:var(--pg-text); opacity:.85; white-space:nowrap;}
+  .dummy{
+    width:54px; height:54px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* browser tab mock */
+  .tabbar{
+    border-radius:14px 14px 0 0; border:1px solid var(--pg-line); border-bottom:none;
+    background:var(--pg-surface); padding:8px 10px 0;
+  }
+  .tab{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--pg-bg); border:1px solid var(--pg-line); border-bottom:none;
+    border-radius:10px 10px 0 0; padding:7px 14px; font-size:12.5px; color:var(--pg-text);
+    max-width:100%;
+  }
+  .tab .fav{flex:0 0 auto; border-radius:4px; overflow:hidden;}
+  .tabline{height:10px; border:1px solid var(--pg-line); border-top:none; border-radius:0 0 14px 14px; background:var(--pg-surface);}
+
+  /* tokens */
+  .tokens{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .tokens code{
+    font-size:11px; color:var(--pg-dim); line-height:1.7; display:block;
+    font-family:ui-monospace,Menlo,monospace; word-break:break-all;
+  }
+  .copy-btn{
+    border:1px solid var(--i-key); color:var(--i-accent-text); background:transparent;
+    padding:8px 14px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .copy-btn:focus-visible{outline:2px solid var(--i-key); outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<!-- O1 mark, defined once -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="o1" viewBox="0 0 120 120">
+      <rect width="120" height="120" fill="var(--i-tile)"/>
+      <rect x="24" y="24" width="34" height="34" rx="9" fill="var(--i-key)"/>
+      <rect x="24" y="62" width="34" height="34" rx="9" fill="var(--i-key)"/>
+      <rect x="62" y="62" width="34" height="34" rx="9" fill="var(--i-key)"/>
+      <line x1="33" y1="41" x2="49" y2="41" stroke="var(--i-keyglyph)" stroke-width="7" stroke-linecap="round"/>
+      <line x1="41" y1="33" x2="41" y2="49" stroke="var(--i-keyglyph)" stroke-width="7" stroke-linecap="round"/>
+      <line x1="33" y1="79" x2="49" y2="79" stroke="var(--i-keyglyph)" stroke-width="7" stroke-linecap="round"/>
+      <line x1="72" y1="72" x2="86" y2="86" stroke="var(--i-keyglyph)" stroke-width="7" stroke-linecap="round"/>
+      <line x1="86" y1="72" x2="72" y2="86" stroke="var(--i-keyglyph)" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="79" cy="41" r="17" fill="var(--i-moon)"/>
+      <circle cx="87" cy="35" r="15" fill="var(--i-tile)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header>
+  <div class="eyebrow">NightCalc · brand studio</div>
+  <h1>Pick the night.</h1>
+  <p class="sub">Tap a palette, flip the mode. Every preview — icon, home screen, browser tab, lockup — updates live. When it feels right, copy the tokens.</p>
+</header>
+
+<section class="panel" aria-label="Mode">
+  <h2>Mode</h2>
+  <div class="mode-row" role="group" aria-label="Light or dark mode">
+    <button class="mode-btn" id="btnDark" aria-pressed="true" onclick="setMode('dark')">Dark</button>
+    <button class="mode-btn" id="btnLight" aria-pressed="false" onclick="setMode('light')">Light</button>
+  </div>
+</section>
+
+<section class="panel" aria-label="Palette">
+  <h2>Accent palette</h2>
+  <div class="swatches" id="swatches"></div>
+  <div class="custom-row">
+    <label for="customColor">Custom:</label>
+    <input type="color" id="customColor" value="#818CF8" aria-label="Custom accent color">
+    <span class="mono" id="customHex" style="font-size:12px;color:var(--pg-dim)">#818CF8</span>
+  </div>
+</section>
+
+<section class="panel" aria-label="Moon color">
+  <h2>Moon</h2>
+  <div class="mode-row" role="group" aria-label="Moon color mode">
+    <button class="mode-btn" id="moonAuto" aria-pressed="true" onclick="setMoon('auto')">Moonlight</button>
+    <button class="mode-btn" id="moonMatch" aria-pressed="false" onclick="setMoon('match')">Match accent</button>
+    <button class="mode-btn" id="moonCustom" aria-pressed="false" onclick="setMoon('custom')">Custom</button>
+  </div>
+  <div class="custom-row">
+    <label for="moonColor">Moon color:</label>
+    <input type="color" id="moonColor" value="#FBBF24" aria-label="Custom moon color">
+    <span class="mono" id="moonHex" style="font-size:12px;color:var(--pg-dim)">#FBBF24</span>
+  </div>
+</section>
+
+<div class="stage">
+
+  <section class="panel" aria-label="Icon sizes">
+    <h2>App icon · 120 / 48 / 24</h2>
+    <div class="icon-plate">
+      <div class="icon-col">
+        <svg class="appicon" width="120" height="120"><use href="#o1"/></svg><span>120</span>
+      </div>
+      <div class="icon-col">
+        <svg class="appicon" width="48" height="48"><use href="#o1"/></svg><span>48</span>
+      </div>
+      <div class="icon-col">
+        <svg class="appicon" width="24" height="24"><use href="#o1"/></svg><span>24</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Lockup">
+    <h2>Lockup</h2>
+    <div class="lockup">
+      <svg class="appicon" width="44" height="44"><use href="#o1"/></svg>
+      <div class="word"><span class="w1">Night</span><span class="w2">Calc</span></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Home screen preview">
+    <h2>On the home screen</h2>
+    <div class="homescreen">
+      <div class="hs-row">
+        <div class="hs-app">
+          <div class="dummy" style="background:#39435C">
+            <svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="8" fill="none" stroke="#9AA6BF" stroke-width="3"/></svg>
+          </div><div class="lbl">Phone</div>
+        </div>
+        <div class="hs-app">
+          <div class="dummy" style="background:#4A5570">
+            <svg width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="7" width="16" height="12" rx="3" fill="none" stroke="#9AA6BF" stroke-width="3"/></svg>
+          </div><div class="lbl">Mail</div>
+        </div>
+        <div class="hs-app">
+          <svg class="appicon" width="54" height="54"><use href="#o1"/></svg>
+          <div class="lbl">NightCalc</div>
+        </div>
+        <div class="hs-app">
+          <div class="dummy" style="background:#39435C">
+            <svg width="26" height="26" viewBox="0 0 26 26"><path d="M6 18 L11 10 L15 14 L20 7" fill="none" stroke="#9AA6BF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div><div class="lbl">Health</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Browser tab preview">
+    <h2>In a browser tab</h2>
+    <div class="tabbar">
+      <div class="tab">
+        <svg class="fav" width="16" height="16"><use href="#o1"/></svg>
+        NightCalc — eGFR · CrCl · Corrected Na
+      </div>
+    </div>
+    <div class="tabline"></div>
+  </section>
+
+  <section class="panel tokens" aria-label="Design tokens">
+    <div>
+      <h2>Tokens</h2>
+      <code id="tokenOut"></code>
+    </div>
+    <button class="copy-btn" id="copyBtn" onclick="copyTokens()">Copy CSS</button>
+  </section>
+
+</div>
+
+<script>
+const PALETTES = [
+  { name:'indigo', dark:'#818CF8', light:'#4F46E5' },
+  { name:'blue',   dark:'#60A5FA', light:'#2563EB' },
+  { name:'sky',    dark:'#38BDF8', light:'#0284C7' },
+  { name:'violet', dark:'#A78BFA', light:'#7C3AED' },
+  { name:'rose',   dark:'#FB7185', light:'#E11D48' },
+  { name:'amber',  dark:'#FBBF24', light:'#D97706' },
+  { name:'slate',  dark:'#94A3B8', light:'#475569' },
+];
+
+let state = { mode:'dark', palette:PALETTES[0], custom:null, moonMode:'auto', moonCustom:'#FBBF24' };
+
+const root = document.documentElement;
+
+function currentAccent(){
+  if (state.custom) return state.custom;
+  return state.mode === 'dark' ? state.palette.dark : state.palette.light;
+}
+
+function currentMoon(){
+  if (state.moonMode === 'match') return currentAccent();
+  if (state.moonMode === 'custom') return state.moonCustom;
+  return state.mode === 'dark' ? '#F1F5F9' : '#0F172A';
+}
+
+function apply(){
+  const acc = currentAccent();
+  document.body.classList.toggle('light', state.mode === 'light');
+  if (state.mode === 'dark'){
+    root.style.setProperty('--i-tile', '#101A30');
+    root.style.setProperty('--i-keyglyph', '#F1F5F9');
+  } else {
+    root.style.setProperty('--i-tile', '#FFFFFF');
+    root.style.setProperty('--i-keyglyph', '#FFFFFF');
+  }
+  root.style.setProperty('--i-moon', currentMoon());
+  root.style.setProperty('--i-key', acc);
+  root.style.setProperty('--i-accent-text', acc);
+  renderTokens();
+}
+
+function renderTokens(){
+  const acc = currentAccent();
+  const tile = state.mode==='dark' ? '#101A30' : '#FFFFFF';
+  const moon = currentMoon();
+  const bg   = state.mode==='dark' ? '#0B1220' : '#F2F4F9';
+  document.getElementById('tokenOut').textContent =
+    `--nc-bg:${bg}; --nc-tile:${tile}; --nc-accent:${acc}; --nc-moon:${moon};`;
+}
+
+function setMode(m){
+  state.mode = m;
+  document.getElementById('btnDark').setAttribute('aria-pressed', m==='dark');
+  document.getElementById('btnLight').setAttribute('aria-pressed', m==='light');
+  apply();
+}
+
+function setPalette(idx){
+  state.palette = PALETTES[idx];
+  state.custom = null;
+  document.querySelectorAll('.swatch').forEach((b,i)=>b.setAttribute('aria-pressed', i===idx));
+  apply();
+}
+
+function buildSwatches(){
+  const wrap = document.getElementById('swatches');
+  PALETTES.forEach((p,i)=>{
+    const b = document.createElement('button');
+    b.className = 'swatch';
+    b.setAttribute('aria-pressed', i===0);
+    b.innerHTML = `<span class="dot" style="background:linear-gradient(135deg, ${p.dark}, ${p.light})"></span><span class="nm">${p.name}</span>`;
+    b.onclick = ()=>setPalette(i);
+    wrap.appendChild(b);
+  });
+}
+
+document.getElementById('customColor').addEventListener('input', e=>{
+  state.custom = e.target.value;
+  document.getElementById('customHex').textContent = e.target.value.toUpperCase();
+  document.querySelectorAll('.swatch').forEach(b=>b.setAttribute('aria-pressed','false'));
+  apply();
+});
+
+function setMoon(m){
+  state.moonMode = m;
+  document.getElementById('moonAuto').setAttribute('aria-pressed', m==='auto');
+  document.getElementById('moonMatch').setAttribute('aria-pressed', m==='match');
+  document.getElementById('moonCustom').setAttribute('aria-pressed', m==='custom');
+  apply();
+}
+
+document.getElementById('moonColor').addEventListener('input', e=>{
+  state.moonCustom = e.target.value;
+  document.getElementById('moonHex').textContent = e.target.value.toUpperCase();
+  setMoon('custom');
+});
+
+async function copyTokens(){
+  const text = `:root {\n  ${document.getElementById('tokenOut').textContent.replaceAll('; ', ';\n  ')}\n}`;
+  const btn = document.getElementById('copyBtn');
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied ✓';
+  } catch {
+    btn.textContent = 'Select & copy above';
+  }
+  setTimeout(()=>btn.textContent='Copy CSS', 1600);
+}
+
+buildSwatches();
+apply();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 80" class="nc-lockup"
+     font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <g transform="translate(12,10) scale(0.5)">
+    <rect x="1" y="1" width="118" height="118" rx="27" fill="var(--nc-tile, #101A30)"/>
+    <rect x="24" y="24" width="34" height="34" rx="9" fill="var(--nc-accent, #B92D5D)"/>
+    <rect x="24" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #B92D5D)"/>
+    <rect x="62" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #B92D5D)"/>
+    <line x1="33" y1="41" x2="49" y2="41" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="41" y1="33" x2="41" y2="49" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="33" y1="79" x2="49" y2="79" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="72" y1="72" x2="86" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="86" y1="72" x2="72" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="79" cy="41" r="17" fill="var(--nc-moon, #F1F5F9)"/>
+    <circle cx="87" cy="35" r="15" fill="var(--nc-tile, #101A30)"/>
+  </g>
+  <text x="84" y="53" font-size="34" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="var(--nc-moon, #F1F5F9)">Night</tspan><tspan fill="var(--nc-accent, #B92D5D)">Calc</tspan>
+  </text>
+</svg>

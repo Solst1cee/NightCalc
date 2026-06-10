@@ -1,6 +1,6 @@
-# MedCalc — AI Agent Context
+# NightCalc — AI Agent Context
 
-This is the canonical agent context for MedCalc. It is written for any AI coding agent (Claude Code, Codex, Cursor, Aider, etc.) — Codex and others auto-load `AGENTS.md`; Claude Code is pointed here from `CLAUDE.md`.
+This is the canonical agent context for NightCalc. It is written for any AI coding agent (Claude Code, Codex, Cursor, Aider, etc.) — Codex and others auto-load `AGENTS.md`; Claude Code is pointed here from `CLAUDE.md`.
 
 Read this file and `MEMORY.md` before making any changes.
 
@@ -8,7 +8,7 @@ Read this file and `MEMORY.md` before making any changes.
 
 ## Project Purpose
 
-MedCalc is a lightweight clinical calculator web app for a medicine resident during ward rounds. iPhone-first, fast, bedside-usable.
+NightCalc is a lightweight clinical calculator web app for a medicine resident during ward rounds — built for night-shift work, with a dark "night" identity. iPhone-first, fast, bedside-usable.
 
 Intentionally simple:
 - Static HTML / CSS / JavaScript only
@@ -32,11 +32,13 @@ Intentionally simple:
 
 | | |
 |---|---|
-| **Local workspace** | `C:\Users\User\MedCalc` |
-| **GitHub** | `https://github.com/Solst1cee/MedCalc` |
-| **GitHub Pages** | `https://solst1cee.github.io/MedCalc/` |
+| **Local workspace** | `C:\Users\User\Project\MedCalc` |
+| **GitHub** | `https://github.com/Solst1cee/NightCalc` |
+| **GitHub Pages** | `https://solst1cee.github.io/NightCalc/` |
 | **Remote** | `origin` |
 | **Main branch** | `main` |
+
+> **Note:** the GitHub repo was renamed MedCalc → NightCalc. Only the on-disk workspace folder still uses `MedCalc` (left as-is to avoid breaking the open workspace); rename it locally if desired.
 
 Always run `git status --short` before committing or pushing — there may be local edits ahead of the last push.
 
@@ -61,7 +63,8 @@ Open: `http://127.0.0.1:4173/`
 | `app.js` | All app state, data structures, render functions, calculator logic |
 | `service-worker.js` | PWA / static asset cache |
 | `manifest.webmanifest` | PWA manifest |
-| `icons/` | Local UI and status icons |
+| `icons/` | Local UI and status icons (incl. `icon.svg`, `favicon.svg` from the brand kit) |
+| `brand/` | NightCalc brand kit — static SVGs (`blue/`, `maroon/`), themeable SVGs, `theme.css`, `BRAND.md`, `tools/palette-studio.html` |
 | `README.md` | User-facing project overview |
 | `AGENTS.md` | This file — canonical AI agent context |
 | `CLAUDE.md` | One-line pointer to `AGENTS.md` (Claude Code auto-loads this) |
@@ -81,7 +84,7 @@ Open: `http://127.0.0.1:4173/`
 
 When changing any cached asset (`app.js`, `styles.css`, icons, `service-worker.js`):
 1. Bump query version strings in `index.html` (e.g. `?v=57` → `?v=58`)
-2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `medcalc-v57` → `medcalc-v58`)
+2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `nightcalc-v57` → `nightcalc-v58`)
 
 Both must be updated together. Check current version in `index.html` before bumping.
 
@@ -106,7 +109,7 @@ Both must be updated together. Check current version in `index.html` before bump
 ## Session Data
 
 State object: `state.session`
-Persisted to: `sessionStorage` key `medcalc.session.v1`
+Persisted to: `sessionStorage` key `nightcalc.session.v1`
 
 | Key | Type | Unit/Values |
 |---|---|---|
@@ -191,9 +194,12 @@ Persisted to: `sessionStorage` key `medcalc.session.v1`
 - Contact fields: GitHub and Email (currently `N/A`)
 
 ### Theme
-- Default: system preference
-- User override saved to `localStorage`
+- Light/dark default: system preference; user override saved to `localStorage` (`nightcalc.theme.v1`)
 - Button icon: sun (light) / moon (dark)
+- **Brand accent** is selectable (blue default, maroon) from the Info menu; saved to `localStorage` (`nightcalc.accent.v1`), applied via `data-accent` on `<html>`
+  - Add a new accent: append it to `ACCENTS` in `app.js`, add a swatch button in `index.html`, and add a `:root[data-accent="..."]` (+ dark) block in `styles.css`
+  - The inline header logo is the brand's themeable SVG; its keys follow `--nc-accent: var(--accent)`, so it recolors with the accent automatically
+  - **Alert-red rule (binding):** the accent colors chrome only (logo, headers, buttons, links) — never a clinical result or warning value. Warnings keep their own red/amber. See `brand/BRAND.md`
 
 ---
 

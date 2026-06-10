@@ -1,8 +1,8 @@
-# MedCalc
+# NightCalc
 
-MedCalc is a simple medical calculator app that helps users quickly perform common health-related calculations in one place. It is designed to be lightweight, easy to use, and accessible from any device.
+NightCalc is a simple, lightweight medical calculator app for the physician working at night — a calm bedside companion that quickly performs common clinical calculations while the ward sleeps. It is designed to be fast, easy to use, and accessible from any device, with a dark "night" theme and selectable brand accent (blue or maroon).
 
-Live demo: [solst1cee.github.io/MedCalc](https://solst1cee.github.io/MedCalc/)
+Live demo: [solst1cee.github.io/NightCalc](https://solst1cee.github.io/NightCalc/)
 
 ## Run Locally
 
@@ -42,6 +42,12 @@ The infusion drug data is intentionally structured as a draft scaffold. Verify a
 
 - Mobile: starts on the tool list, then opens each calculator as a sub-page with a back button.
 - Desktop: keeps a scrollable tool panel on the left and a larger calculator panel on the right.
+
+## Theme
+
+- Light/dark follows the device preference by default and can be toggled with the sun/moon button.
+- The brand accent (blue by default, maroon optional) is selectable from the Info menu and saved across sessions. More accents can be added with one CSS block plus one entry in the `ACCENTS` list in `app.js`.
+- Per the brand's "alert-red rule," the accent only colors chrome (logo, headers, buttons, links) — never a clinical result or warning value.
 
 ## Session Memory
 

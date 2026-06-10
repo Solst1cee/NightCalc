@@ -3,17 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f766e" />
-    <title>MedCalc</title>
+    <meta name="theme-color" content="#0B1220" />
+    <title>NightCalc</title>
+    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=56" />
+    <link rel="stylesheet" href="styles.css?v=57" />
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">Ward rounding companion</p>
-          <h1>MedCalc</h1>
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+            <rect x="1" y="1" width="118" height="118" rx="27" fill="var(--nc-tile, #101A30)"></rect>
+            <rect x="24" y="24" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
+            <rect x="24" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
+            <rect x="62" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
+            <line x1="33" y1="41" x2="49" y2="41" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
+            <line x1="41" y1="33" x2="41" y2="49" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
+            <line x1="33" y1="79" x2="49" y2="79" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
+            <line x1="72" y1="72" x2="86" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
+            <line x1="86" y1="72" x2="72" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
+            <circle cx="79" cy="41" r="17" fill="var(--nc-moon, #F1F5F9)"></circle>
+            <circle cx="87" cy="35" r="15" fill="var(--nc-tile, #101A30)"></circle>
+          </svg>
+          <div>
+            <p class="eyebrow">Ward rounding companion</p>
+            <h1 class="wordmark"><span class="wm-night">Night</span><span class="wm-calc">Calc</span></h1>
+          </div>
         </div>
         <div class="topbar-actions">
           <button class="theme-toggle" id="themeToggleButton" title="Toggle dark or light theme" type="button" aria-label="Switch theme">
@@ -36,6 +52,11 @@
               <h2>Contact</h2>
               <p class="contact-row"><img src="icons/icons8-github-logo.svg" alt="" aria-hidden="true" /><span>GitHub: <a href="https://github.com/Solst1cee" target="_blank" rel="noopener noreferrer">Solst1cee</a></span></p>
               <p class="contact-row"><img src="icons/icons8-gmail-logo.svg" alt="" aria-hidden="true" /><span>Email: N/A</span></p>
+              <h2>Accent</h2>
+              <div class="accent-picker" id="accentPicker" role="group" aria-label="Brand accent color">
+                <button type="button" class="accent-swatch" data-accent-value="blue" style="--swatch:#2563EB" title="Blue" aria-label="Blue accent"></button>
+                <button type="button" class="accent-swatch" data-accent-value="maroon" style="--swatch:#B92D5D" title="Maroon" aria-label="Maroon accent"></button>
+              </div>
             </div>
           </details>
         </div>
@@ -61,6 +82,6 @@
       </main>
     </div>
 
-    <script src="app.js?v=56"></script>
+    <script src="app.js?v=57"></script>
   </body>
 </html>

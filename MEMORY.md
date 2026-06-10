@@ -1,4 +1,4 @@
-# MedCalc — Memory
+# NightCalc — Memory
 
 Update this file at the end of every session. This is the living record of project state.
 
@@ -6,16 +6,17 @@ Update this file at the end of every session. This is the living record of proje
 
 ## Last Session
 
-- Date: —
-- What was done: Initial CLAUDE.md and MEMORY.md created
-- Files changed: —
+- Date: 2026-06-10
+- What was done: Rebranded MedCalc → **NightCalc**. Integrated `nightcalc-brand-kit.zip` into `brand/`; added inline themeable header logo + `Night`/`Calc` wordmark; night-themed dark palette (`#0B1220`/`#101A30`); selectable brand accent (blue default, maroon) with `data-accent` + persistence and one-time migration of legacy `medcalc.*` storage keys; fixed the previously-missing `icons/icon.svg` (which had been breaking the service-worker install); favicon added. Updated manifest, service worker (`nightcalc-v57`), and all docs.
+- Files changed: `index.html`, `styles.css`, `app.js`, `manifest.webmanifest`, `service-worker.js`, `README.md`, `AGENTS.md`, `MEMORY.md`, `brand/` (new), `icons/icon.svg` + `icons/favicon.svg` (new)
+- GitHub repo renamed MedCalc → NightCalc (remote URL updated to `Solst1cee/NightCalc`; docs URLs point to `solst1cee.github.io/NightCalc`). Only the on-disk folder still uses `MedCalc` (left as-is).
 
 ---
 
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v57` / `medcalc-v57`
+Last known: `v57` / `nightcalc-v57`
 
 ---
 
@@ -53,6 +54,8 @@ Reference page — build out as master data view covering all categories (infusi
 | Reference page becomes master data maintenance view | Single source of truth for all calculator data |
 | Drug data stays marked demo until user explicitly verifies | Safety — not a medical device |
 | Search updates list only, not full page re-render | Avoid cursor jump/blink UX bug |
+| Rebranded to NightCalc; blue default accent, maroon selectable | Night-shift identity; blue is the lower-risk accent next to clinical red/amber warnings |
+| Brand accent is chrome-only (never colors values) | Brand kit's binding "alert-red rule" — keep brand and warnings from colliding |
 
 ---
 

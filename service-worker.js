@@ -1,4 +1,4 @@
-const CACHE_NAME = "medcalc-v56";
+const CACHE_NAME = "nightcalc-v57";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const ASSETS = [
   "./app.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
+  "./icons/favicon.svg",
   "./icons/icons8-menu.svg",
   "./icons/icons8-github-logo.svg",
   "./icons/icons8-gmail-logo.svg",

@@ -1,0 +1,38 @@
+/* NightCalc theme tokens — single source of truth.
+   To add a new theme: copy a [data-theme] block, change --nc-accent.
+   For fully custom user colors: set --nc-accent from JS, e.g.
+     document.documentElement.style.setProperty('--nc-accent', picked);
+*/
+
+:root {
+  /* default theme: maroon, dark */
+  --nc-accent:  #B92D5D;
+  --nc-bg:      #0B1220;
+  --nc-tile:    #101A30;
+  --nc-moon:    #F1F5F9;
+  --nc-keyglyph:#F1F5F9;
+
+  /* semantic colors — NEVER reassign these to brand duty (alert-red rule) */
+  --nc-alert:   #DC2626;  /* abnormal / critical values ONLY */
+  --nc-warn:    #D97706;  /* borderline values ONLY */
+}
+
+[data-theme="blue"] {
+  --nc-accent: #2563EB;
+}
+
+[data-theme="light"] {
+  --nc-bg:      #F2F4F9;
+  --nc-tile:    #FFFFFF;
+  --nc-moon:    #0F172A;
+  --nc-keyglyph:#FFFFFF;
+}
+
+/* combine: <html data-theme="blue light"> is not valid — use two attributes
+   or a class; simplest: data-theme for color, data-mode for light/dark:   */
+[data-mode="light"] {
+  --nc-bg:      #F2F4F9;
+  --nc-tile:    #FFFFFF;
+  --nc-moon:    #0F172A;
+  --nc-keyglyph:#FFFFFF;
+}
