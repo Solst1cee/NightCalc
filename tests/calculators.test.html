@@ -105,6 +105,11 @@
           assertClose("NEWS2 worked example = 10", calcScore(SCORES.news2, { rr: 22, spo2: 93, suppO2: "y", temp: 38.5, sbp: 100, hr: 48, consciousness: "a" }), 10, 1e-9);
           assertClose("NEWS2 all-normal = 0", calcScore(SCORES.news2, { rr: 16, spo2: 98, suppO2: "n", temp: 37, sbp: 120, hr: 70, consciousness: "a" }), 0, 1e-9);
           assertClose("CIWA-Ar 4+3+2 = 9", calcScore(SCORES.ciwa, { nausea: "4", tremor: "3", sweats: "0", anxiety: "0", agitation: "0", tactile: "0", auditory: "0", visual: "0", headache: "0", orientation: "2" }), 9, 1e-9);
+
+          // --- Child-Pugh + Wells (PE) ---
+          assertClose("Child-Pugh B example = 7", calcScore(SCORES.childpugh, { bilirubin: "2", albumin: "1", inr: "1", ascites: "2", enceph: "1" }), 7, 1e-9);
+          assertClose("Wells-PE DVT+PE+HR = 7.5", calcScore(SCORES.wellspe, { dvt: "y", peLikely: "y", hr: "y", immob: "n", priorVte: "n", hemoptysis: "n", malignancy: "n" }), 7.5, 1e-9);
+          assertClose("Wells-PE HR+prior+hemoptysis = 4", calcScore(SCORES.wellspe, { dvt: "n", peLikely: "n", hr: "y", immob: "n", priorVte: "y", hemoptysis: "y", malignancy: "n" }), 4, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

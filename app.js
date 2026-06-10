@@ -162,6 +162,20 @@ const tools = [
     tags: ["ciwa", "ciwa-ar", "alcohol", "withdrawal", "detox"],
   },
   {
+    id: "childpugh",
+    title: "Child-Pugh",
+    description: "Cirrhosis severity (Class A/B/C).",
+    status: "ready",
+    tags: ["child-pugh", "childpugh", "cirrhosis", "liver"],
+  },
+  {
+    id: "wellspe",
+    title: "Wells Score (PE)",
+    description: "Pulmonary embolism pretest probability.",
+    status: "ready",
+    tags: ["wells", "pe", "pulmonary embolism", "vte"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -845,6 +859,69 @@ SCORES.ciwa = {
     { test: (t) => t >= 16, text: "≥16: severe — high risk of seizures / delirium tremens; treat and escalate." },
   ],
   notice: "Clinical check: CIWA-Ar assumes the patient can communicate; use a protocol and reassess frequently. Not valid in delirium from other causes.",
+};
+
+SCORES.childpugh = {
+  id: "childpugh",
+  title: "Child-Pugh",
+  description: "Cirrhosis severity (5-15 → Class A/B/C).",
+  maxLabel: "15",
+  tags: ["child-pugh", "childpugh", "cirrhosis", "liver", "hepatology"],
+  criteria: [
+    { name: "bilirubin", label: "Bilirubin", type: "select", options: [
+        { label: "< 2 mg/dL (< 34 µmol/L)", value: "1", points: 1 },
+        { label: "2–3 mg/dL (34–50 µmol/L)", value: "2", points: 2 },
+        { label: "> 3 mg/dL (> 50 µmol/L)", value: "3", points: 3 },
+      ] },
+    { name: "albumin", label: "Albumin", type: "select", options: [
+        { label: "> 3.5 g/dL", value: "1", points: 1 },
+        { label: "2.8–3.5 g/dL", value: "2", points: 2 },
+        { label: "< 2.8 g/dL", value: "3", points: 3 },
+      ] },
+    { name: "inr", label: "INR", type: "select", options: [
+        { label: "< 1.7", value: "1", points: 1 },
+        { label: "1.7–2.3", value: "2", points: 2 },
+        { label: "> 2.3", value: "3", points: 3 },
+      ] },
+    { name: "ascites", label: "Ascites", type: "select", options: [
+        { label: "None", value: "1", points: 1 },
+        { label: "Mild–moderate (diuretic-responsive)", value: "2", points: 2 },
+        { label: "Severe (refractory)", value: "3", points: 3 },
+      ] },
+    { name: "enceph", label: "Encephalopathy", type: "select", options: [
+        { label: "None", value: "1", points: 1 },
+        { label: "Grade 1–2", value: "2", points: 2 },
+        { label: "Grade 3–4", value: "3", points: 3 },
+      ] },
+  ],
+  interpret: [
+    { test: (t) => t <= 6, text: "5-6: Class A — well-compensated." },
+    { test: (t) => t <= 9, text: "7-9: Class B — significant functional compromise." },
+    { test: (t) => t >= 10, text: "10-15: Class C — decompensated." },
+  ],
+  notice: "Clinical check: bilirubin/albumin thresholds assume conventional units; MELD-Na is often preferred for prognosis and transplant listing.",
+};
+
+SCORES.wellspe = {
+  id: "wellspe",
+  title: "Wells Score (PE)",
+  description: "Pretest probability of pulmonary embolism.",
+  maxLabel: "12.5",
+  tags: ["wells", "pe", "pulmonary embolism", "vte", "d-dimer", "ctpa"],
+  criteria: [
+    { name: "dvt", label: "Clinical signs/symptoms of DVT", type: "select", options: YN(3) },
+    { name: "peLikely", label: "PE is the #1 diagnosis, or equally likely", type: "select", options: YN(3) },
+    { name: "hr", label: "Heart rate > 100/min", type: "select", options: YN(1.5) },
+    { name: "immob", label: "Immobilisation ≥ 3 days or surgery in past 4 weeks", type: "select", options: YN(1.5) },
+    { name: "priorVte", label: "Previous DVT / PE", type: "select", options: YN(1.5) },
+    { name: "hemoptysis", label: "Haemoptysis", type: "select", options: YN(1) },
+    { name: "malignancy", label: "Malignancy (treated within 6 months or palliative)", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t <= 4, text: "≤4: PE unlikely — a negative D-dimer can rule out PE (two-tier model)." },
+    { test: (t) => t > 4, text: ">4: PE likely — proceed to CTPA (or V/Q). (3-tier: <2 low, 2-6 moderate, >6 high.)" },
+  ],
+  notice: "Clinical check: pair with PERC / D-dimer per your pathway; pregnancy and renal function modify imaging choice.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
