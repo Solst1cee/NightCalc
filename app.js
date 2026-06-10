@@ -2,6 +2,7 @@ const STORAGE_KEY = "nightcalc.session.v1";
 const THEME_KEY = "nightcalc.theme.v1";
 const ACCENT_KEY = "nightcalc.accent.v1";
 const SKIN_KEY = "nightcalc.skin.v1";
+const A2HS_KEY = "nightcalc.a2hs.v1";
 
 // Selectable brand accents. To add a color: append it here and add a matching
 // :root[data-accent="..."] block in styles.css. Order here = swatch order.
@@ -496,8 +497,14 @@ const els = {
   calculator: document.querySelector("#calculator"),
   sessionChip: document.querySelector("#sessionChip"),
   themeToggleButton: document.querySelector("#themeToggleButton"),
+  topbar: document.querySelector(".topbar"),
   accentPicker: document.querySelector("#accentPicker"),
   skinPicker: document.querySelector("#skinPicker"),
+  installBanner: document.querySelector("#installBanner"),
+  installOverlay: document.querySelector("#installOverlay"),
+  installSheet: document.querySelector("#installSheet"),
+  a2hsMenuRow: document.querySelector("#a2hsMenuRow"),
+  a2hsMenuItem: document.querySelector("#a2hsMenuItem"),
   toolSearch: document.querySelector("#toolSearch"),
 };
 
@@ -505,6 +512,7 @@ const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? 
 applyTheme(localStorage.getItem(THEME_KEY) || systemTheme);
 applyAccent(localStorage.getItem(ACCENT_KEY) || DEFAULT_ACCENT);
 applySkin(localStorage.getItem(SKIN_KEY) || DEFAULT_SKIN);
+initInstallGuide();
 
 function loadSession() {
   try {
@@ -540,6 +548,24 @@ function toggleTheme() {
   const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_KEY, nextTheme);
   applyTheme(nextTheme);
+  repaintTopbar();
+}
+
+// iOS Safari keeps the sticky topbar on its own compositing layer and does not
+// re-rasterize it when a theme switch flips the inherited CSS custom properties,
+// so it keeps showing the previous color until a scroll forces a recomposite.
+// Writing the (already-correct) computed color straight onto the element is a
+// direct paint change that forces an immediate re-raster; we drop the inline
+// override on the next frame so the stylesheet stays the source of truth.
+// (A transform/opacity nudge is not enough — those are compositor-only and just
+// re-show the stale bitmap.)
+function repaintTopbar() {
+  const topbar = els.topbar;
+  if (!topbar) return;
+  topbar.style.backgroundColor = getComputedStyle(topbar).backgroundColor;
+  requestAnimationFrame(() => {
+    topbar.style.backgroundColor = "";
+  });
 }
 
 function applyAccent(accent) {
@@ -570,6 +596,83 @@ function setSkin(skin) {
   const nextSkin = SKINS.includes(skin) ? skin : DEFAULT_SKIN;
   localStorage.setItem(SKIN_KEY, nextSkin);
   applySkin(nextSkin);
+}
+
+// ---- iOS "Add to Home Screen" install guide ----
+// iOS Safari exposes no install API, so eligibility is best-effort UA detection.
+function isIosSafari() {
+  const ua = navigator.userAgent;
+  const isIosDevice =
+    /iP(hone|od|ad)/.test(ua) ||
+    // iPadOS 13+ reports as desktop Safari; fall back to the touch-point tell.
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (!isIosDevice) return false;
+  // Exclude other iOS browsers and in-app webviews — they cannot add web apps.
+  return (
+    /Safari/.test(ua) &&
+    !/(CriOS|FxiOS|EdgiOS|OPiOS|GSA|FBAN|FBAV|Instagram|Line|Twitter)/.test(ua)
+  );
+}
+
+function isStandalone() {
+  return (
+    window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches
+  );
+}
+
+function a2hsEligible() {
+  return isIosSafari() && !isStandalone();
+}
+
+function a2hsDismissed() {
+  return localStorage.getItem(A2HS_KEY) === "dismissed";
+}
+
+function initInstallGuide() {
+  if (!a2hsEligible()) return; // desktop / Android / other browsers / already installed → nothing
+  els.a2hsMenuRow?.removeAttribute("hidden"); // menu entry: always available when eligible
+  if (!a2hsDismissed()) {
+    els.installBanner?.removeAttribute("hidden"); // proactive banner once, until dismissed
+  }
+}
+
+let a2hsLastFocus = null;
+
+function openInstallSheet(trigger) {
+  a2hsLastFocus = trigger || document.activeElement;
+  els.installOverlay.removeAttribute("hidden");
+  const focusTarget = els.installSheet.querySelector(".install-close") || els.installSheet;
+  focusTarget.focus();
+  document.addEventListener("keydown", onInstallKeydown);
+}
+
+function closeInstallSheet() {
+  els.installOverlay.setAttribute("hidden", "");
+  document.removeEventListener("keydown", onInstallKeydown);
+  if (a2hsLastFocus && typeof a2hsLastFocus.focus === "function") a2hsLastFocus.focus();
+  a2hsLastFocus = null;
+}
+
+function onInstallKeydown(event) {
+  if (event.key === "Escape") {
+    closeInstallSheet();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusables = els.installSheet.querySelectorAll(
+    'button, [href], input, [tabindex]:not([tabindex="-1"])'
+  );
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function toolFromHash() {
@@ -2192,6 +2295,26 @@ els.accentPicker?.addEventListener("click", (event) => {
 els.skinPicker?.addEventListener("click", (event) => {
   const option = event.target.closest(".skin-option");
   if (option) setSkin(option.dataset.skinValue);
+});
+
+els.installBanner?.addEventListener("click", (event) => {
+  if (event.target.closest(".install-banner-dismiss")) {
+    localStorage.setItem(A2HS_KEY, "dismissed");
+    els.installBanner.setAttribute("hidden", "");
+    return;
+  }
+  openInstallSheet(els.installBanner.querySelector(".install-banner-main"));
+});
+
+els.a2hsMenuItem?.addEventListener("click", () => {
+  els.a2hsMenuItem.closest("details.disclosure-menu")?.removeAttribute("open");
+  openInstallSheet(els.a2hsMenuItem);
+});
+
+els.installOverlay?.addEventListener("click", (event) => {
+  if (event.target === els.installOverlay || event.target.closest(".install-close")) {
+    closeInstallSheet();
+  }
 });
 
 window.addEventListener("popstate", () => {

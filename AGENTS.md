@@ -83,8 +83,8 @@ Open: `http://127.0.0.1:4173/`
 ## Versioning Rule
 
 When changing any cached asset (`app.js`, `styles.css`, icons, `service-worker.js`):
-1. Bump query version strings in `index.html` (e.g. `?v=60` → `?v=61`)
-2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `nightcalc-v60` → `nightcalc-v61`)
+1. Bump query version strings in `index.html` (e.g. `?v=63` → `?v=64`)
+2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `nightcalc-v63` → `nightcalc-v64`)
 
 Both must be updated together. Check current version in `index.html` before bumping.
 
@@ -207,6 +207,14 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 - Top-right corner
 - Closes on outside click/tap
 - Contact fields: GitHub and Email (currently `N/A`)
+- Contains an **Install** section ("Add to Home Screen" button) that is shown only when the guide is eligible (iOS Safari + not already installed); opens the install bottom sheet
+
+### iOS "Add to Home Screen" install guide
+- Shown only on iOS Safari when not already installed as a standalone app (`isIosSafari() && !isStandalone()`)
+- A dismissible bottom banner and a persistent ⋯-menu "Add to Home Screen" entry both open a shared modal bottom sheet
+- Dismissal persisted in `localStorage` key `nightcalc.a2hs.v1`; the menu entry remains available even after the banner is dismissed
+- Steps follow current iOS 26 Safari: ••• → Share → Add to Home Screen → keep "Open as Web App" on → Add
+- Composes with all themes, accents, and the Pixel skin (square corners, thick borders in pixel mode)
 
 ### Theme
 - Light/dark default: system preference; user override saved to `localStorage` (`nightcalc.theme.v1`)
