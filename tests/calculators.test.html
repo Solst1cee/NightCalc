@@ -50,7 +50,10 @@
           // --- existing function: proves the harness works ---
           assertClose("CrCl 60M 70kg SCr1.0", calculateCrCl({ age: 60, sex: "male", weightKg: 70, serumCreatinine: 1.0, serumCreatinineUnit: "mgDl" }), 77.78, 0.1);
 
-          // --- new function tests are added in later tasks ---
+          // --- CKD-EPI 2021 eGFR (race-free), mL/min/1.73 m^2 ---
+          assertClose("eGFR 60M SCr1.0", calculateEgfrCkdEpi2021({ age: 60, sex: "male", serumCreatinine: 1.0, serumCreatinineUnit: "mgDl" }), 86.2, 0.5);
+          assertClose("eGFR 50F SCr0.8", calculateEgfrCkdEpi2021({ age: 50, sex: "female", serumCreatinine: 0.8, serumCreatinineUnit: "mgDl" }), 89.7, 0.5);
+          assertClose("eGFR µmol/L conversion", calculateEgfrCkdEpi2021({ age: 60, sex: "male", serumCreatinine: 88.4, serumCreatinineUnit: "umolL" }), 86.2, 0.5);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

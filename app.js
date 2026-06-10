@@ -52,10 +52,10 @@ const toolStatuses = {
 const tools = [
   {
     id: "crcl",
-    title: "Creatinine Clearance",
-    description: "Cockcroft-Gault CrCl with reusable age, sex, weight, and creatinine.",
+    title: "Renal Function",
+    description: "Cockcroft-Gault CrCl (for dosing) and CKD-EPI 2021 eGFR (for staging) from age, sex, weight, creatinine.",
     status: "ready",
-    tags: ["renal", "crcl", "creatinine", "cockcroft"],
+    tags: ["renal", "crcl", "creatinine", "cockcroft", "egfr", "gfr", "ckd-epi", "renal function", "ckd"],
   },
   {
     id: "infusion",
@@ -511,6 +511,22 @@ function calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUni
   return sex === "female" ? base * 0.85 : base;
 }
 
+// CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
+function calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUnit }) {
+  const scr = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
+  const female = sex === "female";
+  const kappa = female ? 0.7 : 0.9;
+  const alpha = female ? -0.241 : -0.302;
+  const ratio = scr / kappa;
+  return (
+    142 *
+    Math.pow(Math.min(ratio, 1), alpha) *
+    Math.pow(Math.max(ratio, 1), -1.2) *
+    Math.pow(0.9938, age) *
+    (female ? 1.012 : 1)
+  );
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -645,7 +661,7 @@ function renderCalculator() {
     return;
   }
 
-  if (state.activeTool === "crcl") renderCrCl();
+  if (state.activeTool === "crcl") renderRenalFunction();
   if (state.activeTool === "infusion") renderInfusion();
   if (state.activeTool === "renal-dose") renderRenalDose();
   if (state.activeTool === "fractional-excretion") renderFractionalExcretion();
@@ -690,13 +706,13 @@ function bindLiveForm(form, update) {
   update();
 }
 
-function renderCrCl() {
+function renderRenalFunction() {
   const s = state.session;
   els.calculator.innerHTML = calcShell({
-    title: "Creatinine Clearance",
-    description: "Cockcroft-Gault calculator. Complete the required fields and the result appears immediately.",
+    title: "Renal Function",
+    description: "Cockcroft-Gault CrCl (for drug dosing) and CKD-EPI 2021 eGFR (for CKD staging) from the same inputs.",
     body: `
-      <form id="crclForm">
+      <form id="renalFunctionForm">
         <div class="form-grid">
           ${inputField({ name: "age", label: "Age", value: s.age ?? "", hint: "years" })}
           ${inputField({
@@ -708,7 +724,7 @@ function renderCrCl() {
               { value: "female", label: "Female" },
             ],
           })}
-          ${inputField({ name: "weightKg", label: "Weight", value: s.weightKg ?? "", hint: "kg" })}
+          ${inputField({ name: "weightKg", label: "Weight", value: s.weightKg ?? "", hint: "kg; used for CrCl only" })}
           ${inputField({ name: "serumCreatinine", label: "Serum creatinine", value: s.serumCreatinine ?? "", hint: "Use the unit selected below" })}
           ${inputField({
             name: "serumCreatinineUnit",
@@ -722,11 +738,11 @@ function renderCrCl() {
         </div>
       </form>
     `,
-    notice: "Clinical check: verify dosing decisions with local protocol and patient context.",
+    notice: "Clinical check: CrCl (mL/min) drives most renal drug dosing; CKD-EPI eGFR (mL/min/1.73m2) is for CKD staging. Do not interchange them. Verify with local protocol.",
   });
 
   document.querySelector("#backButton").addEventListener("click", () => history.back());
-  const form = document.querySelector("#crclForm");
+  const form = document.querySelector("#renalFunctionForm");
   bindLiveForm(form, () => {
     const age = numberValue(form, "age");
     const weightKg = numberValue(form, "weightKg");
@@ -734,16 +750,35 @@ function renderCrCl() {
     const sex = form.elements.sex.value;
     const serumCreatinineUnit = form.elements.serumCreatinineUnit.value;
 
-    if (!positive(age) || !positive(weightKg) || !positive(serumCreatinine)) {
-      showPending("Enter age, weight, and serum creatinine to calculate CrCl.");
+    if (!positive(age) || !positive(serumCreatinine)) {
+      showPending("Enter age and serum creatinine. Add weight to calculate CrCl.");
       return;
     }
 
-    const crcl = calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUnit });
+    const egfr = calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUnit });
+    const crcl = positive(weightKg) ? calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUnit }) : null;
     const scrMgDl = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
-    saveSession({ age, sex, weightKg, serumCreatinine, serumCreatinineUnit, crcl });
-    showResult("CrCl", `${round(crcl, 1)} mL/min`, `Formula: Cockcroft-Gault. Weight used: ${weightKg} kg. SCr converted to ${round(scrMgDl, 2)} mg/dL.`);
+
+    const patch = { age, sex, serumCreatinine, serumCreatinineUnit, egfr };
+    if (positive(weightKg)) patch.weightKg = weightKg;
+    if (crcl != null) patch.crcl = crcl;
+    saveSession(patch);
+
+    showRenalFunctionInfo({ crcl, egfr, weightKg, scrMgDl });
   });
+}
+
+function showRenalFunctionInfo({ crcl, egfr, weightKg, scrMgDl }) {
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">Renal function</div>
+      <div class="info-grid">
+        <div><strong>CrCl (Cockcroft-Gault)</strong><span>${crcl == null ? "Enter weight to calculate" : `${round(crcl, 1)} mL/min — for drug dosing`}</span></div>
+        <div><strong>eGFR (CKD-EPI 2021)</strong><span>${round(egfr, 0)} mL/min/1.73m2 — for CKD staging</span></div>
+        <div><strong>Inputs used</strong><span>SCr ${round(scrMgDl, 2)} mg/dL${crcl == null ? "" : `, weight ${weightKg} kg`}</span></div>
+      </div>
+    </div>
+  `;
 }
 
 function renderInfusion() {
