@@ -1585,6 +1585,17 @@ els.installBanner?.addEventListener("click", (event) => {
   openInstallSheet(els.installBanner.querySelector(".install-banner-main"));
 });
 
+els.a2hsMenuItem?.addEventListener("click", () => {
+  els.a2hsMenuItem.closest("details.disclosure-menu")?.removeAttribute("open");
+  openInstallSheet(els.a2hsMenuItem);
+});
+
+els.installOverlay?.addEventListener("click", (event) => {
+  if (event.target === els.installOverlay || event.target.closest(".install-close")) {
+    closeInstallSheet();
+  }
+});
+
 window.addEventListener("popstate", () => {
   state.activeTool = toolFromHash() || (isDesktop() ? "crcl" : null);
   render();
