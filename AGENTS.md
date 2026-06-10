@@ -204,7 +204,6 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 ### Theme
 - Light/dark default: system preference; user override saved to `localStorage` (`nightcalc.theme.v1`)
 - Button icon: sun (light) / moon (dark)
-- Install guide banner dismissal saved to `localStorage` (`nightcalc.a2hs.v1`)
 - **Brand accent** is selectable (blue default, maroon) from the Info menu; saved to `localStorage` (`nightcalc.accent.v1`), applied via `data-accent` on `<html>`
   - Add a new accent: append it to `ACCENTS` in `app.js`, add a swatch button in `index.html`, and add a `:root[data-accent="..."]` (+ dark) block in `styles.css`
   - The inline header logo is the brand's **tile-less** themeable mark; the keycaps follow `--nc-accent: var(--accent)` (recolors with the accent) and the moon uses `--nc-moon`, which flips with the theme (dark on the light topbar, light on the dark topbar) so the mark reads without a tile. The browser-tab `favicon.svg` and iOS `apple-touch-icon.png` are separate static assets in `icons/` (page CSS variables don't reach them, so their colors are baked in)

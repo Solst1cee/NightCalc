@@ -546,9 +546,8 @@ At the very end of `styles.css` (after the existing pixel-skin rules), add:
 :root[data-skin="pixel"] .install-sheet,
 :root[data-skin="pixel"] .install-banner-main,
 :root[data-skin="pixel"] .a2hs-menu-item { border-radius: 0; }
-:root[data-skin="pixel"] .install-banner,
-:root[data-skin="pixel"] .install-sheet { border-width: 3px; }
-:root[data-skin="pixel"] .install-sheet { box-shadow: var(--shadow); }
+:root[data-skin="pixel"] .install-banner { border-width: 3px; }
+:root[data-skin="pixel"] .install-sheet { border-width: 3px; border-bottom-width: 0; }
 :root[data-skin="pixel"] .install-step-n { border-radius: 0; }
 :root[data-skin="pixel"] .a2hs-menu-item { border-width: 2px; }
 ```
