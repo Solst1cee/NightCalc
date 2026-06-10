@@ -775,8 +775,8 @@ function renderScore(config) {
         : inputField({
             name: c.name,
             label: c.label,
-            value: c.options[0].value,
-            options: c.options.map((o) => ({ value: String(o.value), label: o.label })),
+            value: "",
+            options: [{ value: "", label: "— select —" }, ...c.options.map((o) => ({ value: String(o.value), label: o.label }))],
           }),
     )
     .join("");
@@ -792,8 +792,21 @@ function renderScore(config) {
   const form = document.querySelector("#scoreForm");
   bindLiveForm(form, () => {
     const values = {};
+    let complete = true;
     for (const c of config.criteria) {
-      values[c.name] = c.type === "numericBand" ? numberValue(form, c.name) : form.elements[c.name].value;
+      if (c.type === "numericBand") {
+        const n = numberValue(form, c.name);
+        values[c.name] = n;
+        if (n == null) complete = false;
+      } else {
+        const v = form.elements[c.name].value;
+        values[c.name] = v;
+        if (v === "") complete = false;
+      }
+    }
+    if (!complete) {
+      showPending("Complete all items to calculate the score.");
+      return;
     }
     showScoreInfo(config, calcScore(config, values));
   });
@@ -2049,6 +2062,11 @@ function renderBodyWeight() {
     const patch = { heightCm, sex };
     if (positive(weightKg)) patch.weightKg = weightKg;
     saveSession(patch);
+    if (ibw <= 0) {
+      showPending("Height is below the usable range for the Devine formula (≥ 152 cm).");
+      return;
+    }
+    const caution = heightCm < 152 ? `<p class="result-detail">Below Devine's validated range (≥ 152 cm) — interpret with caution.</p>` : "";
     document.querySelector("#resultArea").innerHTML = `
       <div class="result-box">
         <div class="result-label">Body weight</div>
@@ -2056,6 +2074,7 @@ function renderBodyWeight() {
           <div><strong>Ideal (Devine)</strong><span>${round(ibw, 1)} kg</span></div>
           <div><strong>Adjusted</strong><span>${adjusted == null ? "Enter actual weight" : `${round(adjusted, 1)} kg`}</span></div>
         </div>
+        ${caution}
       </div>
     `;
   });
