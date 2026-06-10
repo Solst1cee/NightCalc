@@ -6,15 +6,22 @@
     <meta name="theme-color" content="#0B1220" />
     <title>NightCalc</title>
     <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=57" />
+    <link rel="stylesheet" href="styles.css?v=58" />
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
         <div class="brand">
-          <svg class="brand-mark" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-            <rect x="1" y="1" width="118" height="118" rx="27" fill="var(--nc-tile, #101A30)"></rect>
+          <svg class="brand-mark" viewBox="22 22 76 76" aria-hidden="true" focusable="false">
+            <defs>
+              <mask id="ncMoonCut">
+                <rect x="0" y="0" width="120" height="120" fill="black"></rect>
+                <circle cx="79" cy="41" r="17" fill="white"></circle>
+                <circle cx="87" cy="35" r="15" fill="black"></circle>
+              </mask>
+            </defs>
             <rect x="24" y="24" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
             <rect x="24" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
             <rect x="62" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
@@ -23,8 +30,7 @@
             <line x1="33" y1="79" x2="49" y2="79" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
             <line x1="72" y1="72" x2="86" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
             <line x1="86" y1="72" x2="72" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
-            <circle cx="79" cy="41" r="17" fill="var(--nc-moon, #F1F5F9)"></circle>
-            <circle cx="87" cy="35" r="15" fill="var(--nc-tile, #101A30)"></circle>
+            <circle cx="79" cy="41" r="17" fill="var(--nc-moon, #F1F5F9)" mask="url(#ncMoonCut)"></circle>
           </svg>
           <div>
             <p class="eyebrow">Ward rounding companion</p>
@@ -82,6 +88,6 @@
       </main>
     </div>
 
-    <script src="app.js?v=57"></script>
+    <script src="app.js?v=58"></script>
   </body>
 </html>

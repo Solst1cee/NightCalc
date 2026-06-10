@@ -1,5 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-  <rect x="1" y="1" width="118" height="118" rx="27" fill="#101A30"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 76 76">
+  <!-- NightCalc tile-less favicon. Keycaps = accent; key glyphs stay light
+       (they sit on the squares); the moon flips with the browser color scheme
+       so it reads on both light and dark tab strips. External SVG: colors are
+       hardcoded because page CSS variables do not reach a favicon. -->
+  <style>
+    .nc-moon { fill: #0F172A; }
+    @media (prefers-color-scheme: dark) { .nc-moon { fill: #F1F5F9; } }
+  </style>
+  <defs>
+    <mask id="ncMoonCut">
+      <rect x="0" y="0" width="120" height="120" fill="black"/>
+      <circle cx="79" cy="41" r="17" fill="white"/>
+      <circle cx="87" cy="35" r="15" fill="black"/>
+    </mask>
+  </defs>
   <rect x="24" y="24" width="34" height="34" rx="9" fill="#2563EB"/>
   <rect x="24" y="62" width="34" height="34" rx="9" fill="#2563EB"/>
   <rect x="62" y="62" width="34" height="34" rx="9" fill="#2563EB"/>
@@ -8,6 +22,5 @@
   <line x1="33" y1="79" x2="49" y2="79" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"/>
   <line x1="72" y1="72" x2="86" y2="86" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"/>
   <line x1="86" y1="72" x2="72" y2="86" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"/>
-  <circle cx="79" cy="41" r="17" fill="#F1F5F9"/>
-  <circle cx="87" cy="35" r="15" fill="#101A30"/>
+  <circle class="nc-moon" cx="79" cy="41" r="17" mask="url(#ncMoonCut)"/>
 </svg>

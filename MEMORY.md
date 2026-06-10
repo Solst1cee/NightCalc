@@ -7,16 +7,20 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-10
-- What was done: Rebranded MedCalc → **NightCalc**. Integrated `nightcalc-brand-kit.zip` into `brand/`; added inline themeable header logo + `Night`/`Calc` wordmark; night-themed dark palette (`#0B1220`/`#101A30`); selectable brand accent (blue default, maroon) with `data-accent` + persistence and one-time migration of legacy `medcalc.*` storage keys; fixed the previously-missing `icons/icon.svg` (which had been breaking the service-worker install); favicon added. Updated manifest, service worker (`nightcalc-v57`), and all docs.
-- Files changed: `index.html`, `styles.css`, `app.js`, `manifest.webmanifest`, `service-worker.js`, `README.md`, `AGENTS.md`, `MEMORY.md`, `brand/` (new), `icons/icon.svg` + `icons/favicon.svg` (new)
-- GitHub repo renamed MedCalc → NightCalc (remote URL updated to `Solst1cee/NightCalc`; docs URLs point to `solst1cee.github.io/NightCalc`). Only the on-disk folder still uses `MedCalc` (left as-is).
+- What was done: **Tile-less logo pass** (follow-up to the rebrand — the tiled header badge read "off"). Swapped the top-bar mark for the tile-less version (`brand/themeable/logo-notile.svg`) inlined in `index.html`; the moon crescent is now cut with an SVG `mask` instead of a tile-colored overlap. Made `--nc-moon` theme-adaptive — dark `#0F172A` on the light topbar, light `#F1F5F9` on the dark topbar — so the mark reads with no tile behind it; key glyphs stay light (they sit on the accent squares). Replaced `icons/favicon.svg` with a tile-less, `prefers-color-scheme`-aware version. Added the iOS home-screen icon: `icons/apple-touch-icon.png` (180×180, full-bleed navy tile — iOS ignores SVG here and composites transparency on black) with `icons/apple-touch-icon.svg` as the design source and an `apple-touch-icon` link. Removed the now-unused `--nc-tile` token. Verified both themes × both accents (mask renders a clean crescent; moon legible on white and navy; app.js error-free). Bumped `?v=58` / `nightcalc-v58`.
+- Files changed: `index.html`, `styles.css`, `service-worker.js`, `icons/favicon.svg`, `icons/apple-touch-icon.png` (new), `icons/apple-touch-icon.svg` (new), `brand/themeable/logo-notile.svg` (added), `AGENTS.md`, `MEMORY.md`
+- Note: `manifest.webmanifest` PWA icon is still the tiled `icons/icon.svg` (correct for Android maskable contexts) — only the iOS home-screen icon was added this pass.
+
+### Earlier same day — MedCalc → NightCalc rebrand
+- Integrated `nightcalc-brand-kit.zip` into `brand/`; inline themeable header logo + `Night`/`Calc` wordmark; night palette (`#0B1220`/`#101A30`); selectable accent (blue default, maroon) via `data-accent` + persistence and one-time migration of legacy `medcalc.*` storage keys; fixed the previously-missing `icons/icon.svg` (had been breaking the service-worker install); favicon + manifest + service worker (`nightcalc-v57`) + all docs.
+- GitHub repo renamed MedCalc → NightCalc (remote URL → `Solst1cee/NightCalc`; docs URLs → `solst1cee.github.io/NightCalc`). Only the on-disk folder still uses `MedCalc` (left as-is).
 
 ---
 
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v57` / `nightcalc-v57`
+Last known: `v58` / `nightcalc-v58`
 
 ---
 
