@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NightCalc — calculator tests</title>
+  </head>
+  <body>
+    <!-- Hidden skeleton so app.js bootstraps without throwing: it queries these
+         elements on load and calls render() at the bottom of the file. -->
+    <div id="layout" hidden>
+      <input id="toolSearch" />
+      <div id="sessionChip"></div>
+      <div id="tools"></div>
+      <div id="calculator"></div>
+      <button id="themeToggleButton"></button>
+      <div id="accentPicker"></div>
+    </div>
+
+    <h1>NightCalc calculator tests</h1>
+    <pre id="out"></pre>
+
+    <!-- Classic script: app.js top-level functions become global (window.*). -->
+    <script src="../app.js?test"></script>
+    <script>
+      (function () {
+        const out = document.querySelector("#out");
+        let pass = 0,
+          fail = 0;
+        function log(line) {
+          out.textContent += line + "\n";
+        }
+        function ok(name) {
+          pass++;
+          log("PASS  " + name);
+        }
+        function bad(name, msg) {
+          fail++;
+          log("FAIL  " + name + " — " + msg);
+        }
+        function assertClose(name, actual, expected, tol) {
+          tol = tol == null ? 0.01 : tol;
+          if (typeof actual !== "number" || Number.isNaN(actual)) return bad(name, "got " + actual);
+          return Math.abs(actual - expected) <= tol ? ok(name) : bad(name, "expected " + expected + " ± " + tol + ", got " + actual);
+        }
+        function assertEqual(name, actual, expected) {
+          return actual === expected ? ok(name) : bad(name, "expected " + JSON.stringify(expected) + ", got " + JSON.stringify(actual));
+        }
+
+        try {
+          // --- existing function: proves the harness works ---
+          assertClose("CrCl 60M 70kg SCr1.0", calculateCrCl({ age: 60, sex: "male", weightKg: 70, serumCreatinine: 1.0, serumCreatinineUnit: "mgDl" }), 77.78, 0.1);
+
+          // --- CKD-EPI 2021 eGFR (race-free), mL/min/1.73 m^2 ---
+          assertClose("eGFR 60M SCr1.0", calculateEgfrCkdEpi2021({ age: 60, sex: "male", serumCreatinine: 1.0, serumCreatinineUnit: "mgDl" }), 86.2, 0.5);
+          assertClose("eGFR 50F SCr0.8", calculateEgfrCkdEpi2021({ age: 50, sex: "female", serumCreatinine: 0.8, serumCreatinineUnit: "mgDl" }), 89.7, 0.5);
+          assertClose("eGFR µmol/L conversion", calculateEgfrCkdEpi2021({ age: 60, sex: "male", serumCreatinine: 88.4, serumCreatinineUnit: "umolL" }), 86.2, 0.5);
+
+          // --- Anion gap (mEq/L), optional albumin (g/dL) correction ---
+          var ag = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24 });
+          assertClose("AG basic", ag.anionGap, 12, 1e-6);
+          assertEqual("AG corrected null without albumin", ag.correctedAnionGap, null);
+          var agc = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24, albumin: 2 });
+          assertClose("AG corrected with albumin 2", agc.correctedAnionGap, 17, 1e-6);
+          var agHi = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24, albumin: 5 });
+          assertClose("AG corrected with albumin 5 (above 4 subtracts)", agHi.correctedAnionGap, 9.5, 1e-6);
+
+          // --- Albumin-corrected calcium (Ca mg/dL, albumin g/dL) ---
+          assertClose("Corrected Ca 8.0/alb2", calcCorrectedCalcium({ calcium: 8.0, albumin: 2 }), 9.6, 1e-6);
+          assertClose("Corrected Ca 9.0/alb3 (coefficient-sensitive)", calcCorrectedCalcium({ calcium: 9.0, albumin: 3 }), 9.8, 1e-6);
+
+          // --- Hyperglycemia-corrected sodium (Na mEq/L, glucose mg/dL) ---
+          var cna = calcCorrectedSodium({ sodium: 130, glucose: 600 });
+          assertClose("Corrected Na factor 1.6", cna.corrected16, 138, 1e-6);
+          assertClose("Corrected Na factor 2.4", cna.corrected24, 142, 1e-6);
+          var cnaLo = calcCorrectedSodium({ sodium: 140, glucose: 80 });
+          assertClose("Corrected Na low glucose 1.6", cnaLo.corrected16, 139.68, 1e-6);
+          assertClose("Corrected Na low glucose 2.4", cnaLo.corrected24, 139.52, 1e-6);
+        } catch (err) {
+          bad("suite", err && err.message ? err.message : String(err));
+        }
+
+        log("\n" + pass + " passed, " + fail + " failed");
+        console.log(out.textContent);
+        document.title = (fail ? "FAIL " : "PASS ") + pass + "/" + (pass + fail);
+      })();
+    </script>
+  </body>
+</html>

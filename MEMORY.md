@@ -7,6 +7,11 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-10
+- What was done: **P1 renal/electrolyte calculator slice** (PR #11). Renamed Creatinine Clearance → **Renal Function** (Cockcroft-Gault CrCl + **CKD-EPI 2021 eGFR**); added pure-formula **Anion Gap** (albumin-corrected interpretation), **Corrected Calcium**, and **Corrected Sodium** (1.6 & 2.4 factors). Dependency-free browser test harness `tests/calculators.test.html` (14 assertions, all passing headlessly). Merged the latest `main` (Pixel skin) and bumped `v59 → v60` / `nightcalc-v60`. Built from the spec + plan in `docs/superpowers/`.
+- Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html` (new), `MEMORY.md`, `AGENTS.md`, `docs/superpowers/` (spec + plan).
+- Pending human check: open the app and `tests/calculators.test.html` — expect 14/14 pass, zero console errors, OK at 390px & 1280px; confirm SW updates to `nightcalc-v60`; Pixel skin still toggles.
+
+### Earlier same day — Pixel skin + skin picker (PR #9/#10)
 - What was done: **Pixel skin + skin picker** (PR #9, merged → `main` as `8342208`; live on Pages). Added a selectable retro/8-bit **Pixel** skin alongside the default via a new **orthogonal** `data-skin="default" | "pixel"` axis on `<html>`, composing with the existing theme/accent. New **Skin: Default | Pixel** control in the Info menu, above the accent swatches; choice persisted to `localStorage` (`nightcalc.skin.v1`) by cloning the accent-picker pattern (`SKINS`/`DEFAULT_SKIN`, `applySkin`/`setSkin`, `#skinPicker` delegate). All pixel CSS gated behind `:root[data-skin="pixel"]` — no new colors, reuses existing tokens; overrides only type/shape/shadow (Silkscreen via Google Fonts, 0 radius, 3px borders, hard no-blur shadows, dark-only CRT scanlines). Pixel logo mark inlined as a second `.brand-mark-pixel` SVG next to the default; CSS toggles `display` per skin. Bumped `?v=59` / `nightcalc-v59`. Verified via headless Chrome: all four dark/light × blue/maroon combos, persistence across full close/reopen, full-retro values (e.g. `0.05 mcg/kg/min` in Silkscreen), invalid-skin fallback to default.
 - Files changed: `index.html`, `styles.css`, `app.js`, `service-worker.js` (this PR). Docs reconciled in a follow-up: `README.md`, `AGENTS.md`, `MEMORY.md`.
 - Gotcha: the pixel mark is a hand-laid 16×16 `<rect>` grid; the design source overlaps accent→glyph→moon layers, and a naive flatten dropped/added glyph cells (caught by diffing the visible cell-set against the source SVG — 165/165 must match).
@@ -24,7 +29,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v59` / `nightcalc-v59`
+Last known: `v60` / `nightcalc-v60`
 
 ---
 
@@ -32,9 +37,12 @@ Last known: `v59` / `nightcalc-v59`
 
 | Tool | Status | Notes |
 |---|---|---|
-| Creatinine Clearance | ✅ Ready | Cockcroft-Gault, reusable session inputs |
+| Renal Function | ✅ Ready | Cockcroft-Gault CrCl + CKD-EPI 2021 eGFR (renamed from Creatinine Clearance) |
 | IV / Inotrope Infusion | ✅ Ready | Two-way dose/rate calc, draft drug data, warnings |
 | Fractional Excretion | ✅ Ready | FENa, FEUrea, FEK, FEMg, FEP, FECa |
+| Anion Gap | ✅ Ready | Pure formula; optional albumin correction |
+| Corrected Calcium | ✅ Ready | Pure formula (mg/dL, g/dL) |
+| Corrected Sodium | ✅ Ready | Pure formula; 1.6 and 2.4 factors |
 | Renal Dose Adjustment | 🔴 Down | Workflow ready, drug data is demo-only — do not promote to Ready without user confirmation |
 | Reference | 🔨 In progress | Becoming master maintenance view for all calculator data |
 
@@ -71,10 +79,12 @@ Reference page — build out as master data view covering all categories (infusi
 
 ## Next Up
 
-1. Complete Reference page as master data view
-2. Add all data categories to Reference (not just infusion drugs)
-3. Add verified drug data to Renal Dose Adjustment → promote status to Ready
-4. Add antibiotic dosing category to data architecture
+1. Remaining P1 calculators (QTc, CHA2DS2-VASc, CURB-65, Wells-PE, Child-Pugh, GCS, CIWA-Ar, NEWS2, qSOFA, IBW/adjusted body weight) — see `docs/superpowers/specs/2026-06-10-clinical-calculator-backlog-design.md`
+2. SI unit toggles for the new electrolyte calculators (Ca / glucose / albumin)
+3. Complete Reference page as master data view
+4. Add all data categories to Reference (not just infusion drugs)
+5. Add verified drug data to Renal Dose Adjustment → promote status to Ready
+6. Add antibiotic dosing category to data architecture
 
 ---
 

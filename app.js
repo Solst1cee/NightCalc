@@ -58,10 +58,10 @@ const toolStatuses = {
 const tools = [
   {
     id: "crcl",
-    title: "Creatinine Clearance",
-    description: "Cockcroft-Gault CrCl with reusable age, sex, weight, and creatinine.",
+    title: "Renal Function",
+    description: "Cockcroft-Gault CrCl (for dosing) and CKD-EPI 2021 eGFR (for staging) from age, sex, weight, creatinine.",
     status: "ready",
-    tags: ["renal", "crcl", "creatinine", "cockcroft"],
+    tags: ["renal", "crcl", "creatinine", "cockcroft", "egfr", "gfr", "ckd-epi", "renal function", "ckd"],
   },
   {
     id: "infusion",
@@ -83,6 +83,27 @@ const tools = [
     description: "Calculate FE for Na, urea, K, Mg, phosphate, or calcium with interpretation notes.",
     status: "ready",
     tags: ["fe", "fractional excretion", "fena", "feurea", "aki", "electrolyte"],
+  },
+  {
+    id: "anion-gap",
+    title: "Anion Gap",
+    description: "Serum anion gap with optional albumin correction.",
+    status: "ready",
+    tags: ["anion gap", "acid base", "hagma", "albumin", "electrolyte", "metabolic acidosis"],
+  },
+  {
+    id: "corrected-calcium",
+    title: "Corrected Calcium",
+    description: "Albumin-corrected serum calcium.",
+    status: "ready",
+    tags: ["calcium", "albumin", "corrected calcium", "hypocalcemia", "electrolyte"],
+  },
+  {
+    id: "corrected-sodium",
+    title: "Corrected Sodium",
+    description: "Hyperglycemia-corrected serum sodium (1.6 and 2.4 factors).",
+    status: "ready",
+    tags: ["sodium", "hyperglycemia", "corrected sodium", "hyponatremia", "electrolyte", "dka"],
   },
   {
     id: "reference",
@@ -535,6 +556,43 @@ function calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUni
   return sex === "female" ? base * 0.85 : base;
 }
 
+// CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
+function calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUnit }) {
+  const scr = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
+  const female = sex === "female";
+  const kappa = female ? 0.7 : 0.9;
+  const alpha = female ? -0.241 : -0.302;
+  const ratio = scr / kappa;
+  return (
+    142 *
+    Math.pow(Math.min(ratio, 1), alpha) *
+    Math.pow(Math.max(ratio, 1), -1.2) *
+    Math.pow(0.9938, age) *
+    (female ? 1.012 : 1)
+  );
+}
+
+// Serum anion gap (mEq/L). correctedAnionGap is null unless albumin (g/dL) is given.
+function calcAnionGap({ sodium, chloride, bicarbonate, albumin }) {
+  const anionGap = sodium - (chloride + bicarbonate);
+  const correctedAnionGap = positive(albumin) ? anionGap + 2.5 * (4 - albumin) : null;
+  return { anionGap, correctedAnionGap };
+}
+
+// Albumin-corrected calcium (mg/dL): adds 0.8 mg/dL per 1 g/dL albumin below 4.
+function calcCorrectedCalcium({ calcium, albumin }) {
+  return calcium + 0.8 * (4 - albumin);
+}
+
+// Hyperglycemia-corrected sodium. Returns both the classic 1.6 and the 2.4 correction factors.
+function calcCorrectedSodium({ sodium, glucose }) {
+  const excess = (glucose - 100) / 100;
+  return {
+    corrected16: sodium + 1.6 * excess,
+    corrected24: sodium + 2.4 * excess,
+  };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -669,10 +727,13 @@ function renderCalculator() {
     return;
   }
 
-  if (state.activeTool === "crcl") renderCrCl();
+  if (state.activeTool === "crcl") renderRenalFunction();
   if (state.activeTool === "infusion") renderInfusion();
   if (state.activeTool === "renal-dose") renderRenalDose();
   if (state.activeTool === "fractional-excretion") renderFractionalExcretion();
+  if (state.activeTool === "anion-gap") renderAnionGap();
+  if (state.activeTool === "corrected-calcium") renderCorrectedCalcium();
+  if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
   if (state.activeTool === "reference") renderReference();
 }
 
@@ -714,13 +775,13 @@ function bindLiveForm(form, update) {
   update();
 }
 
-function renderCrCl() {
+function renderRenalFunction() {
   const s = state.session;
   els.calculator.innerHTML = calcShell({
-    title: "Creatinine Clearance",
-    description: "Cockcroft-Gault calculator. Complete the required fields and the result appears immediately.",
+    title: "Renal Function",
+    description: "Cockcroft-Gault CrCl (for drug dosing) and CKD-EPI 2021 eGFR (for CKD staging) from the same inputs.",
     body: `
-      <form id="crclForm">
+      <form id="renalFunctionForm">
         <div class="form-grid">
           ${inputField({ name: "age", label: "Age", value: s.age ?? "", hint: "years" })}
           ${inputField({
@@ -732,7 +793,7 @@ function renderCrCl() {
               { value: "female", label: "Female" },
             ],
           })}
-          ${inputField({ name: "weightKg", label: "Weight", value: s.weightKg ?? "", hint: "kg" })}
+          ${inputField({ name: "weightKg", label: "Weight", value: s.weightKg ?? "", hint: "kg; used for CrCl only" })}
           ${inputField({ name: "serumCreatinine", label: "Serum creatinine", value: s.serumCreatinine ?? "", hint: "Use the unit selected below" })}
           ${inputField({
             name: "serumCreatinineUnit",
@@ -746,11 +807,11 @@ function renderCrCl() {
         </div>
       </form>
     `,
-    notice: "Clinical check: verify dosing decisions with local protocol and patient context.",
+    notice: "Clinical check: CrCl (mL/min) drives most renal drug dosing; CKD-EPI eGFR (mL/min/1.73m2) is for CKD staging. Do not interchange them. Verify with local protocol.",
   });
 
   document.querySelector("#backButton").addEventListener("click", () => history.back());
-  const form = document.querySelector("#crclForm");
+  const form = document.querySelector("#renalFunctionForm");
   bindLiveForm(form, () => {
     const age = numberValue(form, "age");
     const weightKg = numberValue(form, "weightKg");
@@ -758,16 +819,39 @@ function renderCrCl() {
     const sex = form.elements.sex.value;
     const serumCreatinineUnit = form.elements.serumCreatinineUnit.value;
 
-    if (!positive(age) || !positive(weightKg) || !positive(serumCreatinine)) {
-      showPending("Enter age, weight, and serum creatinine to calculate CrCl.");
+    if (!positive(age) || !positive(serumCreatinine)) {
+      showPending("Enter age and serum creatinine. Add weight to calculate CrCl.");
       return;
     }
 
-    const crcl = calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUnit });
+    const egfr = calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUnit });
+    const crcl = positive(weightKg) ? calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUnit }) : null;
     const scrMgDl = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
-    saveSession({ age, sex, weightKg, serumCreatinine, serumCreatinineUnit, crcl });
-    showResult("CrCl", `${round(crcl, 1)} mL/min`, `Formula: Cockcroft-Gault. Weight used: ${weightKg} kg. SCr converted to ${round(scrMgDl, 2)} mg/dL.`);
+
+    const patch = { age, sex, serumCreatinine, serumCreatinineUnit, egfr };
+    if (positive(weightKg)) {
+      patch.weightKg = weightKg;
+      patch.crcl = crcl;
+    } else {
+      patch.crcl = null; // clear any stale CrCl so the chip / Renal Dose don't reuse it
+    }
+    saveSession(patch);
+
+    showRenalFunctionInfo({ crcl, egfr, weightKg, scrMgDl });
   });
+}
+
+function showRenalFunctionInfo({ crcl, egfr, weightKg, scrMgDl }) {
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">Renal function</div>
+      <div class="info-grid">
+        <div><strong>CrCl (Cockcroft-Gault)</strong><span>${crcl == null ? "Enter weight to calculate" : `${round(crcl, 1)} mL/min — for drug dosing`}</span></div>
+        <div><strong>eGFR (CKD-EPI 2021)</strong><span>${round(egfr, 0)} mL/min/1.73m2 — for CKD staging</span></div>
+        <div><strong>Inputs used</strong><span>SCr ${round(scrMgDl, 2)} mg/dL${crcl == null ? "" : `, weight ${round(weightKg, 1)} kg`}</span></div>
+      </div>
+    </div>
+  `;
 }
 
 function renderInfusion() {
@@ -1252,6 +1336,147 @@ function showFractionalExcretionInfo(meta, value, missing) {
         <div><strong>Formula</strong><span>FE = (Urine electrolyte x Serum creatinine) / (Serum electrolyte x Urine creatinine) x 100</span></div>
         <div><strong>Limitations</strong><span>${meta.limitations.join(" ")}</span></div>
       </div>
+    </div>
+  `;
+}
+
+function renderAnionGap() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Anion Gap",
+    description: "Serum anion gap with optional albumin correction. The result updates as you type.",
+    body: `
+      <form id="anionGapForm">
+        <div class="form-grid">
+          ${inputField({ name: "sodium", label: "Sodium (mEq/L)", value: s.sodium ?? "", hint: "" })}
+          ${inputField({ name: "chloride", label: "Chloride (mEq/L)", value: s.chloride ?? "", hint: "" })}
+          ${inputField({ name: "bicarbonate", label: "Bicarbonate (mEq/L)", value: s.bicarbonate ?? "", hint: "HCO3" })}
+          ${inputField({ name: "albumin", label: "Albumin (g/dL, optional)", value: s.albumin ?? "", hint: "enables correction" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: typical normal anion gap is roughly 8-12 mEq/L (lab-dependent). Albumin correction adds 2.5 mEq/L for each 1 g/dL below 4.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#anionGapForm");
+  bindLiveForm(form, () => {
+    const sodium = numberValue(form, "sodium");
+    const chloride = numberValue(form, "chloride");
+    const bicarbonate = numberValue(form, "bicarbonate");
+    const albumin = numberValue(form, "albumin");
+
+    if (!positive(sodium) || !positive(chloride) || !positive(bicarbonate)) {
+      showPending("Enter sodium, chloride, and bicarbonate.");
+      return;
+    }
+
+    const { anionGap, correctedAnionGap } = calcAnionGap({ sodium, chloride, bicarbonate, albumin });
+    const patch = { sodium, chloride, bicarbonate };
+    if (positive(albumin)) patch.albumin = albumin;
+    saveSession(patch);
+    showAnionGapInfo({ anionGap, correctedAnionGap });
+  });
+}
+
+function showAnionGapInfo({ anionGap, correctedAnionGap }) {
+  const agForInterp = correctedAnionGap == null ? anionGap : correctedAnionGap;
+  const basis = correctedAnionGap == null ? "" : " (albumin-corrected)";
+  const interpretation =
+    agForInterp > 12
+      ? `Above ~12 mEq/L${basis} — consider a high anion gap metabolic acidosis.`
+      : agForInterp < 8
+      ? `Below ~8 mEq/L${basis} — consider low anion gap causes (e.g. hypoalbuminaemia, paraproteinaemia).`
+      : `Within the usual 8-12 mEq/L range${basis} (lab-dependent).`;
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">Anion gap</div>
+      <div class="result-value">${round(anionGap, 1)} mEq/L</div>
+      <p class="result-detail">${interpretation}</p>
+      <div class="info-grid">
+        <div><strong>Formula</strong><span>AG = Na - (Cl + HCO3)</span></div>
+        <div><strong>Albumin-corrected</strong><span>${correctedAnionGap == null ? "Enter albumin to correct" : `${round(correctedAnionGap, 1)} mEq/L (+2.5 per 1 g/dL below 4)`}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCorrectedCalcium() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Corrected Calcium",
+    description: "Albumin-corrected serum calcium. The result updates as you type.",
+    body: `
+      <form id="correctedCalciumForm">
+        <div class="form-grid">
+          ${inputField({ name: "calcium", label: "Serum calcium (mg/dL)", value: s.calcium ?? "", hint: "" })}
+          ${inputField({ name: "albumin", label: "Albumin (g/dL)", value: s.albumin ?? "", hint: "" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: assumes calcium in mg/dL and albumin in g/dL (normal albumin 4 g/dL). Ionised calcium is more reliable when available.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#correctedCalciumForm");
+  bindLiveForm(form, () => {
+    const calcium = numberValue(form, "calcium");
+    const albumin = numberValue(form, "albumin");
+    if (!positive(calcium) || !positive(albumin)) {
+      showPending("Enter serum calcium and albumin.");
+      return;
+    }
+    const corrected = calcCorrectedCalcium({ calcium, albumin });
+    saveSession({ calcium, albumin });
+    showResult("Corrected calcium", `${round(corrected, 2)} mg/dL`, `Formula: measured Ca + 0.8 x (4 - albumin). Measured ${calcium} mg/dL, albumin ${albumin} g/dL.`);
+  });
+}
+
+function renderCorrectedSodium() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Corrected Sodium",
+    description: "Hyperglycemia-corrected serum sodium. Shows both the 1.6 and 2.4 correction factors.",
+    body: `
+      <form id="correctedSodiumForm">
+        <div class="form-grid">
+          ${inputField({ name: "sodium", label: "Measured sodium (mEq/L)", value: s.sodium ?? "", hint: "" })}
+          ${inputField({ name: "glucose", label: "Serum glucose (mg/dL)", value: s.glucose ?? "", hint: "" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: correction applies to hyperglycemia (glucose > 100 mg/dL). The 2.4 factor better reflects severe hyperglycemia; 1.6 is the classic factor.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#correctedSodiumForm");
+  bindLiveForm(form, () => {
+    const sodium = numberValue(form, "sodium");
+    const glucose = numberValue(form, "glucose");
+    if (!positive(sodium) || !positive(glucose)) {
+      showPending("Enter measured sodium and serum glucose.");
+      return;
+    }
+    const { corrected16, corrected24 } = calcCorrectedSodium({ sodium, glucose });
+    saveSession({ sodium, glucose });
+    showCorrectedSodiumInfo({ corrected16, corrected24, glucose });
+  });
+}
+
+function showCorrectedSodiumInfo({ corrected16, corrected24, glucose }) {
+  const needsCorrection = glucose > 100;
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">Corrected sodium</div>
+      ${
+        needsCorrection
+          ? `<div class="info-grid">
+        <div><strong>Factor 2.4 (preferred)</strong><span>${round(corrected24, 1)} mEq/L</span></div>
+        <div><strong>Factor 1.6 (classic)</strong><span>${round(corrected16, 1)} mEq/L</span></div>
+        <div><strong>Formula</strong><span>Na + factor x (glucose - 100) / 100</span></div>
+      </div>`
+          : `<p class="result-detail">Glucose 100 mg/dL or below — no hyperglycaemia correction needed; the measured sodium applies.</p>`
+      }
     </div>
   `;
 }
