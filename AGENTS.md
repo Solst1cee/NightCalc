@@ -207,6 +207,14 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 - Top-right corner
 - Closes on outside click/tap
 - Contact fields: GitHub and Email (currently `N/A`)
+- Contains an **Install** section ("Add to Home Screen" button) that is shown only when the guide is eligible (iOS Safari + not already installed); opens the install bottom sheet
+
+### iOS "Add to Home Screen" install guide
+- Shown only on iOS Safari when not already installed as a standalone app (`isIosSafari() && !isStandalone()`)
+- A dismissible bottom banner and a persistent ⋯-menu "Add to Home Screen" entry both open a shared modal bottom sheet
+- Dismissal persisted in `localStorage` key `nightcalc.a2hs.v1`; the menu entry remains available even after the banner is dismissed
+- Steps follow current iOS 26 Safari: ••• → Share → Add to Home Screen → keep "Open as Web App" on → Add
+- Composes with all themes, accents, and the Pixel skin (square corners, thick borders in pixel mode)
 
 ### Theme
 - Light/dark default: system preference; user override saved to `localStorage` (`nightcalc.theme.v1`)
