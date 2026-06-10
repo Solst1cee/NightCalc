@@ -12,10 +12,11 @@
   --warn-soft: #fff4d6;
   --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 
-  /* NightCalc logo badge tokens — a fixed dark badge that reads on any topbar;
-     only the keys follow the selected accent via --nc-accent */
-  --nc-tile: #101a30;
-  --nc-moon: #f1f5f9;
+  /* NightCalc logo tokens — the mark is tile-less and sits directly on the
+     topbar. Keycaps follow the selected accent; the key glyphs stay light
+     (they sit on the accent squares); the moon flips with the theme so it
+     reads on the light topbar (dark moon) and the dark topbar (light moon). */
+  --nc-moon: #0f172a;
   --nc-keyglyph: #f1f5f9;
   --nc-accent: var(--accent);
 }
@@ -32,6 +33,7 @@
   --warn: #ffd37a;
   --warn-soft: #3f2f12;
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  --nc-moon: #f1f5f9; /* light moon for the dark topbar */
 }
 
 /* ---- Selectable brand accents — add a color by copying one pair ---- */
