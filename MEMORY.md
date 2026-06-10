@@ -7,9 +7,11 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-10
-- What was done: **Tile-less logo pass** (follow-up to the rebrand — the tiled header badge read "off"). Swapped the top-bar mark for the tile-less version (`brand/themeable/logo-notile.svg`) inlined in `index.html`; the moon crescent is now cut with an SVG `mask` instead of a tile-colored overlap. Made `--nc-moon` theme-adaptive — dark `#0F172A` on the light topbar, light `#F1F5F9` on the dark topbar — so the mark reads with no tile behind it; key glyphs stay light (they sit on the accent squares). Replaced `icons/favicon.svg` with a tile-less, `prefers-color-scheme`-aware version. Added the iOS home-screen icon: `icons/apple-touch-icon.png` (180×180, full-bleed navy tile — iOS ignores SVG here and composites transparency on black) with `icons/apple-touch-icon.svg` as the design source and an `apple-touch-icon` link. Removed the now-unused `--nc-tile` token. Verified both themes × both accents (mask renders a clean crescent; moon legible on white and navy; app.js error-free). Bumped `?v=58` / `nightcalc-v58`.
-- Files changed: `index.html`, `styles.css`, `service-worker.js`, `icons/favicon.svg`, `icons/apple-touch-icon.png` (new), `icons/apple-touch-icon.svg` (new), `brand/themeable/logo-notile.svg` (added), `AGENTS.md`, `MEMORY.md`
-- Note: `manifest.webmanifest` PWA icon is still the tiled `icons/icon.svg` (correct for Android maskable contexts) — only the iOS home-screen icon was added this pass.
+- What was done: **iOS "Add to Home Screen" install guide.** Added a dismissible bottom banner + a persistent ⋯-menu "Add to Home Screen" entry, both opening a shared modal bottom sheet with the current iOS 26 steps (••• → Share → Add to Home Screen → keep "Open as Web App" on → Add). Entirely gated behind `isIosSafari()` + not-`isStandalone()`, so other platforms render nothing. Banner dismissal persisted in `localStorage` key `nightcalc.a2hs.v1`; the ⋯-menu entry stays available as long as the guide is eligible. Sheet has a focus trap, Esc-to-close, scrim dismiss, and focus-restore. All three components (banner, sheet, menu row) compose with theme/accent/Pixel-skin. Pixel-skin override appended to `styles.css`: square corners, 3px borders, hard `var(--shadow)`, square step badges, 2px menu-item border. Ships **v60 / nightcalc-v60**.
+- Files changed: `index.html`, `styles.css`, `app.js`, `service-worker.js`, `MEMORY.md`, `AGENTS.md`
+
+### Earlier same day — Tile-less logo pass
+- Swapped the top-bar mark for the tile-less version (`brand/themeable/logo-notile.svg`) inlined in `index.html`; moon crescent cut with SVG `mask`; `--nc-moon` theme-adaptive; tile-less `prefers-color-scheme`-aware `icons/favicon.svg`; iOS home-screen icon `icons/apple-touch-icon.png` (180×180). Bumped `?v=58` / `nightcalc-v58`.
 
 ### Earlier same day — MedCalc → NightCalc rebrand
 - Integrated `nightcalc-brand-kit.zip` into `brand/`; inline themeable header logo + `Night`/`Calc` wordmark; night palette (`#0B1220`/`#101A30`); selectable accent (blue default, maroon) via `data-accent` + persistence and one-time migration of legacy `medcalc.*` storage keys; fixed the previously-missing `icons/icon.svg` (had been breaking the service-worker install); favicon + manifest + service worker (`nightcalc-v57`) + all docs.
@@ -20,7 +22,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v58` / `nightcalc-v58`
+Last known: `v60` / `nightcalc-v60`
 
 ---
 
