@@ -113,6 +113,13 @@ const tools = [
     tags: ["qsofa", "sepsis", "sofa", "deterioration", "screening"],
   },
   {
+    id: "qtc",
+    title: "QTc",
+    description: "Corrected QT (Bazett + Fridericia) from QT and heart rate.",
+    status: "ready",
+    tags: ["qtc", "qt", "ecg", "bazett", "fridericia", "interval"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -698,6 +705,12 @@ function calcCorrectedSodium({ sodium, glucose }) {
   };
 }
 
+// QTc: Bazett = QT/sqrt(RR), Fridericia = QT/cbrt(RR); RR (s) = 60 / HR.
+function calcQtc({ qtMs, hrBpm }) {
+  const rr = 60 / hrBpm;
+  return { bazett: qtMs / Math.sqrt(rr), fridericia: qtMs / Math.cbrt(rr) };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -840,6 +853,7 @@ function renderCalculator() {
   if (state.activeTool === "corrected-calcium") renderCorrectedCalcium();
   if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
   if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
+  if (state.activeTool === "qtc") renderQtc();
   if (state.activeTool === "reference") renderReference();
 }
 
@@ -1585,6 +1599,46 @@ function showCorrectedSodiumInfo({ corrected16, corrected24, glucose }) {
       }
     </div>
   `;
+}
+
+function renderQtc() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "QTc",
+    description: "Corrected QT interval. Shows both Bazett and Fridericia.",
+    body: `
+      <form id="qtcForm">
+        <div class="form-grid">
+          ${inputField({ name: "qtMs", label: "QT interval (ms)", value: s.qtMs ?? "", hint: "measured QT" })}
+          ${inputField({ name: "hrBpm", label: "Heart rate (bpm)", value: s.hrBpm ?? "", hint: "or 60000 / RR(ms)" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: Bazett over-corrects at high rates and under-corrects at low rates; Fridericia is steadier. Prolonged is roughly > 450 ms (men) / > 470 ms (women).",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#qtcForm");
+  bindLiveForm(form, () => {
+    const qtMs = numberValue(form, "qtMs");
+    const hrBpm = numberValue(form, "hrBpm");
+    if (!positive(qtMs) || !positive(hrBpm)) {
+      showPending("Enter QT interval (ms) and heart rate (bpm).");
+      return;
+    }
+    const { bazett, fridericia } = calcQtc({ qtMs, hrBpm });
+    saveSession({ qtMs, hrBpm });
+    document.querySelector("#resultArea").innerHTML = `
+      <div class="result-box">
+        <div class="result-label">Corrected QT</div>
+        <div class="info-grid">
+          <div><strong>Bazett (QTcB)</strong><span>${round(bazett, 0)} ms</span></div>
+          <div><strong>Fridericia (QTcF)</strong><span>${round(fridericia, 0)} ms</span></div>
+          <div><strong>Formula</strong><span>QTc = QT / RR^(1/2 or 1/3), RR = 60 / HR (s)</span></div>
+        </div>
+      </div>
+    `;
+  });
 }
 
 function showInfusionInfo({ drug, concentrationMgMl, doseMcgMin, rateMlHr, doseUnit, rateUnit, missing }) {

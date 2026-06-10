@@ -80,6 +80,12 @@
           assertClose("qSOFA all yes", calcScore(SCORES.qsofa, { rr: "y", sbp: "y", ams: "y" }), 3, 1e-9);
           assertClose("qSOFA RR+AMS", calcScore(SCORES.qsofa, { rr: "y", sbp: "n", ams: "y" }), 2, 1e-9);
           assertClose("qSOFA none", calcScore(SCORES.qsofa, { rr: "n", sbp: "n", ams: "n" }), 0, 1e-9);
+
+          // --- QTc (QT ms, HR bpm); RR = 60/HR seconds ---
+          var qtc = calcQtc({ qtMs: 400, hrBpm: 75 });
+          assertClose("QTc Bazett 400/75", qtc.bazett, 447.2, 0.2);
+          assertClose("QTc Fridericia 400/75", qtc.fridericia, 430.9, 0.2);
+          assertClose("QTc Bazett 400/60 = 400", calcQtc({ qtMs: 400, hrBpm: 60 }).bazett, 400, 1e-6);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
