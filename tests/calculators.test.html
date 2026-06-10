@@ -61,15 +61,20 @@
           assertEqual("AG corrected null without albumin", ag.correctedAnionGap, null);
           var agc = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24, albumin: 2 });
           assertClose("AG corrected with albumin 2", agc.correctedAnionGap, 17, 1e-6);
+          var agHi = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24, albumin: 5 });
+          assertClose("AG corrected with albumin 5 (above 4 subtracts)", agHi.correctedAnionGap, 9.5, 1e-6);
 
           // --- Albumin-corrected calcium (Ca mg/dL, albumin g/dL) ---
           assertClose("Corrected Ca 8.0/alb2", calcCorrectedCalcium({ calcium: 8.0, albumin: 2 }), 9.6, 1e-6);
-          assertClose("Corrected Ca normal albumin no change", calcCorrectedCalcium({ calcium: 10, albumin: 4 }), 10, 1e-6);
+          assertClose("Corrected Ca 9.0/alb3 (coefficient-sensitive)", calcCorrectedCalcium({ calcium: 9.0, albumin: 3 }), 9.8, 1e-6);
 
           // --- Hyperglycemia-corrected sodium (Na mEq/L, glucose mg/dL) ---
           var cna = calcCorrectedSodium({ sodium: 130, glucose: 600 });
           assertClose("Corrected Na factor 1.6", cna.corrected16, 138, 1e-6);
           assertClose("Corrected Na factor 2.4", cna.corrected24, 142, 1e-6);
+          var cnaLo = calcCorrectedSodium({ sodium: 140, glucose: 80 });
+          assertClose("Corrected Na low glucose 1.6", cnaLo.corrected16, 139.68, 1e-6);
+          assertClose("Corrected Na low glucose 2.4", cnaLo.corrected24, 139.52, 1e-6);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

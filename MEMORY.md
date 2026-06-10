@@ -7,7 +7,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-10
-- What was done: Added the **P1 renal/electrolyte calculator slice** (v58). Renamed the renal tool **Creatinine Clearance → Renal Function**, now showing both Cockcroft-Gault CrCl (dosing) and **CKD-EPI 2021 eGFR** (staging); added pure-formula **Anion Gap** (optional albumin correction), **Corrected Calcium**, and **Corrected Sodium** (1.6 & 2.4 factors). Added a dependency-free browser unit-test harness `tests/calculators.test.html` (11 assertions, all passing headlessly). Bumped `v57 → v58` / `nightcalc-v58`. Built from the spec + plan in `docs/superpowers/`.
+- What was done: Added the **P1 renal/electrolyte calculator slice** (v58). Renamed the renal tool **Creatinine Clearance → Renal Function**, now showing both Cockcroft-Gault CrCl (dosing) and **CKD-EPI 2021 eGFR** (staging); added pure-formula **Anion Gap** (optional albumin correction), **Corrected Calcium**, and **Corrected Sodium** (1.6 & 2.4 factors). Added a dependency-free browser unit-test harness `tests/calculators.test.html` (14 assertions, all passing headlessly). Bumped `v57 → v58` / `nightcalc-v58`. Built from the spec + plan in `docs/superpowers/`.
 - Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html` (new), `MEMORY.md`, `AGENTS.md`, `docs/superpowers/` (spec + plan)
 - Pending human check: open the app and `tests/calculators.test.html` in a browser — expect 11/11 pass, zero console errors, OK at 390px & 1280px; confirm the service worker updates to `nightcalc-v58`.
 - Earlier same day: rebrand MedCalc → NightCalc (brand kit, blue/maroon accents, v57) — see commit history.

@@ -824,7 +824,7 @@ function showRenalFunctionInfo({ crcl, egfr, weightKg, scrMgDl }) {
       <div class="info-grid">
         <div><strong>CrCl (Cockcroft-Gault)</strong><span>${crcl == null ? "Enter weight to calculate" : `${round(crcl, 1)} mL/min — for drug dosing`}</span></div>
         <div><strong>eGFR (CKD-EPI 2021)</strong><span>${round(egfr, 0)} mL/min/1.73m2 — for CKD staging</span></div>
-        <div><strong>Inputs used</strong><span>SCr ${round(scrMgDl, 2)} mg/dL${crcl == null ? "" : `, weight ${weightKg} kg`}</span></div>
+        <div><strong>Inputs used</strong><span>SCr ${round(scrMgDl, 2)} mg/dL${crcl == null ? "" : `, weight ${round(weightKg, 1)} kg`}</span></div>
       </div>
     </div>
   `;
@@ -1324,10 +1324,10 @@ function renderAnionGap() {
     body: `
       <form id="anionGapForm">
         <div class="form-grid">
-          ${inputField({ name: "sodium", label: "Sodium", value: s.sodium ?? "", hint: "mEq/L" })}
-          ${inputField({ name: "chloride", label: "Chloride", value: s.chloride ?? "", hint: "mEq/L" })}
-          ${inputField({ name: "bicarbonate", label: "Bicarbonate", value: s.bicarbonate ?? "", hint: "mEq/L (HCO3)" })}
-          ${inputField({ name: "albumin", label: "Albumin (optional)", value: s.albumin ?? "", hint: "g/dL; enables correction" })}
+          ${inputField({ name: "sodium", label: "Sodium (mEq/L)", value: s.sodium ?? "", hint: "" })}
+          ${inputField({ name: "chloride", label: "Chloride (mEq/L)", value: s.chloride ?? "", hint: "" })}
+          ${inputField({ name: "bicarbonate", label: "Bicarbonate (mEq/L)", value: s.bicarbonate ?? "", hint: "HCO3" })}
+          ${inputField({ name: "albumin", label: "Albumin (g/dL, optional)", value: s.albumin ?? "", hint: "enables correction" })}
         </div>
       </form>
     `,
@@ -1356,12 +1356,14 @@ function renderAnionGap() {
 }
 
 function showAnionGapInfo({ anionGap, correctedAnionGap }) {
+  const agForInterp = correctedAnionGap == null ? anionGap : correctedAnionGap;
+  const basis = correctedAnionGap == null ? "" : " (albumin-corrected)";
   const interpretation =
-    anionGap > 12
-      ? "Above ~12 mEq/L — consider a high anion gap metabolic acidosis."
-      : anionGap < 8
-      ? "Below ~8 mEq/L — consider low anion gap causes (e.g. hypoalbuminaemia, paraproteinaemia)."
-      : "Within the usual 8-12 mEq/L range (lab-dependent).";
+    agForInterp > 12
+      ? `Above ~12 mEq/L${basis} — consider a high anion gap metabolic acidosis.`
+      : agForInterp < 8
+      ? `Below ~8 mEq/L${basis} — consider low anion gap causes (e.g. hypoalbuminaemia, paraproteinaemia).`
+      : `Within the usual 8-12 mEq/L range${basis} (lab-dependent).`;
   document.querySelector("#resultArea").innerHTML = `
     <div class="result-box">
       <div class="result-label">Anion gap</div>
@@ -1383,8 +1385,8 @@ function renderCorrectedCalcium() {
     body: `
       <form id="correctedCalciumForm">
         <div class="form-grid">
-          ${inputField({ name: "calcium", label: "Serum calcium", value: s.calcium ?? "", hint: "mg/dL" })}
-          ${inputField({ name: "albumin", label: "Albumin", value: s.albumin ?? "", hint: "g/dL" })}
+          ${inputField({ name: "calcium", label: "Serum calcium (mg/dL)", value: s.calcium ?? "", hint: "" })}
+          ${inputField({ name: "albumin", label: "Albumin (g/dL)", value: s.albumin ?? "", hint: "" })}
         </div>
       </form>
     `,
@@ -1414,8 +1416,8 @@ function renderCorrectedSodium() {
     body: `
       <form id="correctedSodiumForm">
         <div class="form-grid">
-          ${inputField({ name: "sodium", label: "Measured sodium", value: s.sodium ?? "", hint: "mEq/L" })}
-          ${inputField({ name: "glucose", label: "Serum glucose", value: s.glucose ?? "", hint: "mg/dL" })}
+          ${inputField({ name: "sodium", label: "Measured sodium (mEq/L)", value: s.sodium ?? "", hint: "" })}
+          ${inputField({ name: "glucose", label: "Serum glucose (mg/dL)", value: s.glucose ?? "", hint: "" })}
         </div>
       </form>
     `,
@@ -1438,15 +1440,19 @@ function renderCorrectedSodium() {
 }
 
 function showCorrectedSodiumInfo({ corrected16, corrected24, glucose }) {
+  const needsCorrection = glucose > 100;
   document.querySelector("#resultArea").innerHTML = `
     <div class="result-box">
       <div class="result-label">Corrected sodium</div>
-      <div class="info-grid">
+      ${
+        needsCorrection
+          ? `<div class="info-grid">
         <div><strong>Factor 2.4 (preferred)</strong><span>${round(corrected24, 1)} mEq/L</span></div>
         <div><strong>Factor 1.6 (classic)</strong><span>${round(corrected16, 1)} mEq/L</span></div>
         <div><strong>Formula</strong><span>Na + factor x (glucose - 100) / 100</span></div>
-      </div>
-      ${glucose <= 100 ? `<p class="result-detail">Glucose 100 mg/dL or below — correction is not clinically needed.</p>` : ""}
+      </div>`
+          : `<p class="result-detail">Glucose 100 mg/dL or below — no hyperglycaemia correction needed; the measured sodium applies.</p>`
+      }
     </div>
   `;
 }
