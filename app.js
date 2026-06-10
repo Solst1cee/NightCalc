@@ -86,6 +86,13 @@ const tools = [
     tags: ["anion gap", "acid base", "hagma", "albumin", "electrolyte", "metabolic acidosis"],
   },
   {
+    id: "corrected-calcium",
+    title: "Corrected Calcium",
+    description: "Albumin-corrected serum calcium.",
+    status: "ready",
+    tags: ["calcium", "albumin", "corrected calcium", "hypocalcemia", "electrolyte"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -541,6 +548,11 @@ function calcAnionGap({ sodium, chloride, bicarbonate, albumin }) {
   return { anionGap, correctedAnionGap };
 }
 
+// Albumin-corrected calcium (mg/dL): adds 0.8 mg/dL per 1 g/dL albumin below 4.
+function calcCorrectedCalcium({ calcium, albumin }) {
+  return calcium + 0.8 * (4 - albumin);
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -680,6 +692,7 @@ function renderCalculator() {
   if (state.activeTool === "renal-dose") renderRenalDose();
   if (state.activeTool === "fractional-excretion") renderFractionalExcretion();
   if (state.activeTool === "anion-gap") renderAnionGap();
+  if (state.activeTool === "corrected-calcium") renderCorrectedCalcium();
   if (state.activeTool === "reference") renderReference();
 }
 
@@ -1334,6 +1347,37 @@ function showAnionGapInfo({ anionGap, correctedAnionGap }) {
       </div>
     </div>
   `;
+}
+
+function renderCorrectedCalcium() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Corrected Calcium",
+    description: "Albumin-corrected serum calcium. The result updates as you type.",
+    body: `
+      <form id="correctedCalciumForm">
+        <div class="form-grid">
+          ${inputField({ name: "calcium", label: "Serum calcium", value: s.calcium ?? "", hint: "mg/dL" })}
+          ${inputField({ name: "albumin", label: "Albumin", value: s.albumin ?? "", hint: "g/dL" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: assumes calcium in mg/dL and albumin in g/dL (normal albumin 4 g/dL). Ionised calcium is more reliable when available.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#correctedCalciumForm");
+  bindLiveForm(form, () => {
+    const calcium = numberValue(form, "calcium");
+    const albumin = numberValue(form, "albumin");
+    if (!positive(calcium) || !positive(albumin)) {
+      showPending("Enter serum calcium and albumin.");
+      return;
+    }
+    const corrected = calcCorrectedCalcium({ calcium, albumin });
+    saveSession({ calcium, albumin });
+    showResult("Corrected calcium", `${round(corrected, 2)} mg/dL`, `Formula: measured Ca + 0.8 x (4 - albumin). Measured ${calcium} mg/dL, albumin ${albumin} g/dL.`);
+  });
 }
 
 function showInfusionInfo({ drug, concentrationMgMl, doseMcgMin, rateMlHr, doseUnit, rateUnit, missing }) {

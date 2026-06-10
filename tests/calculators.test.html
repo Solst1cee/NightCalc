@@ -61,6 +61,10 @@
           assertEqual("AG corrected null without albumin", ag.correctedAnionGap, null);
           var agc = calcAnionGap({ sodium: 140, chloride: 104, bicarbonate: 24, albumin: 2 });
           assertClose("AG corrected with albumin 2", agc.correctedAnionGap, 17, 1e-6);
+
+          // --- Albumin-corrected calcium (Ca mg/dL, albumin g/dL) ---
+          assertClose("Corrected Ca 8.0/alb2", calcCorrectedCalcium({ calcium: 8.0, albumin: 2 }), 9.6, 1e-6);
+          assertClose("Corrected Ca normal albumin no change", calcCorrectedCalcium({ calcium: 10, albumin: 4 }), 10, 1e-6);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
