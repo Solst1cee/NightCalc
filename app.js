@@ -805,8 +805,12 @@ function renderRenalFunction() {
     const scrMgDl = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
 
     const patch = { age, sex, serumCreatinine, serumCreatinineUnit, egfr };
-    if (positive(weightKg)) patch.weightKg = weightKg;
-    if (crcl != null) patch.crcl = crcl;
+    if (positive(weightKg)) {
+      patch.weightKg = weightKg;
+      patch.crcl = crcl;
+    } else {
+      patch.crcl = null; // clear any stale CrCl so the chip / Renal Dose don't reuse it
+    }
     saveSession(patch);
 
     showRenalFunctionInfo({ crcl, egfr, weightKg, scrMgDl });
@@ -1352,12 +1356,17 @@ function renderAnionGap() {
 }
 
 function showAnionGapInfo({ anionGap, correctedAnionGap }) {
-  const high = anionGap > 12;
+  const interpretation =
+    anionGap > 12
+      ? "Above ~12 mEq/L — consider a high anion gap metabolic acidosis."
+      : anionGap < 8
+      ? "Below ~8 mEq/L — consider low anion gap causes (e.g. hypoalbuminaemia, paraproteinaemia)."
+      : "Within the usual 8-12 mEq/L range (lab-dependent).";
   document.querySelector("#resultArea").innerHTML = `
     <div class="result-box">
       <div class="result-label">Anion gap</div>
       <div class="result-value">${round(anionGap, 1)} mEq/L</div>
-      <p class="result-detail">${high ? "Above ~12 mEq/L — consider a high anion gap metabolic acidosis." : "Around the usual 8-12 mEq/L range (lab-dependent)."}</p>
+      <p class="result-detail">${interpretation}</p>
       <div class="info-grid">
         <div><strong>Formula</strong><span>AG = Na - (Cl + HCO3)</span></div>
         <div><strong>Albumin-corrected</strong><span>${correctedAnionGap == null ? "Enter albumin to correct" : `${round(correctedAnionGap, 1)} mEq/L (+2.5 per 1 g/dL below 4)`}</span></div>
