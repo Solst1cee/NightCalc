@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NightCalc — calculator tests</title>
+  </head>
+  <body>
+    <!-- Hidden skeleton so app.js bootstraps without throwing: it queries these
+         elements on load and calls render() at the bottom of the file. -->
+    <div id="layout" hidden>
+      <input id="toolSearch" />
+      <div id="sessionChip"></div>
+      <div id="tools"></div>
+      <div id="calculator"></div>
+      <button id="themeToggleButton"></button>
+      <div id="accentPicker"></div>
+    </div>
+
+    <h1>NightCalc calculator tests</h1>
+    <pre id="out"></pre>
+
+    <!-- Classic script: app.js top-level functions become global (window.*). -->
+    <script src="../app.js?test"></script>
+    <script>
+      (function () {
+        const out = document.querySelector("#out");
+        let pass = 0,
+          fail = 0;
+        function log(line) {
+          out.textContent += line + "\n";
+        }
+        function ok(name) {
+          pass++;
+          log("PASS  " + name);
+        }
+        function bad(name, msg) {
+          fail++;
+          log("FAIL  " + name + " — " + msg);
+        }
+        function assertClose(name, actual, expected, tol) {
+          tol = tol == null ? 0.01 : tol;
+          if (typeof actual !== "number" || Number.isNaN(actual)) return bad(name, "got " + actual);
+          return Math.abs(actual - expected) <= tol ? ok(name) : bad(name, "expected " + expected + " ± " + tol + ", got " + actual);
+        }
+        function assertEqual(name, actual, expected) {
+          return actual === expected ? ok(name) : bad(name, "expected " + JSON.stringify(expected) + ", got " + JSON.stringify(actual));
+        }
+
+        try {
+          // --- existing function: proves the harness works ---
+          assertClose("CrCl 60M 70kg SCr1.0", calculateCrCl({ age: 60, sex: "male", weightKg: 70, serumCreatinine: 1.0, serumCreatinineUnit: "mgDl" }), 77.78, 0.1);
+
+          // --- new function tests are added in later tasks ---
+        } catch (err) {
+          bad("suite", err && err.message ? err.message : String(err));
+        }
+
+        log("\n" + pass + " passed, " + fail + " failed");
+        console.log(out.textContent);
+        document.title = (fail ? "FAIL " : "PASS ") + pass + "/" + (pass + fail);
+      })();
+    </script>
+  </body>
+</html>
