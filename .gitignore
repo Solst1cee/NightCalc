@@ -13,3 +13,6 @@ Thumbs.db
 
 # AI agent session/transcript data (keep local; AGENTS.md and MEMORY.md are tracked)
 .claude/
+
+# Visual brainstorming companion (local mockups)
+.superpowers/
