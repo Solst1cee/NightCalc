@@ -2,6 +2,7 @@ const STORAGE_KEY = "nightcalc.session.v1";
 const THEME_KEY = "nightcalc.theme.v1";
 const ACCENT_KEY = "nightcalc.accent.v1";
 const SKIN_KEY = "nightcalc.skin.v1";
+const A2HS_KEY = "nightcalc.a2hs.v1";
 
 // Selectable brand accents. To add a color: append it here and add a matching
 // :root[data-accent="..."] block in styles.css. Order here = swatch order.
@@ -479,6 +480,37 @@ function setSkin(skin) {
   const nextSkin = SKINS.includes(skin) ? skin : DEFAULT_SKIN;
   localStorage.setItem(SKIN_KEY, nextSkin);
   applySkin(nextSkin);
+}
+
+// ---- iOS "Add to Home Screen" install guide ----
+// iOS Safari exposes no install API, so eligibility is best-effort UA detection.
+function isIosSafari() {
+  const ua = navigator.userAgent;
+  const isIosDevice =
+    /iP(hone|od|ad)/.test(ua) ||
+    // iPadOS 13+ reports as desktop Safari; fall back to the touch-point tell.
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (!isIosDevice) return false;
+  // Exclude other iOS browsers and in-app webviews — they cannot add web apps.
+  return (
+    /Safari/.test(ua) &&
+    !/(CriOS|FxiOS|EdgiOS|OPiOS|GSA|FBAN|FBAV|Instagram|Line|Twitter)/.test(ua)
+  );
+}
+
+function isStandalone() {
+  return (
+    window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches
+  );
+}
+
+function a2hsEligible() {
+  return isIosSafari() && !isStandalone();
+}
+
+function a2hsDismissed() {
+  return localStorage.getItem(A2HS_KEY) === "dismissed";
 }
 
 function toolFromHash() {
