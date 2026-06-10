@@ -75,6 +75,11 @@
           var cnaLo = calcCorrectedSodium({ sodium: 140, glucose: 80 });
           assertClose("Corrected Na low glucose 1.6", cnaLo.corrected16, 139.68, 1e-6);
           assertClose("Corrected Na low glucose 2.4", cnaLo.corrected24, 139.52, 1e-6);
+
+          // --- Scoring engine: qSOFA (3 binary, 0-3) ---
+          assertClose("qSOFA all yes", calcScore(SCORES.qsofa, { rr: "y", sbp: "y", ams: "y" }), 3, 1e-9);
+          assertClose("qSOFA RR+AMS", calcScore(SCORES.qsofa, { rr: "y", sbp: "n", ams: "y" }), 2, 1e-9);
+          assertClose("qSOFA none", calcScore(SCORES.qsofa, { rr: "n", sbp: "n", ams: "n" }), 0, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

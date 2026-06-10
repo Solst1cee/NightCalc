@@ -106,6 +106,13 @@ const tools = [
     tags: ["sodium", "hyperglycemia", "corrected sodium", "hyponatremia", "electrolyte", "dka"],
   },
   {
+    id: "qsofa",
+    title: "qSOFA",
+    description: "Quick SOFA bedside sepsis screen (0-3).",
+    status: "ready",
+    tags: ["qsofa", "sepsis", "sofa", "deterioration", "screening"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -556,6 +563,104 @@ function calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUni
   return sex === "female" ? base * 0.85 : base;
 }
 
+// ===== Scoring engine (data-driven point scores) =====
+// Option helpers keep score configs compact.
+function YN(points) {
+  return [
+    { label: "No", value: "n", points: 0 },
+    { label: "Yes", value: "y", points: points },
+  ];
+}
+function scale(maxPoints) {
+  const opts = [];
+  for (let i = 0; i <= maxPoints; i++) opts.push({ label: String(i), value: String(i), points: i });
+  return opts;
+}
+
+const SCORES = {};
+
+// Pure: total points for selected values. values: { [criterion.name]: rawValue }
+function calcScore(config, values) {
+  let total = 0;
+  for (const c of config.criteria) {
+    if (c.type === "numericBand") {
+      const n = values[c.name];
+      if (n == null || Number.isNaN(n)) continue; // unscored until a number is entered
+      const band = c.bands.find((b) => b.le == null || n <= b.le);
+      total += band ? band.points : 0;
+    } else {
+      const opt = c.options.find((o) => String(o.value) === String(values[c.name]));
+      total += opt ? opt.points : 0;
+    }
+  }
+  return total;
+}
+
+function scoreInterpretation(config, total) {
+  const match = config.interpret.find((i) => i.test(total));
+  return match ? match.text : "";
+}
+
+function renderScore(config) {
+  const fields = config.criteria
+    .map((c) =>
+      c.type === "numericBand"
+        ? inputField({ name: c.name, label: c.label, value: "", hint: c.hint || "" })
+        : inputField({
+            name: c.name,
+            label: c.label,
+            value: c.options[0].value,
+            options: c.options.map((o) => ({ value: String(o.value), label: o.label })),
+          }),
+    )
+    .join("");
+
+  els.calculator.innerHTML = calcShell({
+    title: config.title,
+    description: config.description,
+    body: `<form id="scoreForm"><div class="form-grid">${fields}</div></form>`,
+    notice: config.notice,
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#scoreForm");
+  bindLiveForm(form, () => {
+    const values = {};
+    for (const c of config.criteria) {
+      values[c.name] = c.type === "numericBand" ? numberValue(form, c.name) : form.elements[c.name].value;
+    }
+    showScoreInfo(config, calcScore(config, values));
+  });
+}
+
+function showScoreInfo(config, total) {
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">${config.title}</div>
+      <div class="result-value">${total}${config.maxLabel ? ` / ${config.maxLabel}` : ""}</div>
+      <p class="result-detail">${scoreInterpretation(config, total)}</p>
+    </div>
+  `;
+}
+
+SCORES.qsofa = {
+  id: "qsofa",
+  title: "qSOFA",
+  description: "Quick SOFA — bedside sepsis risk. Updates as you change each item.",
+  maxLabel: "3",
+  tags: ["qsofa", "sepsis", "sofa", "deterioration", "screening"],
+  criteria: [
+    { name: "rr", label: "Respiratory rate ≥ 22/min", type: "select", options: YN(1) },
+    { name: "sbp", label: "Systolic BP ≤ 100 mmHg", type: "select", options: YN(1) },
+    { name: "ams", label: "Altered mentation (GCS < 15)", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t >= 2, text: "≥2: higher risk of poor outcome — assess for sepsis and consider escalation." },
+    { test: (t) => t < 2, text: "<2: lower qSOFA risk — does not rule out sepsis; use clinical judgement." },
+  ],
+  notice: "Clinical check: qSOFA is a screening prompt, not a diagnosis, and is less sensitive than NEWS2/SIRS for early sepsis.",
+};
+
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
 function calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUnit }) {
   const scr = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
@@ -734,6 +839,7 @@ function renderCalculator() {
   if (state.activeTool === "anion-gap") renderAnionGap();
   if (state.activeTool === "corrected-calcium") renderCorrectedCalcium();
   if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
+  if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
   if (state.activeTool === "reference") renderReference();
 }
 
