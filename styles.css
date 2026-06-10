@@ -12,10 +12,11 @@
   --warn-soft: #fff4d6;
   --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 
-  /* NightCalc logo badge tokens — a fixed dark badge that reads on any topbar;
-     only the keys follow the selected accent via --nc-accent */
-  --nc-tile: #101a30;
-  --nc-moon: #f1f5f9;
+  /* NightCalc logo tokens — the mark is tile-less and sits directly on the
+     topbar. Keycaps follow the selected accent; the key glyphs stay light
+     (they sit on the accent squares); the moon flips with the theme so it
+     reads on the light topbar (dark moon) and the dark topbar (light moon). */
+  --nc-moon: #0f172a;
   --nc-keyglyph: #f1f5f9;
   --nc-accent: var(--accent);
 }
@@ -32,6 +33,7 @@
   --warn: #ffd37a;
   --warn-soft: #3f2f12;
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  --nc-moon: #f1f5f9; /* light moon for the dark topbar */
 }
 
 /* ---- Selectable brand accents — add a color by copying one pair ---- */
@@ -1058,3 +1060,117 @@ select {
     display: none;
   }
 }
+
+/* ============================================================================
+   NightCalc — PIXEL SKIN
+   Additive override layer, active only when <html data-skin="pixel">. Default
+   skin is untouched. Reuses existing color tokens (--bg, --panel, --ink, --line,
+   --accent, --muted, --warn, --shadow), so it inherits dark/light and
+   blue/maroon automatically. Changes only TYPE, SHAPE, SHADOW + scanlines + a
+   pixel mark. Direction: "Night Pixel · Silkscreen · Full retro".
+   Silkscreen is loaded in index.html <head>.
+   ========================================================================== */
+
+/* ---- hard, no-blur shadow token, per theme ---- */
+:root[data-skin="pixel"]                    { --shadow: 4px 4px 0 rgba(15, 23, 42, 0.22); }
+:root[data-skin="pixel"][data-theme="dark"] { --shadow: 4px 4px 0 rgba(0, 0, 0, 0.55); }
+
+/* ---- typography: Silkscreen everywhere (full retro) ---- */
+:root[data-skin="pixel"] body,
+:root[data-skin="pixel"] button,
+:root[data-skin="pixel"] input,
+:root[data-skin="pixel"] select,
+:root[data-skin="pixel"] textarea {
+  font-family: "Silkscreen", ui-monospace, monospace;
+  letter-spacing: .3px;
+  -webkit-font-smoothing: none;
+}
+/* Silkscreen runs visually small — nudge a few text roles up for legibility */
+:root[data-skin="pixel"] .tool-desc,
+:root[data-skin="pixel"] .calc-header p,
+:root[data-skin="pixel"] .result-detail,
+:root[data-skin="pixel"] .field-hint { line-height: 1.7; }
+:root[data-skin="pixel"] .result-value { letter-spacing: 0; }
+
+/* ---- shape: kill all the radii, thicken the lines ---- */
+:root[data-skin="pixel"] .topbar,
+:root[data-skin="pixel"] .tool-card,
+:root[data-skin="pixel"] .calc-card,
+:root[data-skin="pixel"] .result-box,
+:root[data-skin="pixel"] .search-wrap input,
+:root[data-skin="pixel"] .field input,
+:root[data-skin="pixel"] .field select,
+:root[data-skin="pixel"] .drug-search-field input,
+:root[data-skin="pixel"] .reference-search input,
+:root[data-skin="pixel"] .reference-card,
+:root[data-skin="pixel"] .dose-reference-row,
+:root[data-skin="pixel"] .infusion-summary div,
+:root[data-skin="pixel"] .primary-button,
+:root[data-skin="pixel"] .secondary-button,
+:root[data-skin="pixel"] .icon-button,
+:root[data-skin="pixel"] .back-button,
+:root[data-skin="pixel"] .session-chip,
+:root[data-skin="pixel"] .notice,
+:root[data-skin="pixel"] .warning-list div,
+:root[data-skin="pixel"] .disclosure-panel,
+:root[data-skin="pixel"] .search-match-list {
+  border-radius: 0;
+}
+:root[data-skin="pixel"] .tool-card,
+:root[data-skin="pixel"] .calc-card,
+:root[data-skin="pixel"] .result-box,
+:root[data-skin="pixel"] .search-wrap input,
+:root[data-skin="pixel"] .field input,
+:root[data-skin="pixel"] .field select,
+:root[data-skin="pixel"] .reference-card,
+:root[data-skin="pixel"] .disclosure-panel {
+  border-width: 3px;
+}
+:root[data-skin="pixel"] .topbar { border-bottom-width: 3px; }
+
+/* ---- hard shadows on the raised surfaces ---- */
+:root[data-skin="pixel"] .tool-card,
+:root[data-skin="pixel"] .calc-card,
+:root[data-skin="pixel"] .primary-button,
+:root[data-skin="pixel"] .secondary-button,
+:root[data-skin="pixel"] .icon-button,
+:root[data-skin="pixel"] .search-wrap input,
+:root[data-skin="pixel"] .disclosure-panel {
+  box-shadow: var(--shadow);
+}
+/* active tool card: accent-colored hard shadow instead of soft glow */
+:root[data-skin="pixel"] .tool-card.active {
+  box-shadow: 4px 4px 0 var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- status chips: square, glyph-led (alert-red rule: never color alone) ---- */
+:root[data-skin="pixel"] .tool-status-icon,
+:root[data-skin="pixel"] .status-badge { border-radius: 0; }
+:root[data-skin="pixel"] .status-badge { border: 2px solid var(--line); }
+
+/* ---- the pixel mark ---- */
+:root[data-skin="pixel"] .brand-mark { image-rendering: pixelated; height: 52px; width: 52px; }
+
+/* ---- mark swap: show one mark per skin (both are inlined in index.html) ---- */
+.brand-mark-pixel { display: none; }
+:root[data-skin="pixel"] .brand-mark-default { display: none; }
+:root[data-skin="pixel"] .brand-mark-pixel { display: block; }
+
+/* ---- CRT scanlines (dark themes only; keep light mode clean) ---- */
+:root[data-skin="pixel"][data-theme="dark"] body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+}
+
+/* ---- Skin picker (mirrors .accent-picker), lives in the Info menu ---- */
+.skin-picker { display: flex; gap: 8px; margin: 0 0 4px; }
+.skin-option {
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px;
+  cursor: pointer; font-weight: 750; min-height: 36px; padding: 0 14px;
+}
+.skin-option[aria-pressed="true"] {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+:root[data-skin="pixel"] .skin-option { border-radius: 0; border-width: 2px; font-family: "Silkscreen", monospace; }

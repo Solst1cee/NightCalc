@@ -1,6 +1,6 @@
 # NightCalc
 
-NightCalc is a simple, lightweight medical calculator app for the physician working at night — a calm bedside companion that quickly performs common clinical calculations while the ward sleeps. It is designed to be fast, easy to use, and accessible from any device, with a dark "night" theme and selectable brand accent (blue or maroon).
+NightCalc is a simple, lightweight medical calculator app for the physician working at night — a calm bedside companion that quickly performs common clinical calculations while the ward sleeps. It is designed to be fast, easy to use, and accessible from any device, with a dark "night" theme, a selectable brand accent (blue or maroon), and a selectable visual skin (Default or a retro Pixel skin).
 
 Live demo: [solst1cee.github.io/NightCalc](https://solst1cee.github.io/NightCalc/)
 
@@ -47,7 +47,10 @@ The infusion drug data is intentionally structured as a draft scaffold. Verify a
 
 - Light/dark follows the device preference by default and can be toggled with the sun/moon button.
 - The brand accent (blue by default, maroon optional) is selectable from the Info menu and saved across sessions. More accents can be added with one CSS block plus one entry in the `ACCENTS` list in `app.js`.
+- A visual **skin** (Default, or a retro 8-bit **Pixel** skin) is selectable from the Info menu and saved across sessions. The Pixel skin reuses the existing colors, so it works in every theme/accent combination.
 - Per the brand's "alert-red rule," the accent only colors chrome (logo, headers, buttons, links) — never a clinical result or warning value.
+
+Theme, accent, and skin are each remembered across sessions (saved to `localStorage`).
 
 ## Session Memory
 

@@ -1,11 +1,17 @@
 const STORAGE_KEY = "nightcalc.session.v1";
 const THEME_KEY = "nightcalc.theme.v1";
 const ACCENT_KEY = "nightcalc.accent.v1";
+const SKIN_KEY = "nightcalc.skin.v1";
 
 // Selectable brand accents. To add a color: append it here and add a matching
 // :root[data-accent="..."] block in styles.css. Order here = swatch order.
 const ACCENTS = ["blue", "maroon"];
 const DEFAULT_ACCENT = "blue";
+
+// Selectable visual skins. Orthogonal to theme/accent: each is a data-skin value
+// gated by a :root[data-skin="..."] block in styles.css. "default" = absence of overrides.
+const SKINS = ["default", "pixel"];
+const DEFAULT_SKIN = "default";
 
 // One-time migration from the pre-rebrand "medcalc.*" keys so a saved theme
 // (and any in-session data) survives the NightCalc rename.
@@ -421,12 +427,14 @@ const els = {
   sessionChip: document.querySelector("#sessionChip"),
   themeToggleButton: document.querySelector("#themeToggleButton"),
   accentPicker: document.querySelector("#accentPicker"),
+  skinPicker: document.querySelector("#skinPicker"),
   toolSearch: document.querySelector("#toolSearch"),
 };
 
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 applyTheme(localStorage.getItem(THEME_KEY) || systemTheme);
 applyAccent(localStorage.getItem(ACCENT_KEY) || DEFAULT_ACCENT);
+applySkin(localStorage.getItem(SKIN_KEY) || DEFAULT_SKIN);
 
 function loadSession() {
   try {
@@ -476,6 +484,22 @@ function setAccent(accent) {
   const nextAccent = ACCENTS.includes(accent) ? accent : DEFAULT_ACCENT;
   localStorage.setItem(ACCENT_KEY, nextAccent);
   applyAccent(nextAccent);
+}
+
+function applySkin(skin) {
+  const nextSkin = SKINS.includes(skin) ? skin : DEFAULT_SKIN;
+  document.documentElement.dataset.skin = nextSkin;
+  // Both brand marks are inlined in the header; styles.css shows the right one
+  // per [data-skin], so no DOM swap is needed here.
+  els.skinPicker?.querySelectorAll(".skin-option").forEach((option) => {
+    option.setAttribute("aria-pressed", String(option.dataset.skinValue === nextSkin));
+  });
+}
+
+function setSkin(skin) {
+  const nextSkin = SKINS.includes(skin) ? skin : DEFAULT_SKIN;
+  localStorage.setItem(SKIN_KEY, nextSkin);
+  applySkin(nextSkin);
 }
 
 function toolFromHash() {
@@ -1686,6 +1710,11 @@ els.themeToggleButton?.addEventListener("click", toggleTheme);
 els.accentPicker?.addEventListener("click", (event) => {
   const swatch = event.target.closest(".accent-swatch");
   if (swatch) setAccent(swatch.dataset.accentValue);
+});
+
+els.skinPicker?.addEventListener("click", (event) => {
+  const option = event.target.closest(".skin-option");
+  if (option) setSkin(option.dataset.skinValue);
 });
 
 window.addEventListener("popstate", () => {

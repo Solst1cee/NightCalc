@@ -6,15 +6,24 @@
     <meta name="theme-color" content="#0B1220" />
     <title>NightCalc</title>
     <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=58" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=60" />
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
         <div class="brand">
-          <svg class="brand-mark" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-            <rect x="1" y="1" width="118" height="118" rx="27" fill="var(--nc-tile, #101A30)"></rect>
+          <svg class="brand-mark brand-mark-default" viewBox="22 22 76 76" aria-hidden="true" focusable="false">
+            <defs>
+              <mask id="ncMoonCut">
+                <rect x="0" y="0" width="120" height="120" fill="black"></rect>
+                <circle cx="79" cy="41" r="17" fill="white"></circle>
+                <circle cx="87" cy="35" r="15" fill="black"></circle>
+              </mask>
+            </defs>
             <rect x="24" y="24" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
             <rect x="24" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
             <rect x="62" y="62" width="34" height="34" rx="9" fill="var(--nc-accent, #2563EB)"></rect>
@@ -23,8 +32,174 @@
             <line x1="33" y1="79" x2="49" y2="79" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
             <line x1="72" y1="72" x2="86" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
             <line x1="86" y1="72" x2="72" y2="86" stroke="var(--nc-keyglyph, #F1F5F9)" stroke-width="7" stroke-linecap="round"></line>
-            <circle cx="79" cy="41" r="17" fill="var(--nc-moon, #F1F5F9)"></circle>
-            <circle cx="87" cy="35" r="15" fill="var(--nc-tile, #101A30)"></circle>
+            <circle cx="79" cy="41" r="17" fill="var(--nc-moon, #F1F5F9)" mask="url(#ncMoonCut)"></circle>
+          </svg>
+          <svg class="brand-mark brand-mark-pixel" viewBox="0 0 160 160" shape-rendering="crispEdges" aria-hidden="true" focusable="false">
+            <rect x="10" y="10" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="10" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="10" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="10" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="10" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="10" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="10" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="20" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="20" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="20" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="20" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="50" y="20" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="20" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="20" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="30" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="30" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="30" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="30" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="50" y="30" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="30" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="30" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="40" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="40" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="30" y="40" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="40" y="40" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="50" y="40" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="60" y="40" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="70" y="40" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="50" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="50" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="50" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="50" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="50" y="50" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="50" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="50" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="60" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="60" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="60" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="60" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="50" y="60" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="60" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="60" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="70" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="70" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="70" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="70" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="70" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="70" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="70" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="110" y="10" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="120" y="10" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="130" y="10" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="100" y="20" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="110" y="20" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="120" y="20" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="100" y="30" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="110" y="30" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="100" y="40" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="110" y="40" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="100" y="50" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="110" y="50" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="100" y="60" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="110" y="60" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="120" y="60" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="110" y="70" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="120" y="70" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="130" y="70" width="10" height="10" fill="var(--ink, #EAF1F8)"></rect>
+            <rect x="10" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="120" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="30" y="120" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="40" y="120" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="50" y="120" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="60" y="120" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="70" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="10" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="20" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="30" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="40" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="50" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="60" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="70" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="90" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="100" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="110" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="120" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="130" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="140" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="150" y="90" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="90" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="100" y="100" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="110" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="120" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="130" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="140" y="100" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="150" y="100" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="90" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="100" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="110" y="110" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="120" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="130" y="110" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="140" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="150" y="110" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="90" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="100" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="110" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="120" y="120" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="130" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="140" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="150" y="120" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="90" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="100" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="110" y="130" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="120" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="130" y="130" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="140" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="150" y="130" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="90" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="100" y="140" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="110" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="120" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="130" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="140" y="140" width="10" height="10" fill="var(--nc-keyglyph, #FFFFFF)"></rect>
+            <rect x="150" y="140" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="90" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="100" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="110" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="120" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="130" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="140" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
+            <rect x="150" y="150" width="10" height="10" fill="var(--nc-accent, #B92D5D)"></rect>
           </svg>
           <div>
             <p class="eyebrow">Ward rounding companion</p>
@@ -52,6 +227,11 @@
               <h2>Contact</h2>
               <p class="contact-row"><img src="icons/icons8-github-logo.svg" alt="" aria-hidden="true" /><span>GitHub: <a href="https://github.com/Solst1cee" target="_blank" rel="noopener noreferrer">Solst1cee</a></span></p>
               <p class="contact-row"><img src="icons/icons8-gmail-logo.svg" alt="" aria-hidden="true" /><span>Email: N/A</span></p>
+              <h2>Skin</h2>
+              <div class="skin-picker" id="skinPicker" role="group" aria-label="App skin">
+                <button type="button" class="skin-option" data-skin-value="default" aria-label="Default skin">Default</button>
+                <button type="button" class="skin-option" data-skin-value="pixel" aria-label="Pixel skin">Pixel</button>
+              </div>
               <h2>Accent</h2>
               <div class="accent-picker" id="accentPicker" role="group" aria-label="Brand accent color">
                 <button type="button" class="accent-swatch" data-accent-value="blue" style="--swatch:#2563EB" title="Blue" aria-label="Blue accent"></button>
@@ -82,6 +262,6 @@
       </main>
     </div>
 
-    <script src="app.js?v=58"></script>
+    <script src="app.js?v=60"></script>
   </body>
 </html>
