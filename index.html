@@ -2,15 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0B1220" />
+    <!-- iOS home-screen app: run full-screen and let the topbar paint behind the
+         status bar (black-translucent) so it matches the theme instead of showing
+         a white strip. Pairs with viewport-fit=cover + safe-area insets in CSS. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NightCalc" />
     <title>NightCalc</title>
     <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=61" />
+    <link rel="stylesheet" href="styles.css?v=62" />
   </head>
   <body>
     <div class="app-shell">
@@ -302,6 +309,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=61"></script>
+    <script src="app.js?v=62"></script>
   </body>
 </html>
