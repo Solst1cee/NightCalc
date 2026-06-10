@@ -6,6 +6,12 @@ Update this file at the end of every session. This is the living record of proje
 
 ## Last Session
 
+- Date: 2026-06-11
+- What was done: **P1 wave 2 — scoring engine + 10 calculators** (v61). Added a data-driven scoring engine (`SCORES` registry + pure `calcScore` + generic `renderScore`; `select` and NEWS2-style `numericBand` criteria) and the 8 point-scores qSOFA, CURB-65, CHA₂DS₂-VASc, GCS, NEWS2, CIWA-Ar, Child-Pugh, Wells (PE), plus the QTc and Ideal/Adjusted Body Weight formulas. Test harness now 34 assertions. Bumped `v60 → v61` / `nightcalc-v61`. From the plan in `docs/superpowers/plans/2026-06-11-p1-wave-2-formulas-and-scores.md`. **This completes the P1 calculator tier.**
+- Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html`, `MEMORY.md`, `AGENTS.md`, `docs/superpowers/plans/` (plan).
+- Pending human check: open the app + `tests/calculators.test.html` — expect 34/34 pass, zero console errors, OK at 390px & 1280px, Pixel skin still toggles, SW updates to `nightcalc-v61`.
+
+### Earlier same day — P1 renal/electrolyte calculator slice (PR #11)
 - Date: 2026-06-10
 - What was done: **P1 renal/electrolyte calculator slice** (PR #11). Renamed Creatinine Clearance → **Renal Function** (Cockcroft-Gault CrCl + **CKD-EPI 2021 eGFR**); added pure-formula **Anion Gap** (albumin-corrected interpretation), **Corrected Calcium**, and **Corrected Sodium** (1.6 & 2.4 factors). Dependency-free browser test harness `tests/calculators.test.html` (14 assertions, all passing headlessly). Merged the latest `main` (Pixel skin) and bumped `v59 → v60` / `nightcalc-v60`. Built from the spec + plan in `docs/superpowers/`.
 - Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html` (new), `MEMORY.md`, `AGENTS.md`, `docs/superpowers/` (spec + plan).
@@ -29,7 +35,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v60` / `nightcalc-v60`
+Last known: `v61` / `nightcalc-v61`
 
 ---
 
@@ -45,6 +51,16 @@ Last known: `v60` / `nightcalc-v60`
 | Corrected Sodium | ✅ Ready | Pure formula; 1.6 and 2.4 factors |
 | Renal Dose Adjustment | 🔴 Down | Workflow ready, drug data is demo-only — do not promote to Ready without user confirmation |
 | Reference | 🔨 In progress | Becoming master maintenance view for all calculator data |
+| qSOFA | ✅ Ready | Scoring engine; 0-3 sepsis screen |
+| QTc | ✅ Ready | Bazett + Fridericia |
+| Ideal / Adjusted Body Weight | ✅ Ready | Devine IBW + adjusted |
+| CURB-65 | ✅ Ready | Scoring engine; pneumonia severity |
+| CHA₂DS₂-VASc | ✅ Ready | Scoring engine; AF stroke risk |
+| Glasgow Coma Scale | ✅ Ready | Scoring engine; 3-15 |
+| NEWS2 | ✅ Ready | Scoring engine (numeric-band vitals) |
+| CIWA-Ar | ✅ Ready | Scoring engine; alcohol withdrawal |
+| Child-Pugh | ✅ Ready | Scoring engine; cirrhosis class |
+| Wells Score (PE) | ✅ Ready | Scoring engine; PE pretest probability |
 
 ---
 
@@ -79,7 +95,7 @@ Reference page — build out as master data view covering all categories (infusi
 
 ## Next Up
 
-1. Remaining P1 calculators (QTc, CHA2DS2-VASc, CURB-65, Wells-PE, Child-Pugh, GCS, CIWA-Ar, NEWS2, qSOFA, IBW/adjusted body weight) — see `docs/superpowers/specs/2026-06-10-clinical-calculator-backlog-design.md`
+1. **P1 tier complete.** Next: the P2 wave from the backlog spec (HEART, MELD-Na, Glasgow-Blatchford, NIHSS, SOFA, BMI/BSA, maintenance fluids, ANC, etc.).
 2. SI unit toggles for the new electrolyte calculators (Ca / glucose / albumin)
 3. Complete Reference page as master data view
 4. Add all data categories to Reference (not just infusion drugs)
