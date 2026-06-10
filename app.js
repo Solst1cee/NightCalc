@@ -580,16 +580,6 @@ function repaintTopbar() {
   if (active && active !== document.body && topbar.contains(active)) {
     active.focus({ preventScroll: true });
   }
-
-  // Belt-and-suspenders for stubborn iOS builds: re-promote the (now correctly
-  // painted) layer and drop the promotion across a double rAF — a single rAF can
-  // run before the paint commits. Harmless if the reflow above already cured it.
-  topbar.style.transform = "translateZ(0)";
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      topbar.style.transform = "";
-    });
-  });
 }
 
 function applyAccent(accent) {
