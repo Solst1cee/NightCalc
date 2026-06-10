@@ -120,6 +120,13 @@ const tools = [
     tags: ["qtc", "qt", "ecg", "bazett", "fridericia", "interval"],
   },
   {
+    id: "body-weight",
+    title: "Ideal / Adjusted Body Weight",
+    description: "Devine IBW and adjusted body weight from height, sex, weight.",
+    status: "ready",
+    tags: ["ibw", "ideal body weight", "adjusted body weight", "devine", "dosing", "weight"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -711,6 +718,15 @@ function calcQtc({ qtMs, hrBpm }) {
   return { bazett: qtMs / Math.sqrt(rr), fridericia: qtMs / Math.cbrt(rr) };
 }
 
+// Devine ideal body weight (kg) from height; adjusted body weight uses actual weight.
+function calcBodyWeight({ heightCm, sex, weightKg }) {
+  const heightIn = heightCm / 2.54;
+  const base = sex === "female" ? 45.5 : 50;
+  const ibw = base + 2.3 * (heightIn - 60);
+  const adjusted = positive(weightKg) ? ibw + 0.4 * (weightKg - ibw) : null;
+  return { ibw, adjusted };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -854,6 +870,7 @@ function renderCalculator() {
   if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
   if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
   if (state.activeTool === "qtc") renderQtc();
+  if (state.activeTool === "body-weight") renderBodyWeight();
   if (state.activeTool === "reference") renderReference();
 }
 
@@ -1635,6 +1652,57 @@ function renderQtc() {
           <div><strong>Bazett (QTcB)</strong><span>${round(bazett, 0)} ms</span></div>
           <div><strong>Fridericia (QTcF)</strong><span>${round(fridericia, 0)} ms</span></div>
           <div><strong>Formula</strong><span>QTc = QT / RR^(1/2 or 1/3), RR = 60 / HR (s)</span></div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function renderBodyWeight() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Ideal / Adjusted Body Weight",
+    description: "Devine ideal body weight, and adjusted body weight when actual weight is entered.",
+    body: `
+      <form id="bodyWeightForm">
+        <div class="form-grid">
+          ${inputField({ name: "heightCm", label: "Height (cm)", value: s.heightCm ?? "", hint: "Devine is validated for ≥ 152 cm" })}
+          ${inputField({
+            name: "sex",
+            label: "Sex",
+            value: s.sex ?? "male",
+            options: [
+              { value: "male", label: "Male" },
+              { value: "female", label: "Female" },
+            ],
+          })}
+          ${inputField({ name: "weightKg", label: "Actual weight (kg)", value: s.weightKg ?? "", hint: "for adjusted body weight" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: IBW/AdjBW choice depends on the drug — confirm which weight a given dose uses.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#bodyWeightForm");
+  bindLiveForm(form, () => {
+    const heightCm = numberValue(form, "heightCm");
+    const weightKg = numberValue(form, "weightKg");
+    const sex = form.elements.sex.value;
+    if (!positive(heightCm)) {
+      showPending("Enter height (cm). Add actual weight for adjusted body weight.");
+      return;
+    }
+    const { ibw, adjusted } = calcBodyWeight({ heightCm, sex, weightKg });
+    const patch = { heightCm, sex };
+    if (positive(weightKg)) patch.weightKg = weightKg;
+    saveSession(patch);
+    document.querySelector("#resultArea").innerHTML = `
+      <div class="result-box">
+        <div class="result-label">Body weight</div>
+        <div class="info-grid">
+          <div><strong>Ideal (Devine)</strong><span>${round(ibw, 1)} kg</span></div>
+          <div><strong>Adjusted</strong><span>${adjusted == null ? "Enter actual weight" : `${round(adjusted, 1)} kg`}</span></div>
         </div>
       </div>
     `;

@@ -86,6 +86,12 @@
           assertClose("QTc Bazett 400/75", qtc.bazett, 447.2, 0.2);
           assertClose("QTc Fridericia 400/75", qtc.fridericia, 430.9, 0.2);
           assertClose("QTc Bazett 400/60 = 400", calcQtc({ qtMs: 400, hrBpm: 60 }).bazett, 400, 1e-6);
+
+          // --- Ideal/Adjusted body weight (Devine); height cm, weight kg ---
+          var bw = calcBodyWeight({ heightCm: 175, sex: "male", weightKg: 90 });
+          assertClose("IBW 175cm male", bw.ibw, 70.47, 0.05);
+          assertClose("AdjBW 175cm male 90kg", bw.adjusted, 78.28, 0.05);
+          assertClose("IBW 160cm female", calcBodyWeight({ heightCm: 160, sex: "female" }).ibw, 52.38, 0.05);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
