@@ -6,6 +6,12 @@ Update this file at the end of every session. This is the living record of proje
 
 ## Last Session
 
+- Date: 2026-06-11
+- What was done: **P1 wave 2 — scoring engine + 10 calculators** (v64). Added a data-driven scoring engine (`SCORES` registry + pure `calcScore` + generic `renderScore`; `select` and NEWS2-style `numericBand` criteria) and the 8 point-scores qSOFA, CURB-65, CHA₂DS₂-VASc, GCS, NEWS2, CIWA-Ar, Child-Pugh, Wells (PE), plus the QTc and Ideal/Adjusted Body Weight formulas. Test harness now 34 assertions. Bumped to `v64` / `nightcalc-v64` (after merging main's v63 iOS work). From the plan in `docs/superpowers/plans/2026-06-11-p1-wave-2-formulas-and-scores.md`. **This completes the P1 calculator tier.**
+- Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html`, `MEMORY.md`, `AGENTS.md`, `docs/superpowers/plans/` (plan).
+- Pending human check: open the app + `tests/calculators.test.html` — expect 34/34 pass, zero console errors, OK at 390px & 1280px, Pixel skin still toggles, SW updates to `nightcalc-v64`.
+
+### Earlier same day — iOS Add to Home Screen guide (PR #12)
 - Date: 2026-06-10
 - What was done: **iOS "Add to Home Screen" install guide.** Added a dismissible bottom banner + a persistent ⋯-menu "Add to Home Screen" entry, both opening a shared modal bottom sheet with the current iOS 26 steps (••• → Share → Add to Home Screen → keep "Open as Web App" on → Add). Entirely gated behind `isIosSafari()` + not-`isStandalone()`, so other platforms render nothing. Banner dismissal persisted in `localStorage` key `nightcalc.a2hs.v1`; the ⋯-menu entry stays available as long as the guide is eligible. Sheet has a focus trap, Esc-to-close, scrim dismiss, and focus-restore. All three components (banner, sheet, menu row) compose with theme/accent/Pixel-skin. Pixel-skin override appended to `styles.css`: square corners, 3px borders, hard `var(--shadow)`, square step badges, 2px menu-item border. Merged the latest `main` (P1 calculators) and bumped to **v61 / nightcalc-v61** (`main` was already at v60).
 - Files changed: `index.html`, `styles.css`, `app.js`, `service-worker.js`, `MEMORY.md`, `AGENTS.md`
@@ -31,7 +37,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v61` / `nightcalc-v61`
+Last known: `v64` / `nightcalc-v64`
 
 ---
 
@@ -47,6 +53,16 @@ Last known: `v61` / `nightcalc-v61`
 | Corrected Sodium | ✅ Ready | Pure formula; 1.6 and 2.4 factors |
 | Renal Dose Adjustment | 🔴 Down | Workflow ready, drug data is demo-only — do not promote to Ready without user confirmation |
 | Reference | 🔨 In progress | Becoming master maintenance view for all calculator data |
+| qSOFA | ✅ Ready | Scoring engine; 0-3 sepsis screen |
+| QTc | ✅ Ready | Bazett + Fridericia |
+| Ideal / Adjusted Body Weight | ✅ Ready | Devine IBW + adjusted |
+| CURB-65 | ✅ Ready | Scoring engine; pneumonia severity |
+| CHA₂DS₂-VASc | ✅ Ready | Scoring engine; AF stroke risk |
+| Glasgow Coma Scale | ✅ Ready | Scoring engine; 3-15 |
+| NEWS2 | ✅ Ready | Scoring engine (numeric-band vitals) |
+| CIWA-Ar | ✅ Ready | Scoring engine; alcohol withdrawal |
+| Child-Pugh | ✅ Ready | Scoring engine; cirrhosis class |
+| Wells Score (PE) | ✅ Ready | Scoring engine; PE pretest probability |
 
 ---
 
@@ -81,7 +97,7 @@ Reference page — build out as master data view covering all categories (infusi
 
 ## Next Up
 
-1. Remaining P1 calculators (QTc, CHA2DS2-VASc, CURB-65, Wells-PE, Child-Pugh, GCS, CIWA-Ar, NEWS2, qSOFA, IBW/adjusted body weight) — see `docs/superpowers/specs/2026-06-10-clinical-calculator-backlog-design.md`
+1. **P1 tier complete.** Next: the P2 wave from the backlog spec (HEART, MELD-Na, Glasgow-Blatchford, NIHSS, SOFA, BMI/BSA, maintenance fluids, ANC, etc.).
 2. SI unit toggles for the new electrolyte calculators (Ca / glucose / albumin)
 3. Complete Reference page as master data view
 4. Add all data categories to Reference (not just infusion drugs)

@@ -107,6 +107,76 @@ const tools = [
     tags: ["sodium", "hyperglycemia", "corrected sodium", "hyponatremia", "electrolyte", "dka"],
   },
   {
+    id: "qsofa",
+    title: "qSOFA",
+    description: "Quick SOFA bedside sepsis screen (0-3).",
+    status: "ready",
+    tags: ["qsofa", "sepsis", "sofa", "deterioration", "screening"],
+  },
+  {
+    id: "qtc",
+    title: "QTc",
+    description: "Corrected QT (Bazett + Fridericia) from QT and heart rate.",
+    status: "ready",
+    tags: ["qtc", "qt", "ecg", "bazett", "fridericia", "interval"],
+  },
+  {
+    id: "body-weight",
+    title: "Ideal / Adjusted Body Weight",
+    description: "Devine IBW and adjusted body weight from height, sex, weight.",
+    status: "ready",
+    tags: ["ibw", "ideal body weight", "adjusted body weight", "devine", "dosing", "weight"],
+  },
+  {
+    id: "curb65",
+    title: "CURB-65",
+    description: "Pneumonia severity score (0-5).",
+    status: "ready",
+    tags: ["curb-65", "curb65", "pneumonia", "cap", "severity"],
+  },
+  {
+    id: "chadsvasc",
+    title: "CHA₂DS₂-VASc",
+    description: "AF stroke-risk score (0-9).",
+    status: "ready",
+    tags: ["cha2ds2-vasc", "chadsvasc", "af", "atrial fibrillation", "stroke"],
+  },
+  {
+    id: "gcs",
+    title: "Glasgow Coma Scale",
+    description: "Conscious level E/V/M (3-15).",
+    status: "ready",
+    tags: ["gcs", "glasgow", "coma", "consciousness", "neuro"],
+  },
+  {
+    id: "news2",
+    title: "NEWS2",
+    description: "Early warning score from vital signs.",
+    status: "ready",
+    tags: ["news2", "news", "early warning", "deterioration", "vital signs"],
+  },
+  {
+    id: "ciwa",
+    title: "CIWA-Ar",
+    description: "Alcohol withdrawal severity (0-67).",
+    status: "ready",
+    tags: ["ciwa", "ciwa-ar", "alcohol", "withdrawal", "detox"],
+  },
+  {
+    id: "childpugh",
+    title: "Child-Pugh",
+    description: "Cirrhosis severity (Class A/B/C).",
+    status: "ready",
+    tags: ["child-pugh", "childpugh", "cirrhosis", "liver"],
+  },
+  {
+    id: "wellspe",
+    title: "Wells Score (PE)",
+    description: "Pulmonary embolism pretest probability.",
+    status: "ready",
+    tags: ["wells", "pe", "pulmonary embolism", "vte"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -683,6 +753,317 @@ function calculateCrCl({ age, sex, weightKg, serumCreatinine, serumCreatinineUni
   return sex === "female" ? base * 0.85 : base;
 }
 
+// ===== Scoring engine (data-driven point scores) =====
+// Option helpers keep score configs compact.
+function YN(points) {
+  return [
+    { label: "No", value: "n", points: 0 },
+    { label: "Yes", value: "y", points: points },
+  ];
+}
+function scale(maxPoints) {
+  const opts = [];
+  for (let i = 0; i <= maxPoints; i++) opts.push({ label: String(i), value: String(i), points: i });
+  return opts;
+}
+
+const SCORES = {};
+
+// Pure: total points for selected values. values: { [criterion.name]: rawValue }
+function calcScore(config, values) {
+  let total = 0;
+  for (const c of config.criteria) {
+    if (c.type === "numericBand") {
+      const n = values[c.name];
+      if (n == null || Number.isNaN(n)) continue; // unscored until a number is entered
+      const band = c.bands.find((b) => b.le == null || n <= b.le);
+      total += band ? band.points : 0;
+    } else {
+      const opt = c.options.find((o) => String(o.value) === String(values[c.name]));
+      total += opt ? opt.points : 0;
+    }
+  }
+  return total;
+}
+
+function scoreInterpretation(config, total) {
+  const match = config.interpret.find((i) => i.test(total));
+  return match ? match.text : "";
+}
+
+function renderScore(config) {
+  const fields = config.criteria
+    .map((c) =>
+      c.type === "numericBand"
+        ? inputField({ name: c.name, label: c.label, value: "", hint: c.hint || "" })
+        : inputField({
+            name: c.name,
+            label: c.label,
+            value: "",
+            options: [{ value: "", label: "— select —" }, ...c.options.map((o) => ({ value: String(o.value), label: o.label }))],
+          }),
+    )
+    .join("");
+
+  els.calculator.innerHTML = calcShell({
+    title: config.title,
+    description: config.description,
+    body: `<form id="scoreForm"><div class="form-grid">${fields}</div></form>`,
+    notice: config.notice,
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#scoreForm");
+  bindLiveForm(form, () => {
+    const values = {};
+    let complete = true;
+    for (const c of config.criteria) {
+      if (c.type === "numericBand") {
+        const n = numberValue(form, c.name);
+        values[c.name] = n;
+        if (n == null) complete = false;
+      } else {
+        const v = form.elements[c.name].value;
+        values[c.name] = v;
+        if (v === "") complete = false;
+      }
+    }
+    if (!complete) {
+      showPending("Complete all items to calculate the score.");
+      return;
+    }
+    showScoreInfo(config, calcScore(config, values));
+  });
+}
+
+function showScoreInfo(config, total) {
+  document.querySelector("#resultArea").innerHTML = `
+    <div class="result-box">
+      <div class="result-label">${config.title}</div>
+      <div class="result-value">${total}${config.maxLabel ? ` / ${config.maxLabel}` : ""}</div>
+      <p class="result-detail">${scoreInterpretation(config, total)}</p>
+    </div>
+  `;
+}
+
+SCORES.qsofa = {
+  id: "qsofa",
+  title: "qSOFA",
+  description: "Quick SOFA — bedside sepsis risk. Updates as you change each item.",
+  maxLabel: "3",
+  tags: ["qsofa", "sepsis", "sofa", "deterioration", "screening"],
+  criteria: [
+    { name: "rr", label: "Respiratory rate ≥ 22/min", type: "select", options: YN(1) },
+    { name: "sbp", label: "Systolic BP ≤ 100 mmHg", type: "select", options: YN(1) },
+    { name: "ams", label: "Altered mentation (GCS < 15)", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t >= 2, text: "≥2: higher risk of poor outcome — assess for sepsis and consider escalation." },
+    { test: (t) => t < 2, text: "<2: lower qSOFA risk — does not rule out sepsis; use clinical judgement." },
+  ],
+  notice: "Clinical check: qSOFA is a screening prompt, not a diagnosis, and is less sensitive than NEWS2/SIRS for early sepsis.",
+};
+
+SCORES.curb65 = {
+  id: "curb65",
+  title: "CURB-65",
+  description: "Community-acquired pneumonia severity (0-5).",
+  maxLabel: "5",
+  tags: ["curb-65", "curb65", "pneumonia", "cap", "severity", "respiratory"],
+  criteria: [
+    { name: "confusion", label: "Confusion (new)", type: "select", options: YN(1) },
+    { name: "urea", label: "Urea > 7 mmol/L (BUN > 19 mg/dL)", type: "select", options: YN(1) },
+    { name: "rr", label: "Respiratory rate ≥ 30/min", type: "select", options: YN(1) },
+    { name: "bp", label: "SBP < 90 or DBP ≤ 60 mmHg", type: "select", options: YN(1) },
+    { name: "age65", label: "Age ≥ 65", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t <= 1, text: "0-1: low severity — outpatient management often appropriate." },
+    { test: (t) => t === 2, text: "2: moderate — consider short-stay admission or supervised care." },
+    { test: (t) => t >= 3, text: "3-5: high severity — admit; 4-5 assess for ICU/HDU." },
+  ],
+  notice: "Clinical check: combine with oxygenation, comorbidity, and social factors; CURB-65 does not capture hypoxaemia.",
+};
+
+SCORES.chadsvasc = {
+  id: "chadsvasc",
+  title: "CHA₂DS₂-VASc",
+  description: "Stroke risk in atrial fibrillation (0-9).",
+  maxLabel: "9",
+  tags: ["cha2ds2-vasc", "chadsvasc", "af", "atrial fibrillation", "stroke", "anticoagulation"],
+  criteria: [
+    { name: "age", label: "Age", type: "select", options: [
+        { label: "< 65", value: "0", points: 0 },
+        { label: "65–74", value: "1", points: 1 },
+        { label: "≥ 75", value: "2", points: 2 },
+      ] },
+    { name: "sex", label: "Sex", type: "select", options: [
+        { label: "Male", value: "m", points: 0 },
+        { label: "Female", value: "f", points: 1 },
+      ] },
+    { name: "chf", label: "Congestive heart failure / LV dysfunction", type: "select", options: YN(1) },
+    { name: "htn", label: "Hypertension", type: "select", options: YN(1) },
+    { name: "dm", label: "Diabetes mellitus", type: "select", options: YN(1) },
+    { name: "stroke", label: "Prior stroke / TIA / thromboembolism", type: "select", options: YN(2) },
+    { name: "vasc", label: "Vascular disease (MI, PAD, aortic plaque)", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t === 0, text: "0: low risk — anticoagulation generally not required." },
+    { test: (t) => t === 1, text: "1: consider oral anticoagulation (1 from female sex alone is low risk)." },
+    { test: (t) => t >= 2, text: "≥2: oral anticoagulation generally recommended, balanced against bleeding risk." },
+  ],
+  notice: "Clinical check: pair with a bleeding-risk assessment (e.g. HAS-BLED) and shared decision-making.",
+};
+
+SCORES.gcs = {
+  id: "gcs",
+  title: "Glasgow Coma Scale",
+  description: "Conscious level (3-15).",
+  maxLabel: "15",
+  tags: ["gcs", "glasgow", "coma", "consciousness", "neuro"],
+  criteria: [
+    { name: "eye", label: "Eye opening", type: "select", options: [
+        { label: "Spontaneous (4)", value: "4", points: 4 },
+        { label: "To speech (3)", value: "3", points: 3 },
+        { label: "To pain (2)", value: "2", points: 2 },
+        { label: "None (1)", value: "1", points: 1 },
+      ] },
+    { name: "verbal", label: "Verbal response", type: "select", options: [
+        { label: "Oriented (5)", value: "5", points: 5 },
+        { label: "Confused (4)", value: "4", points: 4 },
+        { label: "Inappropriate words (3)", value: "3", points: 3 },
+        { label: "Incomprehensible sounds (2)", value: "2", points: 2 },
+        { label: "None (1)", value: "1", points: 1 },
+      ] },
+    { name: "motor", label: "Motor response", type: "select", options: [
+        { label: "Obeys commands (6)", value: "6", points: 6 },
+        { label: "Localises pain (5)", value: "5", points: 5 },
+        { label: "Withdraws from pain (4)", value: "4", points: 4 },
+        { label: "Abnormal flexion (3)", value: "3", points: 3 },
+        { label: "Extension (2)", value: "2", points: 2 },
+        { label: "None (1)", value: "1", points: 1 },
+      ] },
+  ],
+  interpret: [
+    { test: (t) => t >= 13, text: "13-15: mild impairment." },
+    { test: (t) => t >= 9, text: "9-12: moderate impairment." },
+    { test: (t) => t <= 8, text: "≤8: severe — consider airway protection." },
+  ],
+  notice: "Clinical check: report the component breakdown (E/V/M), not just the total; intubation/sedation limit the verbal score.",
+};
+
+SCORES.news2 = {
+  id: "news2",
+  title: "NEWS2",
+  description: "National Early Warning Score 2 — ward deterioration.",
+  maxLabel: "20",
+  tags: ["news2", "news", "early warning", "deterioration", "sepsis", "vital signs"],
+  criteria: [
+    { name: "rr", label: "Respiratory rate (/min)", type: "numericBand", hint: "breaths per minute", bands: [{ le: 8, points: 3 }, { le: 11, points: 1 }, { le: 20, points: 0 }, { le: 24, points: 2 }, { points: 3 }] },
+    { name: "spo2", label: "SpO₂ (%) — Scale 1", type: "numericBand", hint: "oxygen saturation", bands: [{ le: 91, points: 3 }, { le: 93, points: 2 }, { le: 95, points: 1 }, { points: 0 }] },
+    { name: "suppO2", label: "On supplemental oxygen", type: "select", options: [{ label: "No (air)", value: "n", points: 0 }, { label: "Yes", value: "y", points: 2 }] },
+    { name: "temp", label: "Temperature (°C)", type: "numericBand", hint: "degrees C", bands: [{ le: 35.0, points: 3 }, { le: 36.0, points: 1 }, { le: 38.0, points: 0 }, { le: 39.0, points: 1 }, { points: 2 }] },
+    { name: "sbp", label: "Systolic BP (mmHg)", type: "numericBand", hint: "mmHg", bands: [{ le: 90, points: 3 }, { le: 100, points: 2 }, { le: 110, points: 1 }, { le: 219, points: 0 }, { points: 3 }] },
+    { name: "hr", label: "Heart rate (/min)", type: "numericBand", hint: "beats per minute", bands: [{ le: 40, points: 3 }, { le: 50, points: 1 }, { le: 90, points: 0 }, { le: 110, points: 1 }, { le: 130, points: 2 }, { points: 3 }] },
+    { name: "consciousness", label: "Consciousness (ACVPU)", type: "select", options: [{ label: "Alert", value: "a", points: 0 }, { label: "Confusion / V / P / U", value: "x", points: 3 }] },
+  ],
+  interpret: [
+    { test: (t) => t <= 4, text: "0-4: low — routine monitoring (escalate if any single parameter scores 3)." },
+    { test: (t) => t <= 6, text: "5-6: medium — urgent review by a clinician competent in acute illness." },
+    { test: (t) => t >= 7, text: "≥7: high — emergency assessment, usually critical-care involvement." },
+  ],
+  notice: "Clinical check: uses SpO₂ Scale 1 (not the hypercapnic Scale 2). Any single parameter scoring 3 warrants escalation even if the total is low.",
+};
+
+SCORES.ciwa = {
+  id: "ciwa",
+  title: "CIWA-Ar",
+  description: "Alcohol withdrawal severity (0-67).",
+  maxLabel: "67",
+  tags: ["ciwa", "ciwa-ar", "alcohol", "withdrawal", "detox", "neuro"],
+  criteria: [
+    { name: "nausea", label: "Nausea / vomiting (0-7)", type: "select", options: scale(7) },
+    { name: "tremor", label: "Tremor (0-7)", type: "select", options: scale(7) },
+    { name: "sweats", label: "Paroxysmal sweats (0-7)", type: "select", options: scale(7) },
+    { name: "anxiety", label: "Anxiety (0-7)", type: "select", options: scale(7) },
+    { name: "agitation", label: "Agitation (0-7)", type: "select", options: scale(7) },
+    { name: "tactile", label: "Tactile disturbances (0-7)", type: "select", options: scale(7) },
+    { name: "auditory", label: "Auditory disturbances (0-7)", type: "select", options: scale(7) },
+    { name: "visual", label: "Visual disturbances (0-7)", type: "select", options: scale(7) },
+    { name: "headache", label: "Headache / fullness in head (0-7)", type: "select", options: scale(7) },
+    { name: "orientation", label: "Orientation / clouding of sensorium (0-4)", type: "select", options: scale(4) },
+  ],
+  interpret: [
+    { test: (t) => t < 8, text: "<8: absent / minimal withdrawal." },
+    { test: (t) => t <= 15, text: "8-15: mild-to-moderate withdrawal — symptom-triggered treatment per protocol." },
+    { test: (t) => t >= 16, text: "≥16: severe — high risk of seizures / delirium tremens; treat and escalate." },
+  ],
+  notice: "Clinical check: CIWA-Ar assumes the patient can communicate; use a protocol and reassess frequently. Not valid in delirium from other causes.",
+};
+
+SCORES.childpugh = {
+  id: "childpugh",
+  title: "Child-Pugh",
+  description: "Cirrhosis severity (5-15 → Class A/B/C).",
+  maxLabel: "15",
+  tags: ["child-pugh", "childpugh", "cirrhosis", "liver", "hepatology"],
+  criteria: [
+    { name: "bilirubin", label: "Bilirubin", type: "select", options: [
+        { label: "< 2 mg/dL (< 34 µmol/L)", value: "1", points: 1 },
+        { label: "2–3 mg/dL (34–51 µmol/L)", value: "2", points: 2 },
+        { label: "> 3 mg/dL (> 51 µmol/L)", value: "3", points: 3 },
+      ] },
+    { name: "albumin", label: "Albumin", type: "select", options: [
+        { label: "> 3.5 g/dL", value: "1", points: 1 },
+        { label: "2.8–3.5 g/dL", value: "2", points: 2 },
+        { label: "< 2.8 g/dL", value: "3", points: 3 },
+      ] },
+    { name: "inr", label: "INR", type: "select", options: [
+        { label: "< 1.7", value: "1", points: 1 },
+        { label: "1.7–2.3", value: "2", points: 2 },
+        { label: "> 2.3", value: "3", points: 3 },
+      ] },
+    { name: "ascites", label: "Ascites", type: "select", options: [
+        { label: "None", value: "1", points: 1 },
+        { label: "Mild–moderate (diuretic-responsive)", value: "2", points: 2 },
+        { label: "Severe (refractory)", value: "3", points: 3 },
+      ] },
+    { name: "enceph", label: "Encephalopathy", type: "select", options: [
+        { label: "None", value: "1", points: 1 },
+        { label: "Grade 1–2", value: "2", points: 2 },
+        { label: "Grade 3–4", value: "3", points: 3 },
+      ] },
+  ],
+  interpret: [
+    { test: (t) => t <= 6, text: "5-6: Class A — well-compensated." },
+    { test: (t) => t <= 9, text: "7-9: Class B — significant functional compromise." },
+    { test: (t) => t >= 10, text: "10-15: Class C — decompensated." },
+  ],
+  notice: "Clinical check: bilirubin/albumin thresholds assume conventional units; MELD-Na is often preferred for prognosis and transplant listing.",
+};
+
+SCORES.wellspe = {
+  id: "wellspe",
+  title: "Wells Score (PE)",
+  description: "Pretest probability of pulmonary embolism.",
+  maxLabel: "12.5",
+  tags: ["wells", "pe", "pulmonary embolism", "vte", "d-dimer", "ctpa"],
+  criteria: [
+    { name: "dvt", label: "Clinical signs/symptoms of DVT", type: "select", options: YN(3) },
+    { name: "peLikely", label: "PE is the #1 diagnosis, or equally likely", type: "select", options: YN(3) },
+    { name: "hr", label: "Heart rate > 100/min", type: "select", options: YN(1.5) },
+    { name: "immob", label: "Immobilisation ≥ 3 days or surgery in past 4 weeks", type: "select", options: YN(1.5) },
+    { name: "priorVte", label: "Previous DVT / PE", type: "select", options: YN(1.5) },
+    { name: "hemoptysis", label: "Haemoptysis", type: "select", options: YN(1) },
+    { name: "malignancy", label: "Malignancy (treated within 6 months or palliative)", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t <= 4, text: "≤4: PE unlikely — a negative D-dimer can rule out PE (two-tier model)." },
+    { test: (t) => t > 4, text: ">4: PE likely — proceed to CTPA (or V/Q). (3-tier: <2 low, 2-6 moderate, >6 high.)" },
+  ],
+  notice: "Clinical check: pair with PERC / D-dimer per your pathway; pregnancy and renal function modify imaging choice.",
+};
+
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
 function calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUnit }) {
   const scr = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
@@ -718,6 +1099,21 @@ function calcCorrectedSodium({ sodium, glucose }) {
     corrected16: sodium + 1.6 * excess,
     corrected24: sodium + 2.4 * excess,
   };
+}
+
+// QTc: Bazett = QT/sqrt(RR), Fridericia = QT/cbrt(RR); RR (s) = 60 / HR.
+function calcQtc({ qtMs, hrBpm }) {
+  const rr = 60 / hrBpm;
+  return { bazett: qtMs / Math.sqrt(rr), fridericia: qtMs / Math.cbrt(rr) };
+}
+
+// Devine ideal body weight (kg) from height; adjusted body weight uses actual weight.
+function calcBodyWeight({ heightCm, sex, weightKg }) {
+  const heightIn = heightCm / 2.54;
+  const base = sex === "female" ? 45.5 : 50;
+  const ibw = base + 2.3 * (heightIn - 60);
+  const adjusted = positive(weightKg) ? ibw + 0.4 * (weightKg - ibw) : null;
+  return { ibw, adjusted };
 }
 
 function doseToMcgMin(value, unit, weightKg) {
@@ -861,6 +1257,9 @@ function renderCalculator() {
   if (state.activeTool === "anion-gap") renderAnionGap();
   if (state.activeTool === "corrected-calcium") renderCorrectedCalcium();
   if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
+  if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
+  if (state.activeTool === "qtc") renderQtc();
+  if (state.activeTool === "body-weight") renderBodyWeight();
   if (state.activeTool === "reference") renderReference();
 }
 
@@ -1606,6 +2005,103 @@ function showCorrectedSodiumInfo({ corrected16, corrected24, glucose }) {
       }
     </div>
   `;
+}
+
+function renderQtc() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "QTc",
+    description: "Corrected QT interval. Shows both Bazett and Fridericia.",
+    body: `
+      <form id="qtcForm">
+        <div class="form-grid">
+          ${inputField({ name: "qtMs", label: "QT interval (ms)", value: s.qtMs ?? "", hint: "measured QT" })}
+          ${inputField({ name: "hrBpm", label: "Heart rate (bpm)", value: s.hrBpm ?? "", hint: "or 60000 / RR(ms)" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: Bazett over-corrects at high rates and under-corrects at low rates; Fridericia is steadier. Prolonged is roughly > 450 ms (men) / > 470 ms (women).",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#qtcForm");
+  bindLiveForm(form, () => {
+    const qtMs = numberValue(form, "qtMs");
+    const hrBpm = numberValue(form, "hrBpm");
+    if (!positive(qtMs) || !positive(hrBpm)) {
+      showPending("Enter QT interval (ms) and heart rate (bpm).");
+      return;
+    }
+    const { bazett, fridericia } = calcQtc({ qtMs, hrBpm });
+    saveSession({ qtMs, hrBpm });
+    document.querySelector("#resultArea").innerHTML = `
+      <div class="result-box">
+        <div class="result-label">Corrected QT</div>
+        <div class="info-grid">
+          <div><strong>Bazett (QTcB)</strong><span>${round(bazett, 0)} ms</span></div>
+          <div><strong>Fridericia (QTcF)</strong><span>${round(fridericia, 0)} ms</span></div>
+          <div><strong>Formula</strong><span>QTc = QT / RR^(1/2 or 1/3), RR = 60 / HR (s)</span></div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function renderBodyWeight() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Ideal / Adjusted Body Weight",
+    description: "Devine ideal body weight, and adjusted body weight when actual weight is entered.",
+    body: `
+      <form id="bodyWeightForm">
+        <div class="form-grid">
+          ${inputField({ name: "heightCm", label: "Height (cm)", value: s.heightCm ?? "", hint: "Devine is validated for ≥ 152 cm" })}
+          ${inputField({
+            name: "sex",
+            label: "Sex",
+            value: s.sex ?? "male",
+            options: [
+              { value: "male", label: "Male" },
+              { value: "female", label: "Female" },
+            ],
+          })}
+          ${inputField({ name: "weightKg", label: "Actual weight (kg)", value: s.weightKg ?? "", hint: "for adjusted body weight" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: IBW/AdjBW choice depends on the drug — confirm which weight a given dose uses.",
+  });
+
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#bodyWeightForm");
+  bindLiveForm(form, () => {
+    const heightCm = numberValue(form, "heightCm");
+    const weightKg = numberValue(form, "weightKg");
+    const sex = form.elements.sex.value;
+    if (!positive(heightCm)) {
+      showPending("Enter height (cm). Add actual weight for adjusted body weight.");
+      return;
+    }
+    const { ibw, adjusted } = calcBodyWeight({ heightCm, sex, weightKg });
+    const patch = { heightCm, sex };
+    if (positive(weightKg)) patch.weightKg = weightKg;
+    saveSession(patch);
+    if (ibw <= 0) {
+      showPending("Height is below the usable range for the Devine formula (≥ 152 cm).");
+      return;
+    }
+    const caution = heightCm < 152 ? `<p class="result-detail">Below Devine's validated range (≥ 152 cm) — interpret with caution.</p>` : "";
+    document.querySelector("#resultArea").innerHTML = `
+      <div class="result-box">
+        <div class="result-label">Body weight</div>
+        <div class="info-grid">
+          <div><strong>Ideal (Devine)</strong><span>${round(ibw, 1)} kg</span></div>
+          <div><strong>Adjusted</strong><span>${adjusted == null ? "Enter actual weight" : `${round(adjusted, 1)} kg`}</span></div>
+        </div>
+        ${caution}
+      </div>
+    `;
+  });
 }
 
 function showInfusionInfo({ drug, concentrationMgMl, doseMcgMin, rateMlHr, doseUnit, rateUnit, missing }) {

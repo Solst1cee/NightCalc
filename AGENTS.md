@@ -23,7 +23,7 @@ Intentionally simple:
 ## Before You Start
 
 1. Read `MEMORY.md` — current tool status, known bugs, decisions made, what's next
-2. Check `index.html` for current cache version string (e.g. `?v=59`)
+2. Check `index.html` for current cache version string (e.g. `?v=61`)
 3. Never assume tool status from this file — always check `MEMORY.md`
 
 ---
@@ -83,8 +83,8 @@ Open: `http://127.0.0.1:4173/`
 ## Versioning Rule
 
 When changing any cached asset (`app.js`, `styles.css`, icons, `service-worker.js`):
-1. Bump query version strings in `index.html` (e.g. `?v=59` → `?v=60`)
-2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `nightcalc-v59` → `nightcalc-v60`)
+1. Bump query version strings in `index.html` (e.g. `?v=63` → `?v=64`)
+2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `nightcalc-v63` → `nightcalc-v64`)
 
 Both must be updated together. Check current version in `index.html` before bumping.
 
@@ -231,6 +231,13 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 - **Pixel logo mark:** both marks are inlined in `index.html` (`.brand-mark-default` and `.brand-mark-pixel`); CSS toggles `display` per `[data-skin]`. The pixel mark uses CSS vars (`--nc-accent`, `--nc-keyglyph`, `--ink`) so it **must** stay inline DOM — an `<img>` can't read them. ⚠️ It's a hand-laid 16×16 grid of `<rect>`s; if you regenerate it, diff the visible cell-set against `brand/.../pixel-mark.svg` (the source overlaps accent→glyph→moon layers; a naive flatten drops/adds glyph cells).
 - **Decorative exception:** the "no decorative UI" rule still holds for the default skin; the Pixel skin is a deliberate, opt-in, off-by-default exception.
 - Add a new skin: append to `SKINS` in `app.js`, add a `.skin-option` button in `index.html`, and add a gated `:root[data-skin="..."]` block in `styles.css`.
+
+### Scoring engine (point scores)
+- Point-scores are config objects in the `SCORES` registry, consumed by a pure `calcScore(config, values)` and a generic `renderScore(config)` (dispatched automatically via `if (SCORES[id]) renderScore(...)`).
+- Criterion types: `select` (each option carries `points`) and `numericBand` (a numeric input mapped to points via ordered `bands`, each `{ le, points }`, the last entry — no `le` — being the catch-all above the highest threshold). Helpers: `YN(points)` for Yes/No criteria, `scale(n)` for 0..n option lists.
+- Add a score = a `SCORES` entry + a `tools[]` entry (before `reference`); no render code needed.
+- Current scores: qSOFA, CURB-65, CHA₂DS₂-VASc, GCS, NEWS2, CIWA-Ar, Child-Pugh, Wells (PE).
+- Pure formulas added this wave: QTc (Bazett + Fridericia), Ideal/Adjusted Body Weight (Devine).
 
 ---
 
