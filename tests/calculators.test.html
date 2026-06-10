@@ -99,6 +99,12 @@
           assertClose("CHA2DS2-VASc age75+stroke", calcScore(SCORES.chadsvasc, { age: "2", sex: "m", chf: "n", htn: "n", dm: "n", stroke: "y", vasc: "n" }), 4, 1e-9);
           assertClose("GCS E2V4M5 = 11", calcScore(SCORES.gcs, { eye: "2", verbal: "4", motor: "5" }), 11, 1e-9);
           assertClose("GCS best = 15", calcScore(SCORES.gcs, { eye: "4", verbal: "5", motor: "6" }), 15, 1e-9);
+
+          // --- NEWS2 (numericBand) + CIWA-Ar ---
+          // RR22(2)+SpO2 93(2)+suppO2 y(2)+temp38.5(1)+SBP100(2)+HR48(1)+Alert(0) = 10
+          assertClose("NEWS2 worked example = 10", calcScore(SCORES.news2, { rr: 22, spo2: 93, suppO2: "y", temp: 38.5, sbp: 100, hr: 48, consciousness: "a" }), 10, 1e-9);
+          assertClose("NEWS2 all-normal = 0", calcScore(SCORES.news2, { rr: 16, spo2: 98, suppO2: "n", temp: 37, sbp: 120, hr: 70, consciousness: "a" }), 0, 1e-9);
+          assertClose("CIWA-Ar 4+3+2 = 9", calcScore(SCORES.ciwa, { nausea: "4", tremor: "3", sweats: "0", anxiety: "0", agitation: "0", tactile: "0", auditory: "0", visual: "0", headache: "0", orientation: "2" }), 9, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

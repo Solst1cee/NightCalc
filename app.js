@@ -148,6 +148,20 @@ const tools = [
     tags: ["gcs", "glasgow", "coma", "consciousness", "neuro"],
   },
   {
+    id: "news2",
+    title: "NEWS2",
+    description: "Early warning score from vital signs.",
+    status: "ready",
+    tags: ["news2", "news", "early warning", "deterioration", "vital signs"],
+  },
+  {
+    id: "ciwa",
+    title: "CIWA-Ar",
+    description: "Alcohol withdrawal severity (0-67).",
+    status: "ready",
+    tags: ["ciwa", "ciwa-ar", "alcohol", "withdrawal", "detox"],
+  },
+  {
     id: "reference",
     title: "Reference",
     description: "Review draft infusion drug concentrations, limits, diluents, and notes.",
@@ -782,6 +796,55 @@ SCORES.gcs = {
     { test: (t) => t <= 8, text: "≤8: severe — consider airway protection." },
   ],
   notice: "Clinical check: report the component breakdown (E/V/M), not just the total; intubation/sedation limit the verbal score.",
+};
+
+SCORES.news2 = {
+  id: "news2",
+  title: "NEWS2",
+  description: "National Early Warning Score 2 — ward deterioration.",
+  maxLabel: "20",
+  tags: ["news2", "news", "early warning", "deterioration", "sepsis", "vital signs"],
+  criteria: [
+    { name: "rr", label: "Respiratory rate (/min)", type: "numericBand", hint: "breaths per minute", bands: [{ le: 8, points: 3 }, { le: 11, points: 1 }, { le: 20, points: 0 }, { le: 24, points: 2 }, { points: 3 }] },
+    { name: "spo2", label: "SpO₂ (%) — Scale 1", type: "numericBand", hint: "oxygen saturation", bands: [{ le: 91, points: 3 }, { le: 93, points: 2 }, { le: 95, points: 1 }, { points: 0 }] },
+    { name: "suppO2", label: "On supplemental oxygen", type: "select", options: [{ label: "No (air)", value: "n", points: 0 }, { label: "Yes", value: "y", points: 2 }] },
+    { name: "temp", label: "Temperature (°C)", type: "numericBand", hint: "degrees C", bands: [{ le: 35.0, points: 3 }, { le: 36.0, points: 1 }, { le: 38.0, points: 0 }, { le: 39.0, points: 1 }, { points: 2 }] },
+    { name: "sbp", label: "Systolic BP (mmHg)", type: "numericBand", hint: "mmHg", bands: [{ le: 90, points: 3 }, { le: 100, points: 2 }, { le: 110, points: 1 }, { le: 219, points: 0 }, { points: 3 }] },
+    { name: "hr", label: "Heart rate (/min)", type: "numericBand", hint: "beats per minute", bands: [{ le: 40, points: 3 }, { le: 50, points: 1 }, { le: 90, points: 0 }, { le: 110, points: 1 }, { le: 130, points: 2 }, { points: 3 }] },
+    { name: "consciousness", label: "Consciousness (ACVPU)", type: "select", options: [{ label: "Alert", value: "a", points: 0 }, { label: "Confusion / V / P / U", value: "x", points: 3 }] },
+  ],
+  interpret: [
+    { test: (t) => t <= 4, text: "0-4: low — routine monitoring (escalate if any single parameter scores 3)." },
+    { test: (t) => t <= 6, text: "5-6: medium — urgent review by a clinician competent in acute illness." },
+    { test: (t) => t >= 7, text: "≥7: high — emergency assessment, usually critical-care involvement." },
+  ],
+  notice: "Clinical check: uses SpO₂ Scale 1 (not the hypercapnic Scale 2). Any single parameter scoring 3 warrants escalation even if the total is low.",
+};
+
+SCORES.ciwa = {
+  id: "ciwa",
+  title: "CIWA-Ar",
+  description: "Alcohol withdrawal severity (0-67).",
+  maxLabel: "67",
+  tags: ["ciwa", "ciwa-ar", "alcohol", "withdrawal", "detox", "neuro"],
+  criteria: [
+    { name: "nausea", label: "Nausea / vomiting (0-7)", type: "select", options: scale(7) },
+    { name: "tremor", label: "Tremor (0-7)", type: "select", options: scale(7) },
+    { name: "sweats", label: "Paroxysmal sweats (0-7)", type: "select", options: scale(7) },
+    { name: "anxiety", label: "Anxiety (0-7)", type: "select", options: scale(7) },
+    { name: "agitation", label: "Agitation (0-7)", type: "select", options: scale(7) },
+    { name: "tactile", label: "Tactile disturbances (0-7)", type: "select", options: scale(7) },
+    { name: "auditory", label: "Auditory disturbances (0-7)", type: "select", options: scale(7) },
+    { name: "visual", label: "Visual disturbances (0-7)", type: "select", options: scale(7) },
+    { name: "headache", label: "Headache / fullness in head (0-7)", type: "select", options: scale(7) },
+    { name: "orientation", label: "Orientation / clouding of sensorium (0-4)", type: "select", options: scale(4) },
+  ],
+  interpret: [
+    { test: (t) => t < 8, text: "<8: absent / minimal withdrawal." },
+    { test: (t) => t <= 15, text: "8-15: mild-to-moderate withdrawal — symptom-triggered treatment per protocol." },
+    { test: (t) => t >= 16, text: "≥16: severe — high risk of seizures / delirium tremens; treat and escalate." },
+  ],
+  notice: "Clinical check: CIWA-Ar assumes the patient can communicate; use a protocol and reassess frequently. Not valid in delirium from other causes.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
