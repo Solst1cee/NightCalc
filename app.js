@@ -427,6 +427,7 @@ const els = {
   calculator: document.querySelector("#calculator"),
   sessionChip: document.querySelector("#sessionChip"),
   themeToggleButton: document.querySelector("#themeToggleButton"),
+  topbar: document.querySelector(".topbar"),
   accentPicker: document.querySelector("#accentPicker"),
   skinPicker: document.querySelector("#skinPicker"),
   installBanner: document.querySelector("#installBanner"),
@@ -477,6 +478,24 @@ function toggleTheme() {
   const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_KEY, nextTheme);
   applyTheme(nextTheme);
+  repaintTopbar();
+}
+
+// iOS Safari keeps the sticky topbar on its own compositing layer and does not
+// re-rasterize it when a theme switch flips the inherited CSS custom properties,
+// so it keeps showing the previous color until a scroll forces a recomposite.
+// Writing the (already-correct) computed color straight onto the element is a
+// direct paint change that forces an immediate re-raster; we drop the inline
+// override on the next frame so the stylesheet stays the source of truth.
+// (A transform/opacity nudge is not enough — those are compositor-only and just
+// re-show the stale bitmap.)
+function repaintTopbar() {
+  const topbar = els.topbar;
+  if (!topbar) return;
+  topbar.style.backgroundColor = getComputedStyle(topbar).backgroundColor;
+  requestAnimationFrame(() => {
+    topbar.style.backgroundColor = "";
+  });
 }
 
 function applyAccent(accent) {
