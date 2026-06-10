@@ -7,11 +7,20 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-10
-- What was done: **iOS "Add to Home Screen" install guide.** Added a dismissible bottom banner + a persistent ⋯-menu "Add to Home Screen" entry, both opening a shared modal bottom sheet with the current iOS 26 steps (••• → Share → Add to Home Screen → keep "Open as Web App" on → Add). Entirely gated behind `isIosSafari()` + not-`isStandalone()`, so other platforms render nothing. Banner dismissal persisted in `localStorage` key `nightcalc.a2hs.v1`; the ⋯-menu entry stays available as long as the guide is eligible. Sheet has a focus trap, Esc-to-close, scrim dismiss, and focus-restore. All three components (banner, sheet, menu row) compose with theme/accent/Pixel-skin. Pixel-skin override appended to `styles.css`: square corners, 3px borders, hard `var(--shadow)`, square step badges, 2px menu-item border. Ships **v60 / nightcalc-v60**.
+- What was done: **iOS "Add to Home Screen" install guide.** Added a dismissible bottom banner + a persistent ⋯-menu "Add to Home Screen" entry, both opening a shared modal bottom sheet with the current iOS 26 steps (••• → Share → Add to Home Screen → keep "Open as Web App" on → Add). Entirely gated behind `isIosSafari()` + not-`isStandalone()`, so other platforms render nothing. Banner dismissal persisted in `localStorage` key `nightcalc.a2hs.v1`; the ⋯-menu entry stays available as long as the guide is eligible. Sheet has a focus trap, Esc-to-close, scrim dismiss, and focus-restore. All three components (banner, sheet, menu row) compose with theme/accent/Pixel-skin. Pixel-skin override appended to `styles.css`: square corners, 3px borders, hard `var(--shadow)`, square step badges, 2px menu-item border. Merged the latest `main` (P1 calculators) and bumped to **v61 / nightcalc-v61** (`main` was already at v60).
 - Files changed: `index.html`, `styles.css`, `app.js`, `service-worker.js`, `MEMORY.md`, `AGENTS.md`
 
-### Earlier same day — Tile-less logo pass
-- Swapped the top-bar mark for the tile-less version (`brand/themeable/logo-notile.svg`) inlined in `index.html`; moon crescent cut with SVG `mask`; `--nc-moon` theme-adaptive; tile-less `prefers-color-scheme`-aware `icons/favicon.svg`; iOS home-screen icon `icons/apple-touch-icon.png` (180×180). Bumped `?v=58` / `nightcalc-v58`.
+### Earlier same day — P1 renal/electrolyte calculator slice (PR #11)
+- What was done: **P1 renal/electrolyte calculator slice** (PR #11). Renamed Creatinine Clearance → **Renal Function** (Cockcroft-Gault CrCl + **CKD-EPI 2021 eGFR**); added pure-formula **Anion Gap** (albumin-corrected interpretation), **Corrected Calcium**, and **Corrected Sodium** (1.6 & 2.4 factors). Dependency-free browser test harness `tests/calculators.test.html` (14 assertions, all passing headlessly). Built from the spec + plan in `docs/superpowers/`.
+- Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html` (new), `MEMORY.md`, `AGENTS.md`, `docs/superpowers/` (spec + plan).
+
+### Earlier same day — Pixel skin + skin picker (PR #9/#10)
+- What was done: **Pixel skin + skin picker** (PR #9, merged → `main` as `8342208`). Selectable retro/8-bit **Pixel** skin via an orthogonal `data-skin="default" | "pixel"` axis on `<html>`, composing with theme/accent. New **Skin: Default | Pixel** control in the Info menu; persisted to `localStorage` (`nightcalc.skin.v1`). All pixel CSS gated behind `:root[data-skin="pixel"]` — reuses existing tokens; Silkscreen via Google Fonts, 0 radius, 3px borders, hard shadows, dark-only CRT scanlines. Bumped `nightcalc-v59`.
+- Gotcha: the pixel mark is a hand-laid 16×16 `<rect>` grid; the design source overlaps accent→glyph→moon layers, and a naive flatten dropped/added glyph cells (165/165 visible cells must match the source SVG).
+- Caveat: Silkscreen loads from Google Fonts (not in the service-worker cache), so the PWA falls back to `ui-monospace` **offline only**. Self-host later if full offline parity is wanted.
+
+### Earlier same day — Tile-less logo pass (PR #8)
+- Swapped the top-bar mark for the tile-less version (`brand/themeable/logo-notile.svg`) inlined in `index.html`; moon crescent cut with an SVG `mask`. Made `--nc-moon` theme-adaptive (dark on light topbar, light on dark). Replaced `icons/favicon.svg` with a tile-less `prefers-color-scheme`-aware version; added iOS home-screen icon `icons/apple-touch-icon.png` (180×180, full-bleed navy) + `.svg` source. Removed unused `--nc-tile`. PR #8 → `main`. (`manifest.webmanifest` PWA icon stays the tiled `icons/icon.svg` for Android maskable.)
 
 ### Earlier same day — MedCalc → NightCalc rebrand
 - Integrated `nightcalc-brand-kit.zip` into `brand/`; inline themeable header logo + `Night`/`Calc` wordmark; night palette (`#0B1220`/`#101A30`); selectable accent (blue default, maroon) via `data-accent` + persistence and one-time migration of legacy `medcalc.*` storage keys; fixed the previously-missing `icons/icon.svg` (had been breaking the service-worker install); favicon + manifest + service worker (`nightcalc-v57`) + all docs.
@@ -22,7 +31,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v60` / `nightcalc-v60`
+Last known: `v61` / `nightcalc-v61`
 
 ---
 
@@ -30,9 +39,12 @@ Last known: `v60` / `nightcalc-v60`
 
 | Tool | Status | Notes |
 |---|---|---|
-| Creatinine Clearance | ✅ Ready | Cockcroft-Gault, reusable session inputs |
+| Renal Function | ✅ Ready | Cockcroft-Gault CrCl + CKD-EPI 2021 eGFR (renamed from Creatinine Clearance) |
 | IV / Inotrope Infusion | ✅ Ready | Two-way dose/rate calc, draft drug data, warnings |
 | Fractional Excretion | ✅ Ready | FENa, FEUrea, FEK, FEMg, FEP, FECa |
+| Anion Gap | ✅ Ready | Pure formula; optional albumin correction |
+| Corrected Calcium | ✅ Ready | Pure formula (mg/dL, g/dL) |
+| Corrected Sodium | ✅ Ready | Pure formula; 1.6 and 2.4 factors |
 | Renal Dose Adjustment | 🔴 Down | Workflow ready, drug data is demo-only — do not promote to Ready without user confirmation |
 | Reference | 🔨 In progress | Becoming master maintenance view for all calculator data |
 
@@ -62,15 +74,19 @@ Reference page — build out as master data view covering all categories (infusi
 | Search updates list only, not full page re-render | Avoid cursor jump/blink UX bug |
 | Rebranded to NightCalc; blue default accent, maroon selectable | Night-shift identity; blue is the lower-risk accent next to clinical red/amber warnings |
 | Brand accent is chrome-only (never colors values) | Brand kit's binding "alert-red rule" — keep brand and warnings from colliding |
+| Pixel skin is a `data-skin` axis orthogonal to theme/accent, opt-in and off by default | Composes with all theme/accent combos; reuses tokens (no new colors); keeps the default skin untouched and clinical |
+| Pixel "full retro" puts Silkscreen on result values too | User's chosen scope; legible but denser — a chrome-only escape hatch is documented if revisited |
 
 ---
 
 ## Next Up
 
-1. Complete Reference page as master data view
-2. Add all data categories to Reference (not just infusion drugs)
-3. Add verified drug data to Renal Dose Adjustment → promote status to Ready
-4. Add antibiotic dosing category to data architecture
+1. Remaining P1 calculators (QTc, CHA2DS2-VASc, CURB-65, Wells-PE, Child-Pugh, GCS, CIWA-Ar, NEWS2, qSOFA, IBW/adjusted body weight) — see `docs/superpowers/specs/2026-06-10-clinical-calculator-backlog-design.md`
+2. SI unit toggles for the new electrolyte calculators (Ca / glucose / albumin)
+3. Complete Reference page as master data view
+4. Add all data categories to Reference (not just infusion drugs)
+5. Add verified drug data to Renal Dose Adjustment → promote status to Ready
+6. Add antibiotic dosing category to data architecture
 
 ---
 

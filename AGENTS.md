@@ -23,7 +23,7 @@ Intentionally simple:
 ## Before You Start
 
 1. Read `MEMORY.md` — current tool status, known bugs, decisions made, what's next
-2. Check `index.html` for current cache version string (e.g. `?v=57`)
+2. Check `index.html` for current cache version string (e.g. `?v=59`)
 3. Never assume tool status from this file — always check `MEMORY.md`
 
 ---
@@ -32,13 +32,13 @@ Intentionally simple:
 
 | | |
 |---|---|
-| **Local workspace** | `C:\Users\User\Project\MedCalc` |
+| **Local workspace** | `C:\Users\User\Project\NightCalc` |
 | **GitHub** | `https://github.com/Solst1cee/NightCalc` |
 | **GitHub Pages** | `https://solst1cee.github.io/NightCalc/` |
 | **Remote** | `origin` |
 | **Main branch** | `main` |
 
-> **Note:** the GitHub repo was renamed MedCalc → NightCalc. Only the on-disk workspace folder still uses `MedCalc` (left as-is to avoid breaking the open workspace); rename it locally if desired.
+> **Note:** the project was renamed MedCalc → NightCalc (GitHub repo and the on-disk workspace folder). A legacy MedCalc path may still appear in old worktrees/links; the canonical workspace is now `C:\Users\User\Project\NightCalc`.
 
 Always run `git status --short` before committing or pushing — there may be local edits ahead of the last push.
 
@@ -83,8 +83,8 @@ Open: `http://127.0.0.1:4173/`
 ## Versioning Rule
 
 When changing any cached asset (`app.js`, `styles.css`, icons, `service-worker.js`):
-1. Bump query version strings in `index.html` (e.g. `?v=57` → `?v=58`)
-2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `nightcalc-v57` → `nightcalc-v58`)
+1. Bump query version strings in `index.html` (e.g. `?v=59` → `?v=60`)
+2. Bump `CACHE_NAME` in `service-worker.js` (e.g. `nightcalc-v59` → `nightcalc-v60`)
 
 Both must be updated together. Check current version in `index.html` before bumping.
 
@@ -115,11 +115,16 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 |---|---|---|
 | `age` | number | years |
 | `sex` | string | `"male"` \| `"female"` |
-| `weight` | number | kg |
+| `weightKg` | number | kg |
 | `serumCreatinine` | number | numeric value only |
-| `creatinineUnit` | string | `"mg/dL"` \| `"µmol/L"` |
-| `calculatedCrCl` | number | mL/min |
-| `infusionConcentrationChoices` | object | per-drug preset selections |
+| `serumCreatinineUnit` | string | `"mgDl"` \| `"umolL"` |
+| `crcl` | number | mL/min — Cockcroft-Gault; read by Renal Dose Adjustment |
+| `egfr` | number | mL/min/1.73m² — CKD-EPI 2021 |
+| `sodium`, `chloride`, `bicarbonate` | number | mEq/L — anion gap / corrected sodium |
+| `albumin` | number | g/dL — anion gap, corrected calcium |
+| `calcium` | number | mg/dL — corrected calcium |
+| `glucose` | number | mg/dL — corrected sodium |
+| (infusion / FE) | — | those tools persist their own keys (e.g. `infusionDrug`, `doseValue`, `rateValue`, `feType`) |
 
 **Never add patient identifiers (name, HN, ID, DOB) to session or any storage.**
 
@@ -156,10 +161,20 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 
 ## Feature Specifications
 
-### Creatinine Clearance
-- Formula: Cockcroft-Gault
-- Stores age, sex, weight, creatinine to session on change
-- Result renders automatically — no button
+### Renal Function (was Creatinine Clearance)
+- Shows both Cockcroft-Gault **CrCl** (mL/min, drug dosing — written to `state.session.crcl`, read by Renal Dose Adjustment) and race-free **CKD-EPI 2021 eGFR** (mL/min/1.73m², CKD staging)
+- Inputs: age, sex, weight (CrCl only), creatinine (+unit); eGFR computes without weight
+- Result renders automatically — no button; never interchange CrCl and eGFR
+
+### Anion Gap
+- Formula: AG = Na - (Cl + HCO3); optional albumin correction adds 2.5 mEq/L per 1 g/dL albumin below 4
+- Inputs in mEq/L; albumin g/dL (optional). Pure formula.
+
+### Corrected Calcium
+- Formula: measured Ca + 0.8 x (4 - albumin); calcium mg/dL, albumin g/dL. Pure formula.
+
+### Corrected Sodium
+- Formula: Na + factor x (glucose - 100) / 100; shows both 1.6 (classic) and 2.4 (severe hyperglycemia) factors; glucose mg/dL. Pure formula.
 
 ### IV / Inotrope Infusion
 - Drug presets + custom concentration (drug amount ÷ final volume)
@@ -209,6 +224,14 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
   - The inline header logo is the brand's **tile-less** themeable mark; the keycaps follow `--nc-accent: var(--accent)` (recolors with the accent) and the moon uses `--nc-moon`, which flips with the theme (dark on the light topbar, light on the dark topbar) so the mark reads without a tile. The browser-tab `favicon.svg` and iOS `apple-touch-icon.png` are separate static assets in `icons/` (page CSS variables don't reach them, so their colors are baked in)
   - **Alert-red rule (binding):** the accent colors chrome only (logo, headers, buttons, links) — never a clinical result or warning value. Warnings keep their own red/amber. See `brand/BRAND.md`
 
+### Skin (visual style)
+- A third axis **orthogonal** to theme/accent: `data-skin="default" | "pixel"` on `<html>` (absence = default). Selectable from the Info menu (skin picker above the accent swatches); saved to `localStorage` (`nightcalc.skin.v1`), applied on load via `applySkin`.
+- Wiring mirrors the accent picker exactly: `SKINS` list + `DEFAULT_SKIN` in `app.js`, `applySkin`/`setSkin`, `#skinPicker` click delegate.
+- **All pixel styling is gated behind `:root[data-skin="pixel"]`** in `styles.css`, so it composes with every theme/accent combo and never affects the default skin. It introduces **no new colors** — it reuses the existing tokens (`--bg`, `--panel`, `--ink`, `--accent`, `--shadow`, …) and overrides only type/shape/shadow (Silkscreen font, 0 radius, 3px borders, hard no-blur shadows, dark-only CRT scanlines).
+- **Pixel logo mark:** both marks are inlined in `index.html` (`.brand-mark-default` and `.brand-mark-pixel`); CSS toggles `display` per `[data-skin]`. The pixel mark uses CSS vars (`--nc-accent`, `--nc-keyglyph`, `--ink`) so it **must** stay inline DOM — an `<img>` can't read them. ⚠️ It's a hand-laid 16×16 grid of `<rect>`s; if you regenerate it, diff the visible cell-set against `brand/.../pixel-mark.svg` (the source overlaps accent→glyph→moon layers; a naive flatten drops/adds glyph cells).
+- **Decorative exception:** the "no decorative UI" rule still holds for the default skin; the Pixel skin is a deliberate, opt-in, off-by-default exception.
+- Add a new skin: append to `SKINS` in `app.js`, add a `.skin-option` button in `index.html`, and add a gated `:root[data-skin="..."]` block in `styles.css`.
+
 ---
 
 ## Never Do
@@ -234,6 +257,7 @@ After any frontend change:
 4. Test at ~390px width (iPhone)
 5. Test at ~1280px width (desktop)
 6. If cached assets changed → verify version bump in index.html + service-worker.js
+7. Pure-formula calculators: open tests/calculators.test.html → expect all PASS (tab title shows PASS n/n)
 ```
 
 ---
