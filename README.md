@@ -2,9 +2,7 @@
 
 NightCalc is a simple, lightweight medical calculator app for the physician working at night — a calm bedside companion that quickly performs common clinical calculations while the ward sleeps. It is designed to be fast, easy to use, and accessible from any device, with a dark "night" theme and selectable brand accent (blue or maroon).
 
-Live demo: [solst1cee.github.io/MedCalc](https://solst1cee.github.io/MedCalc/)
-
-> Note: the GitHub repo and Pages URL still use the old `MedCalc` path. After renaming the repository to `NightCalc` on GitHub, update this link to `solst1cee.github.io/NightCalc`.
+Live demo: [solst1cee.github.io/NightCalc](https://solst1cee.github.io/NightCalc/)
 
 ## Run Locally
 

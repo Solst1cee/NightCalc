@@ -33,12 +33,12 @@ Intentionally simple:
 | | |
 |---|---|
 | **Local workspace** | `C:\Users\User\Project\MedCalc` |
-| **GitHub** | `https://github.com/Solst1cee/MedCalc` |
-| **GitHub Pages** | `https://solst1cee.github.io/MedCalc/` |
+| **GitHub** | `https://github.com/Solst1cee/NightCalc` |
+| **GitHub Pages** | `https://solst1cee.github.io/NightCalc/` |
 | **Remote** | `origin` |
 | **Main branch** | `main` |
 
-> **Pending rename:** the app was rebranded MedCalc → NightCalc. The GitHub repo, Pages URL, and on-disk folder still use `MedCalc`. After renaming the repo on GitHub (and optionally the local folder), update the GitHub/Pages URLs above.
+> **Note:** the GitHub repo was renamed MedCalc → NightCalc. Only the on-disk workspace folder still uses `MedCalc` (left as-is to avoid breaking the open workspace); rename it locally if desired.
 
 Always run `git status --short` before committing or pushing — there may be local edits ahead of the last push.
 

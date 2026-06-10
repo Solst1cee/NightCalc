@@ -9,7 +9,7 @@ Update this file at the end of every session. This is the living record of proje
 - Date: 2026-06-10
 - What was done: Rebranded MedCalc → **NightCalc**. Integrated `nightcalc-brand-kit.zip` into `brand/`; added inline themeable header logo + `Night`/`Calc` wordmark; night-themed dark palette (`#0B1220`/`#101A30`); selectable brand accent (blue default, maroon) with `data-accent` + persistence and one-time migration of legacy `medcalc.*` storage keys; fixed the previously-missing `icons/icon.svg` (which had been breaking the service-worker install); favicon added. Updated manifest, service worker (`nightcalc-v57`), and all docs.
 - Files changed: `index.html`, `styles.css`, `app.js`, `manifest.webmanifest`, `service-worker.js`, `README.md`, `AGENTS.md`, `MEMORY.md`, `brand/` (new), `icons/icon.svg` + `icons/favicon.svg` (new)
-- Pending (outside repo): rename the GitHub repo + Pages URL (and optionally the on-disk folder) from `MedCalc` to `NightCalc`.
+- GitHub repo renamed MedCalc → NightCalc (remote URL updated to `Solst1cee/NightCalc`; docs URLs point to `solst1cee.github.io/NightCalc`). Only the on-disk folder still uses `MedCalc` (left as-is).
 
 ---
 
