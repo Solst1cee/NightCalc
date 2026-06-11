@@ -1,4 +1,4 @@
-const CACHE_NAME = "nightcalc-v67";
+const CACHE_NAME = "nightcalc-v70";
 const ASSETS = [
   "./",
   "./index.html",
@@ -14,6 +14,10 @@ const ASSETS = [
   "./icons/icons8-pickaxe-24.png",
   "./icons/icons8-check-24.svg",
   "./icons/icons8-lightning-bolt-24.png",
+  "./img/install/dock.jpg",
+  "./img/install/share-menu.jpg",
+  "./img/install/add-to-home.jpg",
+  "./img/install/open-web-app.jpg",
 ];
 
 self.addEventListener("install", (event) => {

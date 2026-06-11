@@ -7,13 +7,17 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-11
-- What was done: **P2 wave (v67): 15 calculators** — 7 formulas (MAP, osmolality+gap, Winter's, free-water deficit, Adrogué–Madias, A–a gradient, MELD-Na/3.0) + 8 scores (HEART, RCRI, Wells-DVT, PERC, ABCD², Glasgow-Blatchford, NIHSS, SOFA). 69 test assertions. Scoring engine unchanged. Bumped to **v67 / nightcalc-v67**. Also persisted MELD creatinine to shared session (`serumCreatinine` + `serumCreatinineUnit: "mgDl"`) so it flows to renal tools.
-- Files changed: `app.js`, `index.html`, `service-worker.js`, `AGENTS.md`, `MEMORY.md`
+- What was done: **P2 wave (v70): 15 calculators** — 7 formulas (MAP, osmolality+gap, Winter's, free-water deficit, Adrogué–Madias, A–a gradient, MELD-Na/3.0) + 8 scores (HEART, RCRI, Wells-DVT, PERC, ABCD², Glasgow-Blatchford, NIHSS, SOFA). 69 test assertions. Scoring engine unchanged. Bumped to **v70 / nightcalc-v70** (reconciled past main's v69). Also persisted MELD creatinine to shared session (`serumCreatinine` + `serumCreatinineUnit: "mgDl"`) so it flows to renal tools.
+- Files changed: `app.js`, `index.html`, `service-worker.js`, `AGENTS.md`, `MEMORY.md`, `tests/calculators.test.html`, `docs/superpowers/plans/` (plan).
 
-### Earlier same day — iOS install-guide visual pass
+### Earlier same day — iOS install-guide real screenshots (PR #22)
 
 - Date: 2026-06-11
-- What was done: **iOS install-guide visual pass** (follow-up to PR #12, which had merged the text-only guide). Added per-step iOS illustrations to the "Add to Home Screen" sheet: a home-screen **dock** with NightCalc's icon highlighted (glowing accent ring) next to Phone/Safari/Rocket; a Liquid-Glass **Safari bottom bar** with the ••• highlighted; and the **Share menu / Add to Home Screen / Open-as-Web-App** dialog illustrations. Cards use themeable iOS-gray (adapts light/dark). Corrected step 1 to "bottom-right" (iOS 26 default **Compact** Safari layout) and sharpened the subtitle. Sheet is now bottom-anchored with `max-height` + internal scroll so it fits an iPhone 15 Pro. Shipped as a fresh PR off v65 `main` (the visuals weren't part of #12). Bumped to **v66 / nightcalc-v66**.
+- What was done: **Swapped the install-guide illustrations for real iOS screenshots.** Replaced the four inline SVG illustrations in the "Add to Home Screen" sheet with the user's actual iPhone screenshots (`img/install/{dock,share-menu,add-to-home,open-web-app}.jpg`): the home-screen **dock** under the intro, then **Share menu** (step 1), **Add to Home Screen** row (step 2), and the **Add to Home Screen dialog / Open as Web App** toggle (step 3). Dropped the separate Safari-bar image — step 1 now points to ••• (bottom-right) in text only, since a 5th image wouldn't fit. New `.install-shot` rule (full-width, `height:auto`, 12px radius, 1px `--line` border; the dock — the only direct-child shot — gets `margin-bottom`). Removed the now-dead SVG CSS (`.install-ill`/`text`, `.install-toolbar`, `.install-dock`, `.dock-glow`) and the `.install-sheet` `--ios-*` theme vars + dark override. Verified headlessly at a true 393px width: all four load, fit width (no horizontal overflow), and stack correctly. **Caveat:** the screenshots are fixed **dark-mode** photos, so they no longer re-theme to light mode or the Pixel skin the way the SVGs did. Fresh PR off v68 `main` (which had reached v68 via the topbar-fix PRs #19/#21); bumped to **v69 / nightcalc-v69**.
+- Files changed: `index.html`, `styles.css`, `service-worker.js`, `MEMORY.md`, + new `img/install/{dock,share-menu,add-to-home,open-web-app}.jpg`
+
+### Earlier same day — iOS install-guide illustrations (SVG, PR #20)
+- What was done: **iOS install-guide visual pass** (follow-up to PR #12, which had merged the text-only guide). Added per-step iOS illustrations to the "Add to Home Screen" sheet: a home-screen **dock** with NightCalc's icon highlighted (glowing accent ring) next to Phone/Safari/Rocket; a Liquid-Glass **Safari bottom bar** with the ••• highlighted; and the **Share menu / Add to Home Screen / Open-as-Web-App** dialog illustrations. Cards use themeable iOS-gray (adapts light/dark). Corrected step 1 to "bottom-right" (iOS 26 default **Compact** Safari layout) and sharpened the subtitle. Sheet is now bottom-anchored with `max-height` + internal scroll so it fits an iPhone 15 Pro. Shipped as a fresh PR off `main` (the visuals weren't part of #12). Bumped to **v66 / nightcalc-v66** (main later reached v68 via the topbar-fix PRs). *(Superseded this session by the real screenshots above.)*
 - Files changed: `index.html`, `styles.css`, `service-worker.js`, `MEMORY.md`
 
 ### Earlier same day — P1 wave 2: scoring engine + 10 calculators (v64)
@@ -46,7 +50,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v67` / `nightcalc-v67`
+Last known: `v70` / `nightcalc-v70`
 
 ---
 

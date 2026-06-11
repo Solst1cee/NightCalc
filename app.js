@@ -567,31 +567,30 @@ function toggleTheme() {
 }
 
 // iOS Safari keeps the position:sticky topbar on its own GPU compositing layer
-// and does NOT re-rasterize it when a theme switch flips the inherited CSS
-// custom properties — it keeps showing the old color until a scroll forces a
-// recomposite. Re-asserting the already-correct color, or nudging transform /
-// opacity, are all no-ops here: the value is unchanged, or the property is
-// compositor-only and just re-shows the stale bitmap (this is why earlier
-// attempts failed). The reliable cure is to destroy and rebuild the layer:
-// toggling display off, forcing a synchronous layout while the element (and its
-// layer) is gone, then restoring it allocates a brand-new layer rasterized
-// against the current theme. It runs in one synchronous task, so no intermediate
-// frame is ever painted (no flicker), and it reads no colors — whatever --panel
-// resolves to now is what gets painted, so both themes and all skins are covered.
+// and does NOT re-rasterize it when a theme flip changes the inherited --panel,
+// so the bar shows the OLD color until a scroll forces a recomposite. The only
+// thing that reliably forces the update on-device is to destroy and rebuild the
+// layer: display:none, force a synchronous reflow while it is gone, then restore
+// so a fresh layer rasterizes against the current theme.
+//
+// DO NOT "simplify" this to an in-place inline background write
+// (els.topbar.style.backgroundColor = ...): that was tried (v66/v67) and on iOS
+// it does NOT force the repaint — it regressed straight back to
+// stale-until-scroll. The rebuild does create a fresh layer that iOS fades in
+// (~0.25s); that minor fade is an accepted trade-off for an instant, scroll-free
+// color update. (The separate status-bar icon cross-fade on toggle is iOS
+// re-tinting its own chrome and is not removable from the page.)
 function repaintTopbar() {
   const topbar = els.topbar;
   if (!topbar) return;
-
-  // display:none destroys the box + its compositing layer; the offsetHeight read
-  // forces a synchronous reflow while it is gone; restoring rebuilds a fresh
-  // layer. The forced read between the writes is mandatory — without it the two
-  // display writes coalesce into a no-op.
+  // The forced offsetHeight read between the display writes is mandatory —
+  // without it the none/restore pair coalesces into a no-op.
   const active = document.activeElement;
   topbar.style.display = "none";
   void topbar.offsetHeight;
   topbar.style.display = "";
-  // The display toggle blurs focus if it was inside the bar (e.g. the theme
-  // button the user just tapped); restore it without scrolling.
+  // display:none blurs focus if it was inside the bar (e.g. the theme button the
+  // user just tapped); restore it without scrolling.
   if (active && active !== document.body && topbar.contains(active)) {
     active.focus({ preventScroll: true });
   }
