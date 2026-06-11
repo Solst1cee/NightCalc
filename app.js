@@ -542,34 +542,43 @@ function applyTheme(theme) {
     els.themeToggleButton.setAttribute("aria-pressed", String(nextTheme === "dark"));
     els.themeToggleButton.setAttribute("aria-label", `Switch to ${nextTheme === "dark" ? "light" : "dark"} theme`);
   }
-  paintTopbar();
 }
 
 function toggleTheme() {
   const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_KEY, nextTheme);
   applyTheme(nextTheme);
+  repaintTopbar();
 }
 
-// iOS Safari does NOT re-rasterize the position:sticky topbar's own GPU layer
-// when the inherited :root custom property --panel flips, so it keeps showing
-// the old color until a scroll forces a recomposite. Earlier fixes tried to
-// rebuild the layer (display:none -> reflow -> restore); that worked but iOS
-// gives a freshly-created layer a Core-Animation implicit fade-in, so the bar
-// faded on every toggle. Instead, paint the resolved --panel directly onto the
-// topbar's OWN element. An inline value that differs from the previous one is a
-// genuine paint change on THIS layer (the inline overrides var(--panel), so the
-// element's computed background actually changes), which invalidates the layer's
-// backing store IN PLACE — the same path a scroll takes — so the color updates
-// immediately with no fade and no new layer. The offsetWidth read flushes the
-// change in the current frame without creating a layer. Reading --panel keeps it
-// in lockstep with the theme tokens (no hard-coded colors).
-function paintTopbar() {
-  if (!els.topbar) return;
-  const panel = getComputedStyle(document.documentElement).getPropertyValue("--panel").trim();
-  if (!panel) return;
-  els.topbar.style.backgroundColor = panel;
-  void els.topbar.offsetWidth;
+// iOS Safari keeps the position:sticky topbar on its own GPU compositing layer
+// and does NOT re-rasterize it when a theme flip changes the inherited --panel,
+// so the bar shows the OLD color until a scroll forces a recomposite. The only
+// thing that reliably forces the update on-device is to destroy and rebuild the
+// layer: display:none, force a synchronous reflow while it is gone, then restore
+// so a fresh layer rasterizes against the current theme.
+//
+// DO NOT "simplify" this to an in-place inline background write
+// (els.topbar.style.backgroundColor = ...): that was tried (v66/v67) and on iOS
+// it does NOT force the repaint — it regressed straight back to
+// stale-until-scroll. The rebuild does create a fresh layer that iOS fades in
+// (~0.25s); that minor fade is an accepted trade-off for an instant, scroll-free
+// color update. (The separate status-bar icon cross-fade on toggle is iOS
+// re-tinting its own chrome and is not removable from the page.)
+function repaintTopbar() {
+  const topbar = els.topbar;
+  if (!topbar) return;
+  // The forced offsetHeight read between the display writes is mandatory —
+  // without it the none/restore pair coalesces into a no-op.
+  const active = document.activeElement;
+  topbar.style.display = "none";
+  void topbar.offsetHeight;
+  topbar.style.display = "";
+  // display:none blurs focus if it was inside the bar (e.g. the theme button the
+  // user just tapped); restore it without scrolling.
+  if (active && active !== document.body && topbar.contains(active)) {
+    active.focus({ preventScroll: true });
+  }
 }
 
 function applyAccent(accent) {
