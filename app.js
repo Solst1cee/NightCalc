@@ -188,6 +188,7 @@ const tools = [
   { id: "wellsdvt", title: "Wells Score (DVT)", description: "DVT pretest probability.", status: "ready", tags: ["wells", "dvt", "vte"] },
   { id: "perc", title: "PERC Rule", description: "PE rule-out criteria.", status: "ready", tags: ["perc", "pe", "pulmonary embolism", "rule out"] },
   { id: "abcd2", title: "ABCD² Score", description: "TIA short-term stroke risk (0-7).", status: "ready", tags: ["abcd2", "tia", "stroke"] },
+  { id: "gbs", title: "Glasgow-Blatchford Score", description: "Upper-GI-bleed risk (0-23).", status: "ready", tags: ["glasgow-blatchford", "blatchford", "gi bleed", "melaena"] },
   {
     id: "reference",
     title: "Reference",
@@ -1206,6 +1207,41 @@ SCORES.abcd2 = {
     { test: (t) => t >= 6, text: "6-7: high (~8.1% 2-day risk)." },
   ],
   notice: "Clinical check: ABCD² has limited discrimination and does not detect carotid stenosis/AF — current guidance is urgent specialist assessment for all suspected TIA regardless of score.",
+};
+
+SCORES.gbs = {
+  id: "gbs",
+  title: "Glasgow-Blatchford Score",
+  description: "Upper-GI-bleed risk — identifies patients who may avoid admission (0-23).",
+  maxLabel: "23",
+  tags: ["glasgow-blatchford", "blatchford", "gbs", "gi bleed", "upper gi", "haematemesis", "melaena"],
+  criteria: [
+    { name: "urea", label: "Blood urea (mmol/L)", type: "select", options: [
+        { label: "< 6.5", value: "0", points: 0 },
+        { label: "6.5 – < 8.0", value: "2", points: 2 },
+        { label: "8.0 – < 10.0", value: "3", points: 3 },
+        { label: "10.0 – < 25.0", value: "4", points: 4 },
+        { label: "≥ 25.0", value: "6", points: 6 },
+      ] },
+    { name: "hb", label: "Haemoglobin", type: "select", options: [
+        { label: "Men ≥ 13 / Women ≥ 12 g/dL", value: "0", points: 0 },
+        { label: "Men 12–<13 / Women 10–<12 g/dL", value: "1", points: 1 },
+        { label: "Men 10–<12 g/dL", value: "3", points: 3 },
+        { label: "Hb < 10 g/dL", value: "6", points: 6 },
+      ] },
+    { name: "sbp", label: "Systolic BP (mmHg)", type: "numericBand", hint: "mmHg", bands: [{ le: 89, points: 3 }, { le: 99, points: 2 }, { le: 109, points: 1 }, { points: 0 }] },
+    { name: "pulse", label: "Pulse ≥ 100/min", type: "select", options: YN(1) },
+    { name: "melaena", label: "Melaena present", type: "select", options: YN(1) },
+    { name: "syncope", label: "Syncope at presentation", type: "select", options: YN(2) },
+    { name: "hepatic", label: "Hepatic disease (history)", type: "select", options: YN(2) },
+    { name: "cardiac", label: "Cardiac failure (history)", type: "select", options: YN(2) },
+  ],
+  interpret: [
+    { test: (t) => t === 0, text: "0: very low risk — outpatient management may be appropriate." },
+    { test: (t) => t <= 5, text: "1-5: low–intermediate — most require admission and inpatient endoscopy." },
+    { test: (t) => t >= 6, text: "≥6: high risk — > 50% need an intervention (transfusion, endoscopy, surgery)." },
+  ],
+  notice: "Clinical check: urea is in mmol/L (BUN mg/dL ÷ 2.8 ≈ urea mmol/L). Haemoglobin bands are sex-specific. A score of 0 (some validations ≤1) supports outpatient management.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.

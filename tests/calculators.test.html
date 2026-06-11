@@ -152,6 +152,10 @@
           // --- ABCD2 ---
           assertClose("ABCD2 example = 4", calcScore(SCORES.abcd2, { age: "y", bp: "y", clinical: "1", duration: "1", diabetes: "n" }), 4, 1e-9);
           assertClose("ABCD2 weakness+long+dm = 5", calcScore(SCORES.abcd2, { age: "n", bp: "n", clinical: "2", duration: "2", diabetes: "y" }), 5, 1e-9);
+          // --- Glasgow-Blatchford ---
+          assertClose("GBS example A = 7", calcScore(SCORES.gbs, { urea: "3", hb: "1", sbp: 105, pulse: "y", melaena: "y", syncope: "n", hepatic: "n", cardiac: "n" }), 7, 1e-9);
+          assertClose("GBS example B = 20", calcScore(SCORES.gbs, { urea: "6", hb: "6", sbp: 88, pulse: "y", melaena: "n", syncope: "y", hepatic: "y", cardiac: "n" }), 20, 1e-9);
+          assertClose("GBS all-normal = 0", calcScore(SCORES.gbs, { urea: "0", hb: "0", sbp: 120, pulse: "n", melaena: "n", syncope: "n", hepatic: "n", cardiac: "n" }), 0, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
