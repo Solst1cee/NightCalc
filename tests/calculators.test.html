@@ -156,6 +156,9 @@
           assertClose("GBS example A = 7", calcScore(SCORES.gbs, { urea: "3", hb: "1", sbp: 105, pulse: "y", melaena: "y", syncope: "n", hepatic: "n", cardiac: "n" }), 7, 1e-9);
           assertClose("GBS example B = 20", calcScore(SCORES.gbs, { urea: "6", hb: "6", sbp: 88, pulse: "y", melaena: "n", syncope: "y", hepatic: "y", cardiac: "n" }), 20, 1e-9);
           assertClose("GBS all-normal = 0", calcScore(SCORES.gbs, { urea: "0", hb: "0", sbp: 120, pulse: "n", melaena: "n", syncope: "n", hepatic: "n", cardiac: "n" }), 0, 1e-9);
+          // --- NIHSS ---
+          assertClose("NIHSS minor = 3", calcScore(SCORES.nihss, { loc: "0", locQ: "0", locC: "0", gaze: "0", visual: "0", facial: "1", lArm: "1", rArm: "0", lLeg: "0", rLeg: "0", ataxia: "0", sensory: "0", language: "0", dysarthria: "1", extinction: "0" }), 3, 1e-9);
+          assertClose("NIHSS severe = 27", calcScore(SCORES.nihss, { loc: "2", locQ: "2", locC: "2", gaze: "2", visual: "3", facial: "3", lArm: "0", rArm: "4", lLeg: "0", rLeg: "4", ataxia: "0", sensory: "2", language: "3", dysarthria: "0", extinction: "0" }), 27, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

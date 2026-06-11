@@ -189,6 +189,7 @@ const tools = [
   { id: "perc", title: "PERC Rule", description: "PE rule-out criteria.", status: "ready", tags: ["perc", "pe", "pulmonary embolism", "rule out"] },
   { id: "abcd2", title: "ABCD² Score", description: "TIA short-term stroke risk (0-7).", status: "ready", tags: ["abcd2", "tia", "stroke"] },
   { id: "gbs", title: "Glasgow-Blatchford Score", description: "Upper-GI-bleed risk (0-23).", status: "ready", tags: ["glasgow-blatchford", "blatchford", "gi bleed", "melaena"] },
+  { id: "nihss", title: "NIHSS", description: "NIH Stroke Scale severity (0-42).", status: "ready", tags: ["nihss", "stroke", "nih stroke scale"] },
   {
     id: "reference",
     title: "Reference",
@@ -1242,6 +1243,62 @@ SCORES.gbs = {
     { test: (t) => t >= 6, text: "≥6: high risk — > 50% need an intervention (transfusion, endoscopy, surgery)." },
   ],
   notice: "Clinical check: urea is in mmol/L (BUN mg/dL ÷ 2.8 ≈ urea mmol/L). Haemoglobin bands are sex-specific. A score of 0 (some validations ≤1) supports outpatient management.",
+};
+
+SCORES.nihss = {
+  id: "nihss",
+  title: "NIHSS",
+  description: "NIH Stroke Scale — stroke severity (0-42).",
+  maxLabel: "42",
+  tags: ["nihss", "nih stroke scale", "stroke", "severity", "neuro"],
+  criteria: [
+    { name: "loc", label: "1a. Level of consciousness", type: "select", options: [
+        { label: "0 — alert", value: "0", points: 0 }, { label: "1 — rouses to minor stimulation", value: "1", points: 1 },
+        { label: "2 — responds only to pain", value: "2", points: 2 }, { label: "3 — unresponsive/reflex", value: "3", points: 3 } ] },
+    { name: "locQ", label: "1b. LOC questions (month, age)", type: "select", options: [
+        { label: "0 — both correct", value: "0", points: 0 }, { label: "1 — one correct", value: "1", points: 1 }, { label: "2 — neither", value: "2", points: 2 } ] },
+    { name: "locC", label: "1c. LOC commands (eyes, grip)", type: "select", options: [
+        { label: "0 — both correct", value: "0", points: 0 }, { label: "1 — one correct", value: "1", points: 1 }, { label: "2 — neither", value: "2", points: 2 } ] },
+    { name: "gaze", label: "2. Best gaze", type: "select", options: [
+        { label: "0 — normal", value: "0", points: 0 }, { label: "1 — partial gaze palsy", value: "1", points: 1 }, { label: "2 — forced deviation", value: "2", points: 2 } ] },
+    { name: "visual", label: "3. Visual fields", type: "select", options: [
+        { label: "0 — no loss", value: "0", points: 0 }, { label: "1 — partial hemianopia", value: "1", points: 1 },
+        { label: "2 — complete hemianopia", value: "2", points: 2 }, { label: "3 — bilateral", value: "3", points: 3 } ] },
+    { name: "facial", label: "4. Facial palsy", type: "select", options: [
+        { label: "0 — normal", value: "0", points: 0 }, { label: "1 — minor", value: "1", points: 1 },
+        { label: "2 — partial", value: "2", points: 2 }, { label: "3 — complete", value: "3", points: 3 } ] },
+    { name: "lArm", label: "5a. Left arm motor", type: "select", options: [
+        { label: "0 — no drift", value: "0", points: 0 }, { label: "1 — drift", value: "1", points: 1 }, { label: "2 — some antigravity", value: "2", points: 2 },
+        { label: "3 — no antigravity", value: "3", points: 3 }, { label: "4 — no movement", value: "4", points: 4 } ] },
+    { name: "rArm", label: "5b. Right arm motor", type: "select", options: [
+        { label: "0 — no drift", value: "0", points: 0 }, { label: "1 — drift", value: "1", points: 1 }, { label: "2 — some antigravity", value: "2", points: 2 },
+        { label: "3 — no antigravity", value: "3", points: 3 }, { label: "4 — no movement", value: "4", points: 4 } ] },
+    { name: "lLeg", label: "6a. Left leg motor", type: "select", options: [
+        { label: "0 — no drift", value: "0", points: 0 }, { label: "1 — drift", value: "1", points: 1 }, { label: "2 — some antigravity", value: "2", points: 2 },
+        { label: "3 — no antigravity", value: "3", points: 3 }, { label: "4 — no movement", value: "4", points: 4 } ] },
+    { name: "rLeg", label: "6b. Right leg motor", type: "select", options: [
+        { label: "0 — no drift", value: "0", points: 0 }, { label: "1 — drift", value: "1", points: 1 }, { label: "2 — some antigravity", value: "2", points: 2 },
+        { label: "3 — no antigravity", value: "3", points: 3 }, { label: "4 — no movement", value: "4", points: 4 } ] },
+    { name: "ataxia", label: "7. Limb ataxia", type: "select", options: [
+        { label: "0 — absent", value: "0", points: 0 }, { label: "1 — one limb", value: "1", points: 1 }, { label: "2 — two+ limbs", value: "2", points: 2 } ] },
+    { name: "sensory", label: "8. Sensory", type: "select", options: [
+        { label: "0 — normal", value: "0", points: 0 }, { label: "1 — mild–moderate loss", value: "1", points: 1 }, { label: "2 — severe/total loss", value: "2", points: 2 } ] },
+    { name: "language", label: "9. Best language", type: "select", options: [
+        { label: "0 — normal", value: "0", points: 0 }, { label: "1 — mild–moderate aphasia", value: "1", points: 1 },
+        { label: "2 — severe aphasia", value: "2", points: 2 }, { label: "3 — mute/global", value: "3", points: 3 } ] },
+    { name: "dysarthria", label: "10. Dysarthria", type: "select", options: [
+        { label: "0 — normal", value: "0", points: 0 }, { label: "1 — mild–moderate", value: "1", points: 1 }, { label: "2 — severe/anarthric", value: "2", points: 2 } ] },
+    { name: "extinction", label: "11. Extinction / inattention", type: "select", options: [
+        { label: "0 — normal", value: "0", points: 0 }, { label: "1 — one modality", value: "1", points: 1 }, { label: "2 — profound/>1 modality", value: "2", points: 2 } ] },
+  ],
+  interpret: [
+    { test: (t) => t === 0, text: "0: no stroke symptoms." },
+    { test: (t) => t <= 4, text: "1-4: minor stroke." },
+    { test: (t) => t <= 15, text: "5-15: moderate stroke." },
+    { test: (t) => t <= 20, text: "16-20: moderate-to-severe stroke." },
+    { test: (t) => t >= 21, text: "21-42: severe stroke." },
+  ],
+  notice: "Clinical check: score per the certified NIHSS instructions. Untestable items (amputation, intubation) are recorded but contribute 0 to the total. Use the component pattern, not just the total.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
