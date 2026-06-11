@@ -17,7 +17,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=69" />
+    <link rel="stylesheet" href="styles.css?v=70" />
   </head>
   <body>
     <div class="app-shell">
@@ -289,25 +289,37 @@
           <button type="button" class="install-close" aria-label="Close">&times;</button>
           <h2 id="installTitle" class="install-title">Add NightCalc to your Home Screen</h2>
           <p class="install-sub">Pin it for one-tap, full-screen access &mdash; like a real app, no Safari bars.</p>
-          <img class="install-shot" src="img/install/dock.jpg" alt="NightCalc's icon on the iOS Home Screen dock, next to Safari and other apps" loading="lazy" />
+          <span class="install-shot-wrap">
+            <img class="install-shot" src="img/install/dock.jpg" alt="NightCalc's icon on the iOS Home Screen dock, next to Safari and other apps" loading="lazy" />
+            <span class="install-hl install-hl-dock" aria-hidden="true"></span>
+          </span>
           <ol class="install-steps">
             <li>
               <div class="install-step-head"><span class="install-step-n">1</span><span>Tap <b>&ctdot;</b> (bottom-right), then <b>Share</b>.</span></div>
-              <img class="install-shot" src="img/install/share-menu.jpg" alt="Safari's menu with Share at the top" loading="lazy" />
+              <span class="install-shot-wrap">
+                <img class="install-shot" src="img/install/share-menu.jpg" alt="Safari's menu with Share at the top" loading="lazy" />
+                <span class="install-hl install-hl-share" aria-hidden="true"></span>
+              </span>
             </li>
             <li>
               <div class="install-step-head"><span class="install-step-n">2</span><span>Scroll down and tap <b>Add to Home Screen</b>.</span></div>
-              <img class="install-shot" src="img/install/add-to-home.jpg" alt="The Share sheet with Add to Home Screen" loading="lazy" />
+              <span class="install-shot-wrap">
+                <img class="install-shot" src="img/install/add-to-home.jpg" alt="The Share sheet with Add to Home Screen" loading="lazy" />
+                <span class="install-hl install-hl-add" aria-hidden="true"></span>
+              </span>
             </li>
             <li>
               <div class="install-step-head"><span class="install-step-n">3</span><span>Keep <b>Open as Web App</b> on, then tap <b>Add</b>.</span></div>
-              <img class="install-shot" src="img/install/open-web-app.jpg" alt="The Add to Home Screen dialog with Open as Web App on" loading="lazy" />
+              <span class="install-shot-wrap">
+                <img class="install-shot" src="img/install/open-web-app.jpg" alt="The Add to Home Screen dialog with Open as Web App on" loading="lazy" />
+                <span class="install-hl install-hl-open" aria-hidden="true"></span>
+              </span>
             </li>
           </ol>
         </div>
       </div>
     </div>
 
-    <script src="app.js?v=69"></script>
+    <script src="app.js?v=70"></script>
   </body>
 </html>
