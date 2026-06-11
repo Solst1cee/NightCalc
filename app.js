@@ -183,6 +183,8 @@ const tools = [
   { id: "sodium-correction", title: "Sodium Correction (Adrogué–Madias)", description: "Δ serum Na per 1 L of infusate.", status: "ready", tags: ["adrogue", "madias", "sodium correction", "hyponatremia", "hypertonic saline", "infusate"] },
   { id: "aa-gradient", title: "A–a Oxygen Gradient", description: "Alveolar–arterial O₂ gradient vs age-expected.", status: "ready", tags: ["a-a gradient", "aa gradient", "alveolar arterial", "oxygenation", "hypoxemia", "shunt", "v/q mismatch"] },
   { id: "meld", title: "MELD-Na / MELD 3.0", description: "Cirrhosis severity / transplant scores.", status: "ready", tags: ["meld", "meld-na", "meld 3.0", "cirrhosis", "liver", "transplant", "hepatology"] },
+  { id: "heart", title: "HEART Score", description: "Chest-pain 6-week MACE risk (0-10).", status: "ready", tags: ["heart", "chest pain", "mace", "acs"] },
+  { id: "rcri", title: "Revised Cardiac Risk Index", description: "Pre-operative cardiac risk (0-6).", status: "ready", tags: ["rcri", "lee", "perioperative", "cardiac risk"] },
   {
     id: "reference",
     title: "Reference",
@@ -1059,6 +1061,70 @@ SCORES.wellspe = {
     { test: (t) => t > 4, text: ">4: PE likely — proceed to CTPA (or V/Q). (3-tier: <2 low, 2-6 moderate, >6 high.)" },
   ],
   notice: "Clinical check: pair with PERC / D-dimer per your pathway; pregnancy and renal function modify imaging choice.",
+};
+
+SCORES.heart = {
+  id: "heart",
+  title: "HEART Score",
+  description: "Chest-pain risk of a major adverse cardiac event (MACE) at 6 weeks (0-10).",
+  maxLabel: "10",
+  tags: ["heart", "heart score", "chest pain", "mace", "acs", "cardiology"],
+  criteria: [
+    { name: "history", label: "History", type: "select", options: [
+        { label: "Slightly suspicious", value: "0", points: 0 },
+        { label: "Moderately suspicious", value: "1", points: 1 },
+        { label: "Highly suspicious", value: "2", points: 2 },
+      ] },
+    { name: "ecg", label: "ECG", type: "select", options: [
+        { label: "Normal", value: "0", points: 0 },
+        { label: "Non-specific repolarisation (LBBB/LVH/digoxin)", value: "1", points: 1 },
+        { label: "Significant ST deviation", value: "2", points: 2 },
+      ] },
+    { name: "age", label: "Age", type: "select", options: [
+        { label: "< 45", value: "0", points: 0 },
+        { label: "45–64", value: "1", points: 1 },
+        { label: "≥ 65", value: "2", points: 2 },
+      ] },
+    { name: "risk", label: "Risk factors", type: "select", options: [
+        { label: "None known", value: "0", points: 0 },
+        { label: "1–2 risk factors", value: "1", points: 1 },
+        { label: "≥ 3, or history of atherosclerotic disease", value: "2", points: 2 },
+      ] },
+    { name: "troponin", label: "Initial troponin", type: "select", options: [
+        { label: "≤ normal limit", value: "0", points: 0 },
+        { label: "1–3× normal limit", value: "1", points: 1 },
+        { label: "> 3× normal limit", value: "2", points: 2 },
+      ] },
+  ],
+  interpret: [
+    { test: (t) => t <= 3, text: "0-3: low risk (~1-2% 6-week MACE) — consider early discharge with follow-up." },
+    { test: (t) => t <= 6, text: "4-6: moderate risk (~12-17%) — admit for observation and serial troponin." },
+    { test: (t) => t >= 7, text: "7-10: high risk (~50-65%) — consider early invasive strategy / cardiology." },
+  ],
+  notice: "Clinical check: risk factors = HTN, hypercholesterolaemia, diabetes, obesity, smoking, family history; known atherosclerotic disease scores 2 outright. This is the HEART Score, not the HEART Pathway.",
+};
+
+SCORES.rcri = {
+  id: "rcri",
+  title: "Revised Cardiac Risk Index",
+  description: "Pre-operative cardiac risk for non-cardiac surgery (0-6).",
+  maxLabel: "6",
+  tags: ["rcri", "lee", "cardiac risk", "perioperative", "preoperative", "surgery"],
+  criteria: [
+    { name: "surgery", label: "High-risk surgery (intraperitoneal, intrathoracic, suprainguinal vascular)", type: "select", options: YN(1) },
+    { name: "ihd", label: "History of ischaemic heart disease", type: "select", options: YN(1) },
+    { name: "chf", label: "History of congestive heart failure", type: "select", options: YN(1) },
+    { name: "cvd", label: "History of cerebrovascular disease (TIA/stroke)", type: "select", options: YN(1) },
+    { name: "insulin", label: "Insulin-treated diabetes", type: "select", options: YN(1) },
+    { name: "creat", label: "Pre-op creatinine > 2.0 mg/dL (> 177 µmol/L)", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t === 0, text: "0: low risk of major cardiac complications (~0.4% original / ~3.9% contemporary)." },
+    { test: (t) => t === 1, text: "1: ~0.9% (original) / ~6% (contemporary)." },
+    { test: (t) => t === 2, text: "2: ~6.6% (original) / ~10% (contemporary)." },
+    { test: (t) => t >= 3, text: "≥3: high risk (~11% original / ~15% contemporary)." },
+  ],
+  notice: "Clinical check: RCRI under-estimates risk in major vascular surgery; pair with functional capacity and consider NSQIP/MICA where appropriate. Contemporary event rates are higher than the original 1999 cohort.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
