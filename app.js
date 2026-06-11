@@ -1751,17 +1751,17 @@ function renderPfRatio() {
   const form = document.querySelector("#pfRatioForm");
   bindLiveForm(form, () => {
     const pao2 = numberValue(form, "pao2");
-    let fio2 = numberValue(form, "fio2");
-    if (!positive(pao2) || !positive(fio2)) { showPending("Enter PaO₂ and FiO₂."); return; }
-    if (fio2 > 1) fio2 = fio2 / 100; // accept FiO2 entered as a percentage
+    const fio2Raw = numberValue(form, "fio2");
+    if (!positive(pao2) || !positive(fio2Raw)) { showPending("Enter PaO₂ and FiO₂."); return; }
+    const fio2 = fio2Raw > 1 ? fio2Raw / 100 : fio2Raw; // accept FiO2 entered as a percentage
     if (fio2 < 0.21 || fio2 > 1) { showPending("FiO₂ should be between 21% and 100%."); return; }
-    saveSession({ pao2, fio2: numberValue(form, "fio2") });
+    saveSession({ pao2, fio2: fio2Raw });
     const pf = calcPfRatio({ pao2, fio2 });
     let detail;
     if (pf > 300) detail = "> 300: does not meet the P/F criterion for ARDS.";
-    else if (pf > 200) detail = "201–300: mild ARDS (on PEEP/CPAP ≥ 5).";
-    else if (pf > 100) detail = "101–200: moderate ARDS.";
-    else detail = "≤ 100: severe ARDS.";
+    else if (pf > 200) detail = "Mild ARDS (P/F 200–300, on PEEP/CPAP ≥ 5).";
+    else if (pf > 100) detail = "Moderate ARDS (P/F 100–200).";
+    else detail = "Severe ARDS (P/F ≤ 100).";
     showResult("P/F ratio", `${round(pf, 0)} mmHg`, detail);
   });
 }
