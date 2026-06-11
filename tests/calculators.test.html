@@ -110,6 +110,14 @@
           assertClose("Child-Pugh B example = 7", calcScore(SCORES.childpugh, { bilirubin: "2", albumin: "1", inr: "1", ascites: "2", enceph: "1" }), 7, 1e-9);
           assertClose("Wells-PE DVT+PE+HR = 7.5", calcScore(SCORES.wellspe, { dvt: "y", peLikely: "y", hr: "y", immob: "n", priorVte: "n", hemoptysis: "n", malignancy: "n" }), 7.5, 1e-9);
           assertClose("Wells-PE HR+prior+hemoptysis = 4", calcScore(SCORES.wellspe, { dvt: "n", peLikely: "n", hr: "y", immob: "n", priorVte: "y", hemoptysis: "y", malignancy: "n" }), 4, 1e-9);
+          // --- Adrogué–Madias: ΔNa per 1 L = (infusateNa - serumNa)/(TBW+1) ; TBW = wt*frac ---
+          assertClose("Adrogue 70M Na120 3%saline", calcAdrogue({ weightKg: 70, sex: "male", sodium: 120, infusateNa: 513 }), 9.14, 0.01);
+          assertClose("Adrogue 60F Na122 NS", calcAdrogue({ weightKg: 60, sex: "female", sodium: 122, infusateNa: 154 }), 1.032, 0.01);
+          // --- A–a gradient: PAO2 = FiO2*(760-47) - PaCO2/0.8 ; A-a = PAO2 - PaO2 ; expected = 2.5 + 0.21*age ---
+          var aa1 = calcAaGradient({ fio2: 0.21, paco2: 40, pao2: 95, age: 40 });
+          assertClose("A-a gradient young", aa1.gradient, 4.73, 0.05);
+          assertClose("A-a expected age40", aa1.expected, 10.9, 1e-6);
+          assertClose("A-a gradient elevated", calcAaGradient({ fio2: 0.21, paco2: 30, pao2: 60, age: 70 }).gradient, 52.23, 0.05);
           // --- Osmolality: 2*Na + glu/18 + BUN/2.8 (+ EtOH/3.7) ; gap = measured - calc ---
           assertClose("Osm calc no EtOH", calcOsmolality({ sodium: 140, glucose: 90, bun: 14 }).calculated, 290, 1e-6);
           assertClose("Osm calc with EtOH", calcOsmolality({ sodium: 135, glucose: 180, bun: 28, ethanol: 100 }).calculated, 317.027, 0.01);

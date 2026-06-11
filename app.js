@@ -180,6 +180,8 @@ const tools = [
   { id: "winters", title: "Winter's Formula", description: "Expected PaCO₂ for a metabolic acidosis.", status: "ready", tags: ["winters", "winter's", "paco2", "metabolic acidosis", "compensation", "acid base"] },
   { id: "osmolality", title: "Serum Osmolality + Gap", description: "Calculated osmolality and osmolar gap.", status: "ready", tags: ["osmolality", "osmolar gap", "osmol gap", "toxic alcohol", "methanol", "ethylene glycol"] },
   { id: "free-water-deficit", title: "Free Water Deficit", description: "Free-water deficit in hypernatremia.", status: "ready", tags: ["free water deficit", "hypernatremia", "water deficit", "sodium", "tbw"] },
+  { id: "sodium-correction", title: "Sodium Correction (Adrogué–Madias)", description: "Δ serum Na per 1 L of infusate.", status: "ready", tags: ["adrogue", "madias", "sodium correction", "hyponatremia", "hypertonic saline", "infusate"] },
+  { id: "aa-gradient", title: "A–a Oxygen Gradient", description: "Alveolar–arterial O₂ gradient vs age-expected.", status: "ready", tags: ["a-a gradient", "aa gradient", "alveolar arterial", "oxygenation", "hypoxemia", "pe"] },
   {
     id: "reference",
     title: "Reference",
@@ -1141,6 +1143,27 @@ function calcFreeWaterDeficit({ weightKg, sex, sodium, elderly }) {
   return tbw * (sodium / 140 - 1);
 }
 
+// Na content (mEq/L) of common infusates; LR uses Na+K (130+4) per Adrogué–Madias.
+const INFUSATES = [
+  { value: "hypertonic3", label: "3% saline (Na 513)", na: 513 },
+  { value: "ns", label: "0.9% saline (Na 154)", na: 154 },
+  { value: "lr", label: "Lactated Ringer's (Na+K 134)", na: 134 },
+  { value: "half", label: "0.45% saline (Na 77)", na: 77 },
+  { value: "d5w", label: "D5W (Na 0)", na: 0 },
+];
+
+// Adrogué–Madias: predicted change in serum Na (mEq/L) per 1 L of the chosen infusate.
+function calcAdrogue({ weightKg, sex, sodium, infusateNa, elderly }) {
+  const tbw = weightKg * tbwFraction(sex, elderly);
+  return (infusateNa - sodium) / (tbw + 1);
+}
+
+// Alveolar–arterial O2 gradient (sea level). fio2 as a fraction (0.21–1.0).
+function calcAaGradient({ fio2, paco2, pao2, age }) {
+  const pAO2 = fio2 * (760 - 47) - paco2 / 0.8;
+  return { pAO2, gradient: pAO2 - pao2, expected: 2.5 + 0.21 * age };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -1286,6 +1309,8 @@ function renderCalculator() {
   if (state.activeTool === "winters") renderWinters();
   if (state.activeTool === "osmolality") renderOsmolality();
   if (state.activeTool === "free-water-deficit") renderFreeWaterDeficit();
+  if (state.activeTool === "sodium-correction") renderSodiumCorrection();
+  if (state.activeTool === "aa-gradient") renderAaGradient();
   if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
   if (state.activeTool === "qtc") renderQtc();
   if (state.activeTool === "body-weight") renderBodyWeight();
@@ -2262,6 +2287,78 @@ function renderFreeWaterDeficit() {
       ? "Sodium is at/below 140 — no free-water deficit by this estimate."
       : `Deficit = TBW × (Na/140 − 1), TBW = ${tbwFraction(sex, elderly)} × weight.`;
     showResult("Free water deficit", `${round(Math.max(deficit, 0), 1)} L`, detail);
+  });
+}
+
+function renderSodiumCorrection() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Sodium Correction Rate (Adrogué–Madias)",
+    description: "Predicted change in serum Na per 1 L of an infusate.",
+    body: `
+      <form id="adrogueForm">
+        <div class="form-grid">
+          ${inputField({ name: "weightKg", label: "Weight (kg)", value: s.weightKg ?? "", hint: "" })}
+          ${inputField({ name: "sex", label: "Sex", value: s.sex ?? "male", options: [{ value: "male", label: "Male" }, { value: "female", label: "Female" }] })}
+          ${inputField({ name: "elderly", label: "Age group", value: s.elderly ? "yes" : "no", options: [{ value: "no", label: "Adult" }, { value: "yes", label: "Elderly" }] })}
+          ${inputField({ name: "sodium", label: "Current sodium (mEq/L)", value: s.sodium ?? "", hint: "" })}
+          ${inputField({ name: "infusate", label: "Infusate", value: s.infusate ?? "hypertonic3", options: INFUSATES.map((i) => ({ value: i.value, label: i.label })) })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: estimates the change from 1 L only and ignores ongoing losses/urine output — it under-predicts the rise from hypertonic saline. Re-check sodium frequently and respect correction-rate limits.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#adrogueForm");
+  bindLiveForm(form, () => {
+    const weightKg = numberValue(form, "weightKg");
+    const sodium = numberValue(form, "sodium");
+    const sex = form.elements.sex.value;
+    const elderly = form.elements.elderly.value === "yes";
+    const infusate = form.elements.infusate.value;
+    const infusateNa = (INFUSATES.find((i) => i.value === infusate) || INFUSATES[0]).na;
+    if (!positive(weightKg) || !positive(sodium)) { showPending("Enter weight and current sodium."); return; }
+    const delta = calcAdrogue({ weightKg, sex, sodium, infusateNa, elderly });
+    saveSession({ weightKg, sex, sodium, elderly, infusate });
+    const dir = delta >= 0 ? "rise" : "fall";
+    showResult("Δ Sodium per 1 L", `${delta >= 0 ? "+" : ""}${round(delta, 2)} mEq/L`, `Expected ${dir} of ${round(Math.abs(delta), 2)} mEq/L per litre infused (infusate Na ${infusateNa}). Multiply by litres for total change.`);
+  });
+}
+
+function renderAaGradient() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "A–a Oxygen Gradient",
+    description: "Alveolar–arterial oxygen gradient at sea level, vs the age-expected normal.",
+    body: `
+      <form id="aaForm">
+        <div class="form-grid">
+          ${inputField({ name: "fio2Pct", label: "FiO₂ (%)", value: s.fio2Pct ?? "21", hint: "21 = room air" })}
+          ${inputField({ name: "paco2", label: "PaCO₂ (mmHg)", value: s.paco2 ?? "", hint: "arterial" })}
+          ${inputField({ name: "pao2", label: "PaO₂ (mmHg)", value: s.pao2 ?? "", hint: "arterial" })}
+          ${inputField({ name: "age", label: "Age (years)", value: s.age ?? "", hint: "for expected normal" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: sea-level constants (Patm 760, PH₂O 47, RQ 0.8). A raised A–a gradient points to V/Q mismatch, shunt, or a diffusion defect; a normal gradient with hypoxaemia suggests hypoventilation or low inspired O₂.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#aaForm");
+  bindLiveForm(form, () => {
+    const fio2Pct = numberValue(form, "fio2Pct");
+    const paco2 = numberValue(form, "paco2");
+    const pao2 = numberValue(form, "pao2");
+    const age = numberValue(form, "age");
+    if (!positive(fio2Pct) || !positive(paco2) || !positive(pao2)) { showPending("Enter FiO₂, PaCO₂, and PaO₂."); return; }
+    if (fio2Pct < 21 || fio2Pct > 100) { showPending("FiO₂ should be 21–100%."); return; }
+    const { gradient, expected } = calcAaGradient({ fio2: fio2Pct / 100, paco2, pao2, age: positive(age) ? age : 0 });
+    const patch = { fio2Pct, paco2, pao2 };
+    if (positive(age)) patch.age = age;
+    saveSession(patch);
+    const detail = positive(age)
+      ? `Age-expected ≈ ${round(expected, 1)} mmHg (2.5 + 0.21 × age). ${gradient > expected ? "Above expected — abnormal gas exchange." : "Within the expected range."}`
+      : "Enter age for the expected-normal comparison.";
+    showResult("A–a gradient", `${round(gradient, 1)} mmHg`, detail);
   });
 }
 
