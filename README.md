@@ -121,6 +121,14 @@ Each calculator updates automatically as you fill the required fields — there 
 | Glasgow-Blatchford Score | Upper-GI-bleed risk (0–23). | Ready |
 | NIHSS | NIH Stroke Scale — stroke severity (0–42). | Ready |
 | SOFA Score | Sequential Organ Failure Assessment — organ dysfunction (0–24). | Ready |
+| Urine Anion Gap | Localises a normal-anion-gap metabolic acidosis (renal vs GI). | In progress |
+| P/F Ratio | PaO₂/FiO₂ oxygenation and ARDS severity grading. | In progress |
+| FIB-4 Index | Non-invasive estimate of liver fibrosis. | In progress |
+| Maddrey Discriminant Function | Alcohol-associated hepatitis severity. | In progress |
+| HbA1c → eAG | Estimated average glucose from HbA1c. | In progress |
+| HAS-BLED | Bleeding risk on anticoagulation for AF (0–9). | In progress |
+| SIRS Criteria | Systemic inflammatory response (0–4). | In progress |
+| 4Ts Score (HIT) | Pretest probability of heparin-induced thrombocytopenia (0–8). | In progress |
 | Reference | Source inventory for calculator data and future guideline updates. | In progress |
 
 The infusion drug data is intentionally a draft scaffold; verify and replace values with local protocol/reference data before clinical use.
