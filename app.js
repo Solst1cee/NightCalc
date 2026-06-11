@@ -39,19 +39,19 @@ const toolStatuses = {
   testing: {
     label: "In progress",
     className: "testing",
-    icon: "icons/icons8-pickaxe-24.png",
+    icon: "assets/icons/pickaxe.png",
     alt: "In progress",
   },
   ready: {
     label: "Ready",
     className: "ready",
-    icon: "icons/icons8-check-24.svg",
+    icon: "assets/icons/check.svg",
     alt: "Ready",
   },
   down: {
     label: "Down",
     className: "down",
-    icon: "icons/icons8-lightning-bolt-24.png",
+    icon: "assets/icons/lightning-bolt.png",
     alt: "Down",
   },
 };
