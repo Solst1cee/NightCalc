@@ -1161,7 +1161,7 @@ SCORES.wellsdvt = {
 SCORES.perc = {
   id: "perc",
   title: "PERC Rule",
-  description: "PE rule-out criteria — counts criteria NOT satisfied (0 = PERC negative).",
+  description: "PE rule-out criteria — each criterion present scores 1; a total of 0 is PERC-negative (PE excluded in low-risk patients).",
   maxLabel: "8",
   tags: ["perc", "pulmonary embolism", "pe", "rule out", "d-dimer"],
   criteria: [
@@ -1449,9 +1449,11 @@ function calcMeld({ creatinine, bilirubin, inr, sodium, albumin, sex, dialysis }
   const inrB = Math.max(inr, 1);
   const naB = clamp(sodium, 125, 137);
 
-  // --- MELD-Na (creatinine cap 4.0) ---
+  // --- MELD-Na (creatinine cap 4.0). OPTN/MDCalc keep MELD(i) at decimal precision for the
+  //     ">11" test and the Na coefficient; round to an integer only at the very end.
+  //     Rounding MELD(i) to an integer first under-scores at the boundary (raw 11.3 → 11 → no Na term). ---
   const crNa = dialysis ? 4.0 : clamp(creatinine, 1, 4);
-  let meldI = Math.round(10 * (0.957 * ln(crNa) + 0.378 * ln(biliB) + 1.12 * ln(inrB) + 0.643));
+  const meldI = 10 * (0.957 * ln(crNa) + 0.378 * ln(biliB) + 1.12 * ln(inrB) + 0.643);
   let meldNa = meldI;
   if (meldI > 11) meldNa = meldI + 1.32 * (137 - naB) - 0.033 * meldI * (137 - naB);
   meldNa = clamp(Math.round(meldNa), 6, 40);
@@ -2710,7 +2712,7 @@ function renderMeld() {
       return;
     }
     const { meldNa, meld3 } = calcMeld({ creatinine, bilirubin, inr, sodium, albumin, sex, dialysis });
-    saveSession({ bilirubin, inr, sodium, albumin, sex, dialysis, serumCreatinine: creatinine, serumCreatinineUnit: "mgDl" });
+    saveSession({ bilirubin, inr, sodium, albumin, sex, dialysis });
     document.querySelector("#resultArea").innerHTML = `
       <div class="result-box">
         <div class="result-label">MELD scores</div>
