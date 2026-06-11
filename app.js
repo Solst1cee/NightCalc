@@ -190,6 +190,7 @@ const tools = [
   { id: "abcd2", title: "ABCD² Score", description: "TIA short-term stroke risk (0-7).", status: "ready", tags: ["abcd2", "tia", "stroke"] },
   { id: "gbs", title: "Glasgow-Blatchford Score", description: "Upper-GI-bleed risk (0-23).", status: "ready", tags: ["glasgow-blatchford", "blatchford", "gi bleed", "melaena"] },
   { id: "nihss", title: "NIHSS", description: "NIH Stroke Scale severity (0-42).", status: "ready", tags: ["nihss", "stroke", "nih stroke scale"] },
+  { id: "sofa", title: "SOFA Score", description: "Organ dysfunction severity (0-24).", status: "ready", tags: ["sofa", "organ failure", "icu", "sepsis"] },
   {
     id: "reference",
     title: "Reference",
@@ -1299,6 +1300,42 @@ SCORES.nihss = {
     { test: (t) => t >= 21, text: "21-42: severe stroke." },
   ],
   notice: "Clinical check: score per the certified NIHSS instructions. Untestable items (amputation, intubation) are recorded but contribute 0 to the total. Use the component pattern, not just the total.",
+};
+
+SCORES.sofa = {
+  id: "sofa",
+  title: "SOFA Score",
+  description: "Sequential Organ Failure Assessment — organ dysfunction (0-24).",
+  maxLabel: "24",
+  tags: ["sofa", "organ failure", "sepsis", "icu", "critical care"],
+  criteria: [
+    { name: "resp", label: "Respiration — PaO₂/FiO₂ (mmHg)", type: "select", options: [
+        { label: "≥ 400", value: "0", points: 0 }, { label: "< 400", value: "1", points: 1 }, { label: "< 300", value: "2", points: 2 },
+        { label: "< 200 with respiratory support", value: "3", points: 3 }, { label: "< 100 with respiratory support", value: "4", points: 4 } ] },
+    { name: "coag", label: "Coagulation — platelets (×10³/µL)", type: "select", options: [
+        { label: "≥ 150", value: "0", points: 0 }, { label: "< 150", value: "1", points: 1 }, { label: "< 100", value: "2", points: 2 },
+        { label: "< 50", value: "3", points: 3 }, { label: "< 20", value: "4", points: 4 } ] },
+    { name: "liver", label: "Liver — bilirubin", type: "select", options: [
+        { label: "< 1.2 mg/dL (< 20 µmol/L)", value: "0", points: 0 }, { label: "1.2–1.9 (20–32)", value: "1", points: 1 }, { label: "2.0–5.9 (33–101)", value: "2", points: 2 },
+        { label: "6.0–11.9 (102–204)", value: "3", points: 3 }, { label: "≥ 12.0 (> 204)", value: "4", points: 4 } ] },
+    { name: "cardio", label: "Cardiovascular (pressors in µg/kg/min)", type: "select", options: [
+        { label: "MAP ≥ 70 mmHg", value: "0", points: 0 }, { label: "MAP < 70 mmHg", value: "1", points: 1 }, { label: "Dopamine ≤ 5 or dobutamine (any)", value: "2", points: 2 },
+        { label: "Dopamine > 5, or epi/norepi ≤ 0.1", value: "3", points: 3 }, { label: "Dopamine > 15, or epi/norepi > 0.1", value: "4", points: 4 } ] },
+    { name: "cns", label: "CNS — Glasgow Coma Scale", type: "select", options: [
+        { label: "15", value: "0", points: 0 }, { label: "13–14", value: "1", points: 1 }, { label: "10–12", value: "2", points: 2 },
+        { label: "6–9", value: "3", points: 3 }, { label: "< 6", value: "4", points: 4 } ] },
+    { name: "renal", label: "Renal — creatinine / urine output", type: "select", options: [
+        { label: "< 1.2 mg/dL (< 110 µmol/L)", value: "0", points: 0 }, { label: "1.2–1.9 (110–170)", value: "1", points: 1 }, { label: "2.0–3.4 (171–299)", value: "2", points: 2 },
+        { label: "3.5–4.9 (300–440) or UO < 500 mL/d", value: "3", points: 3 }, { label: "≥ 5.0 (> 440) or UO < 200 mL/d", value: "4", points: 4 } ] },
+  ],
+  interpret: [
+    { test: (t) => t <= 6, text: "0-6: ICU mortality < 10%." },
+    { test: (t) => t <= 9, text: "7-9: ~15-20% mortality." },
+    { test: (t) => t <= 12, text: "10-12: ~40-50% mortality." },
+    { test: (t) => t <= 14, text: "13-14: ~50-60% mortality." },
+    { test: (t) => t >= 15, text: "≥15: > 80% mortality." },
+  ],
+  notice: "Clinical check: a rise in SOFA ≥ 2 from baseline defines organ dysfunction in Sepsis-3. The original SOFA has no points for vasopressin/phenylephrine. Not the same as qSOFA.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
