@@ -66,3 +66,7 @@ Examples of reused values:
 ## Clinical Safety
 
 This app is for workflow testing. Drug dose bands are placeholders and must be replaced with verified local protocols or references before clinical use.
+
+## Credits
+
+UI glyphs (menu, check, pickaxe, lightning bolt, and the GitHub/Gmail marks) are by [Icons8](https://icons8.com).
