@@ -178,6 +178,8 @@ const tools = [
   },
   { id: "map", title: "Mean Arterial Pressure", description: "MAP from systolic and diastolic BP.", status: "ready", tags: ["map", "mean arterial pressure", "perfusion", "bp", "hemodynamics"] },
   { id: "winters", title: "Winter's Formula", description: "Expected PaCO₂ for a metabolic acidosis.", status: "ready", tags: ["winters", "winter's", "paco2", "metabolic acidosis", "compensation", "acid base"] },
+  { id: "osmolality", title: "Serum Osmolality + Gap", description: "Calculated osmolality and osmolar gap.", status: "ready", tags: ["osmolality", "osmolar gap", "osmol gap", "toxic alcohol", "methanol", "ethylene glycol"] },
+  { id: "free-water-deficit", title: "Free Water Deficit", description: "Free-water deficit in hypernatremia.", status: "ready", tags: ["free water deficit", "hypernatremia", "water deficit", "sodium", "tbw"] },
   {
     id: "reference",
     title: "Reference",
@@ -1119,6 +1121,26 @@ function calcWinters({ bicarbonate }) {
   return { expected, low: expected - 2, high: expected + 2 };
 }
 
+// Calculated serum osmolality (mOsm/kg) + osmolar gap. US units: Na mEq/L; glucose/BUN/ethanol mg/dL.
+function calcOsmolality({ sodium, glucose, bun, ethanol, measured }) {
+  let calculated = 2 * sodium + glucose / 18 + bun / 2.8;
+  if (positive(ethanol)) calculated += ethanol / 3.7;
+  const gap = positive(measured) ? measured - calculated : null;
+  return { calculated, gap };
+}
+
+// Total-body-water fraction by sex/age band (shared by free-water deficit and Adrogué–Madias).
+function tbwFraction(sex, elderly) {
+  if (sex === "female") return elderly ? 0.45 : 0.5;
+  return elderly ? 0.5 : 0.6;
+}
+
+// Free water deficit (L) to correct hypernatremia to a target Na of 140.
+function calcFreeWaterDeficit({ weightKg, sex, sodium, elderly }) {
+  const tbw = weightKg * tbwFraction(sex, elderly);
+  return tbw * (sodium / 140 - 1);
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -1262,6 +1284,8 @@ function renderCalculator() {
   if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
   if (state.activeTool === "map") renderMap();
   if (state.activeTool === "winters") renderWinters();
+  if (state.activeTool === "osmolality") renderOsmolality();
+  if (state.activeTool === "free-water-deficit") renderFreeWaterDeficit();
   if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
   if (state.activeTool === "qtc") renderQtc();
   if (state.activeTool === "body-weight") renderBodyWeight();
@@ -2165,6 +2189,79 @@ function renderWinters() {
       detail += paco2 > high ? " Measured is ABOVE range — concurrent respiratory acidosis." : paco2 < low ? " Measured is BELOW range — concurrent respiratory alkalosis." : " Measured is within range — appropriate compensation.";
     }
     showResult("Expected PaCO₂", `${round(expected, 1)} mmHg`, detail);
+  });
+}
+
+function renderOsmolality() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Serum Osmolality + Osmolar Gap",
+    description: "Calculated osmolality and (if a measured value is entered) the osmolar gap.",
+    body: `
+      <form id="osmForm">
+        <div class="form-grid">
+          ${inputField({ name: "sodium", label: "Sodium (mEq/L)", value: s.sodium ?? "", hint: "" })}
+          ${inputField({ name: "glucose", label: "Glucose (mg/dL)", value: s.glucose ?? "", hint: "" })}
+          ${inputField({ name: "bun", label: "BUN (mg/dL)", value: s.bun ?? "", hint: "blood urea nitrogen" })}
+          ${inputField({ name: "ethanol", label: "Ethanol (mg/dL, optional)", value: s.etoh ?? "", hint: "adds /3.7 term" })}
+          ${inputField({ name: "measured", label: "Measured osmolality (mOsm/kg, optional)", value: s.measuredOsm ?? "", hint: "enables the gap" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: normal osmolar gap is < 10 mOsm/kg. A raised gap suggests unmeasured osmoles (toxic alcohols, mannitol). The ethanol divisor (3.7) is lab-dependent.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#osmForm");
+  bindLiveForm(form, () => {
+    const sodium = numberValue(form, "sodium");
+    const glucose = numberValue(form, "glucose");
+    const bun = numberValue(form, "bun");
+    const ethanol = numberValue(form, "ethanol");
+    const measured = numberValue(form, "measured");
+    if (!positive(sodium) || glucose == null || bun == null) { showPending("Enter sodium, glucose, and BUN."); return; }
+    const { calculated, gap } = calcOsmolality({ sodium, glucose, bun, ethanol, measured });
+    const patch = { sodium, glucose, bun };
+    if (positive(ethanol)) patch.etoh = ethanol;
+    if (positive(measured)) patch.measuredOsm = measured;
+    saveSession(patch);
+    const detail = gap == null
+      ? "Enter a measured osmolality to compute the osmolar gap."
+      : `Osmolar gap ${round(gap, 1)} mOsm/kg (measured − calculated). ${gap > 10 ? "Raised — consider unmeasured osmoles." : "Within the normal range (< 10)."}`;
+    showResult("Calculated osmolality", `${round(calculated, 1)} mOsm/kg`, detail);
+  });
+}
+
+function renderFreeWaterDeficit() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Free Water Deficit",
+    description: "Estimated free-water deficit in hypernatremia (target Na 140).",
+    body: `
+      <form id="fwdForm">
+        <div class="form-grid">
+          ${inputField({ name: "weightKg", label: "Weight (kg)", value: s.weightKg ?? "", hint: "" })}
+          ${inputField({ name: "sex", label: "Sex", value: s.sex ?? "male", options: [{ value: "male", label: "Male" }, { value: "female", label: "Female" }] })}
+          ${inputField({ name: "elderly", label: "Age group", value: s.elderly ? "yes" : "no", options: [{ value: "no", label: "Adult" }, { value: "yes", label: "Elderly" }] })}
+          ${inputField({ name: "sodium", label: "Current sodium (mEq/L)", value: s.sodium ?? "", hint: "" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: this is the pure-water deficit only (excludes ongoing/insensible losses and any volume deficit). Correct slowly — ≤ ~10–12 mEq/L per 24 h.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#fwdForm");
+  bindLiveForm(form, () => {
+    const weightKg = numberValue(form, "weightKg");
+    const sodium = numberValue(form, "sodium");
+    const sex = form.elements.sex.value;
+    const elderly = form.elements.elderly.value === "yes";
+    if (!positive(weightKg) || !positive(sodium)) { showPending("Enter weight and current sodium."); return; }
+    const deficit = calcFreeWaterDeficit({ weightKg, sex, sodium, elderly });
+    saveSession({ weightKg, sex, sodium, elderly });
+    const detail = sodium <= 140
+      ? "Sodium is at/below 140 — no free-water deficit by this estimate."
+      : `Deficit = TBW × (Na/140 − 1), TBW = ${tbwFraction(sex, elderly)} × weight.`;
+    showResult("Free water deficit", `${round(Math.max(deficit, 0), 1)} L`, detail);
   });
 }
 

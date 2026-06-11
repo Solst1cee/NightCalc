@@ -110,6 +110,13 @@
           assertClose("Child-Pugh B example = 7", calcScore(SCORES.childpugh, { bilirubin: "2", albumin: "1", inr: "1", ascites: "2", enceph: "1" }), 7, 1e-9);
           assertClose("Wells-PE DVT+PE+HR = 7.5", calcScore(SCORES.wellspe, { dvt: "y", peLikely: "y", hr: "y", immob: "n", priorVte: "n", hemoptysis: "n", malignancy: "n" }), 7.5, 1e-9);
           assertClose("Wells-PE HR+prior+hemoptysis = 4", calcScore(SCORES.wellspe, { dvt: "n", peLikely: "n", hr: "y", immob: "n", priorVte: "y", hemoptysis: "y", malignancy: "n" }), 4, 1e-9);
+          // --- Osmolality: 2*Na + glu/18 + BUN/2.8 (+ EtOH/3.7) ; gap = measured - calc ---
+          assertClose("Osm calc no EtOH", calcOsmolality({ sodium: 140, glucose: 90, bun: 14 }).calculated, 290, 1e-6);
+          assertClose("Osm calc with EtOH", calcOsmolality({ sodium: 135, glucose: 180, bun: 28, ethanol: 100 }).calculated, 317.027, 0.01);
+          assertClose("Osm gap", calcOsmolality({ sodium: 140, glucose: 90, bun: 14, measured: 290 }).gap, 0, 1e-6);
+          // --- Free water deficit: TBW*(Na/140 - 1); TBW = wt*frac (0.6 M / 0.5 F / 0.5 elderly M / 0.45 elderly F) ---
+          assertClose("FWD 70kg M Na160", calcFreeWaterDeficit({ weightKg: 70, sex: "male", sodium: 160 }), 6.0, 0.01);
+          assertClose("FWD 60kg elderly F Na154", calcFreeWaterDeficit({ weightKg: 60, sex: "female", sodium: 154, elderly: true }), 2.7, 0.01);
           // --- MAP = (SBP + 2*DBP)/3 ---
           assertClose("MAP 120/80", calcMap({ sbp: 120, dbp: 80 }), 93.333, 0.01);
           assertClose("MAP 90/60", calcMap({ sbp: 90, dbp: 60 }), 70, 1e-6);
