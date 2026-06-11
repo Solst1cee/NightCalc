@@ -143,6 +143,15 @@
           // --- RCRI (6 binary) ---
           assertClose("RCRI insulin only = 1", calcScore(SCORES.rcri, { surgery: "n", ihd: "n", chf: "n", cvd: "n", insulin: "y", creat: "n" }), 1, 1e-9);
           assertClose("RCRI three = 3", calcScore(SCORES.rcri, { surgery: "y", ihd: "y", chf: "n", cvd: "n", insulin: "n", creat: "y" }), 3, 1e-9);
+          // --- Wells DVT (eight +1 items, one -2 item) ---
+          assertClose("Wells-DVT alt-dx makes -1", calcScore(SCORES.wellsdvt, { cancer: "n", paralysis: "n", bedridden: "n", tenderness: "y", legSwollen: "n", calf: "n", edema: "n", veins: "n", priorDvt: "n", altDx: "y" }), -1, 1e-9);
+          assertClose("Wells-DVT three = 3", calcScore(SCORES.wellsdvt, { cancer: "y", paralysis: "n", bedridden: "n", tenderness: "n", legSwollen: "y", calf: "y", edema: "n", veins: "n", priorDvt: "n", altDx: "n" }), 3, 1e-9);
+          // --- PERC (count of FAILED criteria; 0 = rule-out) ---
+          assertClose("PERC all pass = 0", calcScore(SCORES.perc, { age: "n", hr: "n", spo2: "n", hemoptysis: "n", estrogen: "n", priorVte: "n", legSwelling: "n", surgery: "n" }), 0, 1e-9);
+          assertClose("PERC age fails = 1", calcScore(SCORES.perc, { age: "y", hr: "n", spo2: "n", hemoptysis: "n", estrogen: "n", priorVte: "n", legSwelling: "n", surgery: "n" }), 1, 1e-9);
+          // --- ABCD2 ---
+          assertClose("ABCD2 example = 4", calcScore(SCORES.abcd2, { age: "y", bp: "y", clinical: "1", duration: "1", diabetes: "n" }), 4, 1e-9);
+          assertClose("ABCD2 weakness+long+dm = 5", calcScore(SCORES.abcd2, { age: "n", bp: "n", clinical: "2", duration: "2", diabetes: "y" }), 5, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

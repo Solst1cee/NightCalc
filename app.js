@@ -185,6 +185,9 @@ const tools = [
   { id: "meld", title: "MELD-Na / MELD 3.0", description: "Cirrhosis severity / transplant scores.", status: "ready", tags: ["meld", "meld-na", "meld 3.0", "cirrhosis", "liver", "transplant", "hepatology"] },
   { id: "heart", title: "HEART Score", description: "Chest-pain 6-week MACE risk (0-10).", status: "ready", tags: ["heart", "chest pain", "mace", "acs"] },
   { id: "rcri", title: "Revised Cardiac Risk Index", description: "Pre-operative cardiac risk (0-6).", status: "ready", tags: ["rcri", "lee", "perioperative", "cardiac risk"] },
+  { id: "wellsdvt", title: "Wells Score (DVT)", description: "DVT pretest probability.", status: "ready", tags: ["wells", "dvt", "vte"] },
+  { id: "perc", title: "PERC Rule", description: "PE rule-out criteria.", status: "ready", tags: ["perc", "pe", "pulmonary embolism", "rule out"] },
+  { id: "abcd2", title: "ABCD² Score", description: "TIA short-term stroke risk (0-7).", status: "ready", tags: ["abcd2", "tia", "stroke"] },
   {
     id: "reference",
     title: "Reference",
@@ -1125,6 +1128,84 @@ SCORES.rcri = {
     { test: (t) => t >= 3, text: "≥3: high risk (~11% original / ~15% contemporary)." },
   ],
   notice: "Clinical check: RCRI under-estimates risk in major vascular surgery; pair with functional capacity and consider NSQIP/MICA where appropriate. Contemporary event rates are higher than the original 1999 cohort.",
+};
+
+SCORES.wellsdvt = {
+  id: "wellsdvt",
+  title: "Wells Score (DVT)",
+  description: "Pretest probability of deep vein thrombosis.",
+  maxLabel: "9",
+  tags: ["wells", "dvt", "deep vein thrombosis", "vte", "d-dimer", "ultrasound"],
+  criteria: [
+    { name: "cancer", label: "Active cancer (treatment/palliation within 6 months)", type: "select", options: YN(1) },
+    { name: "paralysis", label: "Paralysis, paresis, or recent plaster immobilisation of the leg", type: "select", options: YN(1) },
+    { name: "bedridden", label: "Bedridden ≥ 3 days, or major surgery within 12 weeks", type: "select", options: YN(1) },
+    { name: "tenderness", label: "Localised tenderness along the deep venous system", type: "select", options: YN(1) },
+    { name: "legSwollen", label: "Entire leg swollen", type: "select", options: YN(1) },
+    { name: "calf", label: "Calf swelling > 3 cm vs the other leg", type: "select", options: YN(1) },
+    { name: "edema", label: "Pitting oedema confined to the symptomatic leg", type: "select", options: YN(1) },
+    { name: "veins", label: "Collateral superficial (non-varicose) veins", type: "select", options: YN(1) },
+    { name: "priorDvt", label: "Previously documented DVT", type: "select", options: YN(1) },
+    { name: "altDx", label: "Alternative diagnosis at least as likely as DVT", type: "select", options: [{ label: "No", value: "n", points: 0 }, { label: "Yes", value: "y", points: -2 }] },
+  ],
+  interpret: [
+    { test: (t) => t >= 3, text: "≥3: high probability — proceed to compression ultrasound. (2-tier: ≥2 = DVT likely.)" },
+    { test: (t) => t >= 1, text: "1-2: moderate probability — D-dimer or ultrasound. (2-tier: ≥2 likely, so 2 = likely.)" },
+    { test: (t) => t <= 0, text: "≤0: low probability (DVT unlikely) — a negative high-sensitivity D-dimer rules out DVT." },
+  ],
+  notice: "Clinical check: the −2 'alternative diagnosis as likely' item is the only negative. The 2-tier model (≥2 likely / <2 unlikely) paired with a high-sensitivity D-dimer is now preferred. Distinct from Wells-PE.",
+};
+
+SCORES.perc = {
+  id: "perc",
+  title: "PERC Rule",
+  description: "PE rule-out criteria — counts criteria NOT satisfied (0 = PERC negative).",
+  maxLabel: "8",
+  tags: ["perc", "pulmonary embolism", "pe", "rule out", "d-dimer"],
+  criteria: [
+    { name: "age", label: "Age ≥ 50", type: "select", options: YN(1) },
+    { name: "hr", label: "Heart rate ≥ 100/min", type: "select", options: YN(1) },
+    { name: "spo2", label: "Room-air SaO₂ < 95%", type: "select", options: YN(1) },
+    { name: "hemoptysis", label: "Haemoptysis", type: "select", options: YN(1) },
+    { name: "estrogen", label: "Oestrogen use (OCP/HRT)", type: "select", options: YN(1) },
+    { name: "priorVte", label: "Prior DVT or PE", type: "select", options: YN(1) },
+    { name: "legSwelling", label: "Unilateral leg swelling", type: "select", options: YN(1) },
+    { name: "surgery", label: "Surgery/trauma needing hospitalisation within 4 weeks", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t === 0, text: "0: PERC negative — in a low pretest-probability patient, PE is excluded without D-dimer (< 2% risk)." },
+    { test: (t) => t >= 1, text: "≥1: PERC positive — cannot rule out PE; proceed to D-dimer/imaging per your pathway." },
+  ],
+  notice: "Clinical check: PERC only applies when clinical gestalt is already LOW (< 15%). It is a rule-out, not a probability — a positive result does not diagnose PE. Not valid in pregnancy or high-prevalence settings.",
+};
+
+SCORES.abcd2 = {
+  id: "abcd2",
+  title: "ABCD² Score",
+  description: "Short-term stroke risk after a TIA (0-7).",
+  maxLabel: "7",
+  tags: ["abcd2", "abcd²", "tia", "stroke", "transient ischemic attack", "neuro"],
+  criteria: [
+    { name: "age", label: "Age ≥ 60", type: "select", options: YN(1) },
+    { name: "bp", label: "BP ≥ 140/90 at presentation", type: "select", options: YN(1) },
+    { name: "clinical", label: "Clinical features", type: "select", options: [
+        { label: "Other (no weakness/speech)", value: "0", points: 0 },
+        { label: "Speech disturbance without weakness", value: "1", points: 1 },
+        { label: "Unilateral weakness", value: "2", points: 2 },
+      ] },
+    { name: "duration", label: "Duration", type: "select", options: [
+        { label: "< 10 min", value: "0", points: 0 },
+        { label: "10–59 min", value: "1", points: 1 },
+        { label: "≥ 60 min", value: "2", points: 2 },
+      ] },
+    { name: "diabetes", label: "Diabetes", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t <= 3, text: "0-3: low (~1.0% 2-day stroke risk)." },
+    { test: (t) => t <= 5, text: "4-5: moderate (~4.1% 2-day risk)." },
+    { test: (t) => t >= 6, text: "6-7: high (~8.1% 2-day risk)." },
+  ],
+  notice: "Clinical check: ABCD² has limited discrimination and does not detect carotid stenosis/AF — current guidance is urgent specialist assessment for all suspected TIA regardless of score.",
 };
 
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
