@@ -7,6 +7,12 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-11
+- What was done: **P2 wave (v67): 15 calculators** — 7 formulas (MAP, osmolality+gap, Winter's, free-water deficit, Adrogué–Madias, A–a gradient, MELD-Na/3.0) + 8 scores (HEART, RCRI, Wells-DVT, PERC, ABCD², Glasgow-Blatchford, NIHSS, SOFA). 69 test assertions. Scoring engine unchanged. Bumped to **v67 / nightcalc-v67**. Also persisted MELD creatinine to shared session (`serumCreatinine` + `serumCreatinineUnit: "mgDl"`) so it flows to renal tools.
+- Files changed: `app.js`, `index.html`, `service-worker.js`, `AGENTS.md`, `MEMORY.md`
+
+### Earlier same day — iOS install-guide visual pass
+
+- Date: 2026-06-11
 - What was done: **iOS install-guide visual pass** (follow-up to PR #12, which had merged the text-only guide). Added per-step iOS illustrations to the "Add to Home Screen" sheet: a home-screen **dock** with NightCalc's icon highlighted (glowing accent ring) next to Phone/Safari/Rocket; a Liquid-Glass **Safari bottom bar** with the ••• highlighted; and the **Share menu / Add to Home Screen / Open-as-Web-App** dialog illustrations. Cards use themeable iOS-gray (adapts light/dark). Corrected step 1 to "bottom-right" (iOS 26 default **Compact** Safari layout) and sharpened the subtitle. Sheet is now bottom-anchored with `max-height` + internal scroll so it fits an iPhone 15 Pro. Shipped as a fresh PR off v65 `main` (the visuals weren't part of #12). Bumped to **v66 / nightcalc-v66**.
 - Files changed: `index.html`, `styles.css`, `service-worker.js`, `MEMORY.md`
 
@@ -40,7 +46,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v66` / `nightcalc-v66`
+Last known: `v67` / `nightcalc-v67`
 
 ---
 
@@ -66,6 +72,21 @@ Last known: `v66` / `nightcalc-v66`
 | CIWA-Ar | ✅ Ready | Scoring engine; alcohol withdrawal |
 | Child-Pugh | ✅ Ready | Scoring engine; cirrhosis class |
 | Wells Score (PE) | ✅ Ready | Scoring engine; PE pretest probability |
+| Mean Arterial Pressure | ✅ Ready | Pure formula (MAP = (SBP + 2×DBP) / 3) |
+| Serum Osmolality + Osmolar Gap | ✅ Ready | Pure formula; optional measured osmolality for gap |
+| Winter's Formula | ✅ Ready | Pure formula; expected PaCO₂ range |
+| Free Water Deficit | ✅ Ready | Pure formula; sex + elderly TBW fractions |
+| Sodium Correction (Adrogué–Madias) | ✅ Ready | Pure formula; ΔNa per litre infused |
+| A–a Oxygen Gradient | ✅ Ready | Pure formula; optional age-expected comparison |
+| MELD-Na / MELD 3.0 | ✅ Ready | Pure formula; OPTN listing score |
+| HEART Score | ✅ Ready | Scoring engine; ACS pretest risk |
+| Revised Cardiac Risk Index | ✅ Ready | Scoring engine; perioperative cardiac risk |
+| Wells-DVT | ✅ Ready | Scoring engine; DVT pretest probability |
+| PERC Rule | ✅ Ready | Scoring engine; PE rule-out (failed criteria count) |
+| ABCD² Score | ✅ Ready | Scoring engine; TIA stroke risk |
+| Glasgow-Blatchford Score | ✅ Ready | Scoring engine; UGIB intervention risk |
+| NIHSS | ✅ Ready | Scoring engine; stroke severity |
+| SOFA | ✅ Ready | Scoring engine; organ failure / ICU mortality |
 
 ---
 

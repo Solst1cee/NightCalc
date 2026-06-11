@@ -2711,7 +2711,7 @@ function renderMeld() {
       return;
     }
     const { meldNa, meld3 } = calcMeld({ creatinine, bilirubin, inr, sodium, albumin, sex, dialysis });
-    saveSession({ bilirubin, inr, sodium, albumin, sex, dialysis });
+    saveSession({ bilirubin, inr, sodium, albumin, sex, dialysis, serumCreatinine: creatinine, serumCreatinineUnit: "mgDl" });
     document.querySelector("#resultArea").innerHTML = `
       <div class="result-box">
         <div class="result-label">MELD scores</div>

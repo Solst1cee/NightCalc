@@ -23,7 +23,7 @@ Intentionally simple:
 ## Before You Start
 
 1. Read `MEMORY.md` — current tool status, known bugs, decisions made, what's next
-2. Check `index.html` for current cache version string (e.g. `?v=61`)
+2. Check `index.html` for current cache version string (e.g. `?v=67`)
 3. Never assume tool status from this file — always check `MEMORY.md`
 
 ---
@@ -236,8 +236,9 @@ Persisted to: `sessionStorage` key `nightcalc.session.v1`
 - Point-scores are config objects in the `SCORES` registry, consumed by a pure `calcScore(config, values)` and a generic `renderScore(config)` (dispatched automatically via `if (SCORES[id]) renderScore(...)`).
 - Criterion types: `select` (each option carries `points`) and `numericBand` (a numeric input mapped to points via ordered `bands`, each `{ le, points }`, the last entry — no `le` — being the catch-all above the highest threshold). Helpers: `YN(points)` for Yes/No criteria, `scale(n)` for 0..n option lists.
 - Add a score = a `SCORES` entry + a `tools[]` entry (before `reference`); no render code needed.
-- Current scores: qSOFA, CURB-65, CHA₂DS₂-VASc, GCS, NEWS2, CIWA-Ar, Child-Pugh, Wells (PE).
-- Pure formulas added this wave: QTc (Bazett + Fridericia), Ideal/Adjusted Body Weight (Devine).
+- Current scores: qSOFA, CURB-65, CHA₂DS₂-VASc, GCS, NEWS2, CIWA-Ar, Child-Pugh, Wells (PE), HEART, RCRI, Wells-DVT, PERC, ABCD², Glasgow-Blatchford, NIHSS, SOFA.
+- Pure formulas added this wave: QTc (Bazett + Fridericia), Ideal/Adjusted Body Weight (Devine), Mean Arterial Pressure, Serum Osmolality + Osmolar Gap, Winter's Formula, Free Water Deficit, Sodium Correction (Adrogué–Madias), A–a Oxygen Gradient, MELD-Na / MELD 3.0.
+- Engine unchanged in the P2 wave. Notable scorer behaviours: PERC counts failed criteria (a score of 0 means all criteria absent = rule-out); GBS haemoglobin uses a sex-labelled select (≥13 g/dL male / ≥12 g/dL female as the zero-point threshold).
 
 ---
 
