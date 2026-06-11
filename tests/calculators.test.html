@@ -110,6 +110,12 @@
           assertClose("Child-Pugh B example = 7", calcScore(SCORES.childpugh, { bilirubin: "2", albumin: "1", inr: "1", ascites: "2", enceph: "1" }), 7, 1e-9);
           assertClose("Wells-PE DVT+PE+HR = 7.5", calcScore(SCORES.wellspe, { dvt: "y", peLikely: "y", hr: "y", immob: "n", priorVte: "n", hemoptysis: "n", malignancy: "n" }), 7.5, 1e-9);
           assertClose("Wells-PE HR+prior+hemoptysis = 4", calcScore(SCORES.wellspe, { dvt: "n", peLikely: "n", hr: "y", immob: "n", priorVte: "y", hemoptysis: "y", malignancy: "n" }), 4, 1e-9);
+          // --- MAP = (SBP + 2*DBP)/3 ---
+          assertClose("MAP 120/80", calcMap({ sbp: 120, dbp: 80 }), 93.333, 0.01);
+          assertClose("MAP 90/60", calcMap({ sbp: 90, dbp: 60 }), 70, 1e-6);
+          // --- Winter's: expected PaCO2 = 1.5*HCO3 + 8 (±2) ---
+          assertClose("Winters HCO3 12", calcWinters({ bicarbonate: 12 }).expected, 26, 1e-6);
+          assertClose("Winters HCO3 8 low", calcWinters({ bicarbonate: 8 }).low, 18, 1e-6);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }

@@ -176,6 +176,8 @@ const tools = [
     status: "ready",
     tags: ["wells", "pe", "pulmonary embolism", "vte"],
   },
+  { id: "map", title: "Mean Arterial Pressure", description: "MAP from systolic and diastolic BP.", status: "ready", tags: ["map", "mean arterial pressure", "perfusion", "bp", "hemodynamics"] },
+  { id: "winters", title: "Winter's Formula", description: "Expected PaCO₂ for a metabolic acidosis.", status: "ready", tags: ["winters", "winter's", "paco2", "metabolic acidosis", "compensation", "acid base"] },
   {
     id: "reference",
     title: "Reference",
@@ -1106,6 +1108,17 @@ function calcBodyWeight({ heightCm, sex, weightKg }) {
   return { ibw, adjusted };
 }
 
+// Mean arterial pressure (mmHg) from systolic/diastolic.
+function calcMap({ sbp, dbp }) {
+  return (sbp + 2 * dbp) / 3;
+}
+
+// Winter's formula: expected PaCO2 (mmHg) compensating a metabolic acidosis, ±2.
+function calcWinters({ bicarbonate }) {
+  const expected = 1.5 * bicarbonate + 8;
+  return { expected, low: expected - 2, high: expected + 2 };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -1247,6 +1260,8 @@ function renderCalculator() {
   if (state.activeTool === "anion-gap") renderAnionGap();
   if (state.activeTool === "corrected-calcium") renderCorrectedCalcium();
   if (state.activeTool === "corrected-sodium") renderCorrectedSodium();
+  if (state.activeTool === "map") renderMap();
+  if (state.activeTool === "winters") renderWinters();
   if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
   if (state.activeTool === "qtc") renderQtc();
   if (state.activeTool === "body-weight") renderBodyWeight();
@@ -2091,6 +2106,65 @@ function renderBodyWeight() {
         ${caution}
       </div>
     `;
+  });
+}
+
+function renderMap() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Mean Arterial Pressure",
+    description: "MAP from systolic and diastolic blood pressure.",
+    body: `
+      <form id="mapForm">
+        <div class="form-grid">
+          ${inputField({ name: "sbp", label: "Systolic BP (mmHg)", value: s.sbpMap ?? "", hint: "" })}
+          ${inputField({ name: "dbp", label: "Diastolic BP (mmHg)", value: s.dbp ?? "", hint: "" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: MAP ≥ 65 mmHg is the usual perfusion target. The (SBP + 2·DBP)/3 estimate assumes a normal heart rate.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#mapForm");
+  bindLiveForm(form, () => {
+    const sbp = numberValue(form, "sbp");
+    const dbp = numberValue(form, "dbp");
+    if (!positive(sbp) || !positive(dbp)) { showPending("Enter systolic and diastolic blood pressure."); return; }
+    if (dbp > sbp) { showPending("Diastolic should not exceed systolic — check the values."); return; }
+    saveSession({ sbpMap: sbp, dbp });
+    showResult("Mean arterial pressure", `${round(calcMap({ sbp, dbp }), 0)} mmHg`, "MAP = (SBP + 2 × DBP) / 3. Target ≥ 65 mmHg for organ perfusion.");
+  });
+}
+
+function renderWinters() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Winter's Formula",
+    description: "Expected PaCO₂ for a metabolic acidosis — checks respiratory compensation.",
+    body: `
+      <form id="wintersForm">
+        <div class="form-grid">
+          ${inputField({ name: "bicarbonate", label: "Bicarbonate (mEq/L)", value: s.bicarbonate ?? "", hint: "HCO₃⁻" })}
+          ${inputField({ name: "paco2", label: "Measured PaCO₂ (mmHg, optional)", value: s.paco2 ?? "", hint: "to compare vs expected" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: valid for metabolic acidosis only. Measured PaCO₂ above the expected range suggests a concurrent respiratory acidosis; below it, a respiratory alkalosis.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#wintersForm");
+  bindLiveForm(form, () => {
+    const bicarbonate = numberValue(form, "bicarbonate");
+    const paco2 = numberValue(form, "paco2");
+    if (!positive(bicarbonate)) { showPending("Enter bicarbonate (HCO₃⁻)."); return; }
+    const { expected, low, high } = calcWinters({ bicarbonate });
+    saveSession({ bicarbonate });
+    let detail = `Expected PaCO₂ ${round(low, 1)}–${round(high, 1)} mmHg (1.5 × HCO₃ + 8 ± 2).`;
+    if (positive(paco2)) {
+      saveSession({ paco2 });
+      detail += paco2 > high ? " Measured is ABOVE range — concurrent respiratory acidosis." : paco2 < low ? " Measured is BELOW range — concurrent respiratory alkalosis." : " Measured is within range — appropriate compensation.";
+    }
+    showResult("Expected PaCO₂", `${round(expected, 1)} mmHg`, detail);
   });
 }
 
