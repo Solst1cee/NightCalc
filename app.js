@@ -182,6 +182,7 @@ const tools = [
   { id: "free-water-deficit", title: "Free Water Deficit", description: "Free-water deficit in hypernatremia.", status: "ready", tags: ["free water deficit", "hypernatremia", "water deficit", "sodium", "tbw"] },
   { id: "sodium-correction", title: "Sodium Correction (Adrogué–Madias)", description: "Δ serum Na per 1 L of infusate.", status: "ready", tags: ["adrogue", "madias", "sodium correction", "hyponatremia", "hypertonic saline", "infusate"] },
   { id: "aa-gradient", title: "A–a Oxygen Gradient", description: "Alveolar–arterial O₂ gradient vs age-expected.", status: "ready", tags: ["a-a gradient", "aa gradient", "alveolar arterial", "oxygenation", "hypoxemia", "shunt", "v/q mismatch"] },
+  { id: "meld", title: "MELD-Na / MELD 3.0", description: "Cirrhosis severity / transplant scores.", status: "ready", tags: ["meld", "meld-na", "meld 3.0", "cirrhosis", "liver", "transplant", "hepatology"] },
   {
     id: "reference",
     title: "Reference",
@@ -1164,6 +1165,40 @@ function calcAaGradient({ fio2, paco2, pao2, age }) {
   return { pAO2, gradient: pAO2 - pao2, expected: 2.5 + 0.21 * age };
 }
 
+// MELD-Na and MELD 3.0. Cr/bili in mg/dL, INR unitless, Na mEq/L, albumin g/dL. dialysis = boolean.
+function calcMeld({ creatinine, bilirubin, inr, sodium, albumin, sex, dialysis }) {
+  const ln = Math.log;
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+  const biliB = Math.max(bilirubin, 1);
+  const inrB = Math.max(inr, 1);
+  const naB = clamp(sodium, 125, 137);
+
+  // --- MELD-Na (creatinine cap 4.0) ---
+  const crNa = dialysis ? 4.0 : clamp(creatinine, 1, 4);
+  let meldI = Math.round(10 * (0.957 * ln(crNa) + 0.378 * ln(biliB) + 1.12 * ln(inrB) + 0.643));
+  let meldNa = meldI;
+  if (meldI > 11) meldNa = meldI + 1.32 * (137 - naB) - 0.033 * meldI * (137 - naB);
+  meldNa = clamp(Math.round(meldNa), 6, 40);
+
+  // --- MELD 3.0 (creatinine cap 3.0, no ×10) ---
+  const cr3 = dialysis ? 3.0 : clamp(creatinine, 1, 3);
+  const albB = clamp(albumin, 1.5, 3.5);
+  const female = sex === "female" ? 1 : 0;
+  const m3 =
+    1.33 * female +
+    4.56 * ln(biliB) +
+    0.82 * (137 - naB) -
+    0.24 * (137 - naB) * ln(biliB) +
+    9.09 * ln(inrB) +
+    11.14 * ln(cr3) +
+    1.85 * (3.5 - albB) -
+    1.83 * (3.5 - albB) * ln(cr3) +
+    6;
+  const meld3 = clamp(Math.round(m3), 6, 40);
+
+  return { meldI, meldNa, meld3 };
+}
+
 function doseToMcgMin(value, unit, weightKg) {
   if (!positive(value)) return null;
   if (unit === "mcgKgMin") return positive(weightKg) ? value * weightKg : null;
@@ -1311,6 +1346,7 @@ function renderCalculator() {
   if (state.activeTool === "free-water-deficit") renderFreeWaterDeficit();
   if (state.activeTool === "sodium-correction") renderSodiumCorrection();
   if (state.activeTool === "aa-gradient") renderAaGradient();
+  if (state.activeTool === "meld") renderMeld();
   if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
   if (state.activeTool === "qtc") renderQtc();
   if (state.activeTool === "body-weight") renderBodyWeight();
@@ -2359,6 +2395,56 @@ function renderAaGradient() {
       ? `Age-expected ≈ ${round(expected, 1)} mmHg (2.5 + 0.21 × age). ${gradient > expected ? "Above expected — abnormal gas exchange." : gradient < 0 ? "Gradient is negative — check the inputs." : "Within the expected range."}`
       : "Enter age for the expected-normal comparison.";
     showResult("A–a gradient", `${round(gradient, 1)} mmHg`, detail);
+  });
+}
+
+function renderMeld() {
+  const s = state.session;
+  const scrMgDl = positive(s.serumCreatinine) ? round(creatinineToMgDl(s.serumCreatinine, s.serumCreatinineUnit), 2) : "";
+  els.calculator.innerHTML = calcShell({
+    title: "MELD-Na / MELD 3.0",
+    description: "Cirrhosis severity / transplant-listing scores. MELD 3.0 is the current OPTN standard.",
+    body: `
+      <form id="meldForm">
+        <div class="form-grid">
+          ${inputField({ name: "bilirubin", label: "Bilirubin (mg/dL)", value: s.bilirubin ?? "", hint: "floored at 1.0" })}
+          ${inputField({ name: "inr", label: "INR", value: s.inr ?? "", hint: "floored at 1.0" })}
+          ${inputField({ name: "creatinine", label: "Creatinine (mg/dL)", value: scrMgDl, hint: "MELD-Na cap 4.0 · MELD 3.0 cap 3.0" })}
+          ${inputField({ name: "sodium", label: "Sodium (mEq/L)", value: s.sodium ?? "", hint: "bounded 125–137" })}
+          ${inputField({ name: "albumin", label: "Albumin (g/dL)", value: s.albumin ?? "", hint: "MELD 3.0 only · 1.5–3.5" })}
+          ${inputField({ name: "sex", label: "Sex", value: s.sex ?? "male", options: [{ value: "male", label: "Male" }, { value: "female", label: "Female" }] })}
+          ${inputField({ name: "dialysis", label: "Dialysis ≥2× in past 7 days", value: s.dialysis ? "yes" : "no", options: [{ value: "no", label: "No" }, { value: "yes", label: "Yes" }] })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: MELD 3.0 (2023) is the current OPTN allocation score; MELD-Na is the prior standard. Both are floored at 6 and capped at 40. Uses conventional units (mg/dL).",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#meldForm");
+  bindLiveForm(form, () => {
+    const bilirubin = numberValue(form, "bilirubin");
+    const inr = numberValue(form, "inr");
+    const creatinine = numberValue(form, "creatinine");
+    const sodium = numberValue(form, "sodium");
+    const albumin = numberValue(form, "albumin");
+    const sex = form.elements.sex.value;
+    const dialysis = form.elements.dialysis.value === "yes";
+    if (!positive(bilirubin) || !positive(inr) || !positive(creatinine) || !positive(sodium) || !positive(albumin)) {
+      showPending("Enter bilirubin, INR, creatinine, sodium, and albumin.");
+      return;
+    }
+    const { meldNa, meld3 } = calcMeld({ creatinine, bilirubin, inr, sodium, albumin, sex, dialysis });
+    saveSession({ bilirubin, inr, sodium, albumin, sex, dialysis });
+    document.querySelector("#resultArea").innerHTML = `
+      <div class="result-box">
+        <div class="result-label">MELD scores</div>
+        <div class="info-grid">
+          <div><strong>MELD 3.0</strong><span>${meld3}</span></div>
+          <div><strong>MELD-Na</strong><span>${meldNa}</span></div>
+        </div>
+        <p class="result-detail">Higher scores indicate greater 90-day mortality. MELD 3.0 is the current OPTN listing score.</p>
+      </div>
+    `;
   });
 }
 

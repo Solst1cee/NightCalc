@@ -131,6 +131,12 @@
           // --- Winter's: expected PaCO2 = 1.5*HCO3 + 8 (±2) ---
           assertClose("Winters HCO3 12", calcWinters({ bicarbonate: 12 }).expected, 26, 1e-6);
           assertClose("Winters HCO3 8 low", calcWinters({ bicarbonate: 8 }).low, 18, 1e-6);
+          // --- MELD-Na ---
+          assertEqual("MELD-Na Cr2 bili3 INR1.5 Na130", calcMeld({ creatinine: 2.0, bilirubin: 3.0, inr: 1.5, sodium: 130, albumin: 3.0, sex: "male" }).meldNa, 26);
+          assertEqual("MELD-Na all-1 Na120 floors to 6", calcMeld({ creatinine: 1.0, bilirubin: 1.0, inr: 1.0, sodium: 120, albumin: 3.5, sex: "male" }).meldNa, 6);
+          // --- MELD 3.0 ---
+          assertEqual("MELD3 male Cr2 bili3 INR1.5 Na130 alb3.0", calcMeld({ creatinine: 2.0, bilirubin: 3.0, inr: 1.5, sodium: 130, albumin: 3.0, sex: "male" }).meld3, 27);
+          assertEqual("MELD3 female Cr1 bili2 INR1.2 Na135 alb2.5", calcMeld({ creatinine: 1.0, bilirubin: 2.0, inr: 1.2, sodium: 135, albumin: 2.5, sex: "female" }).meld3, 15);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
