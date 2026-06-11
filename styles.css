@@ -1302,7 +1302,23 @@ select {
   border-radius: 12px;
   border: 1px solid var(--line);
 }
-.install-sheet > .install-shot { margin-bottom: 14px; }
+.install-shot-wrap { position: relative; display: block; }
+.install-sheet > .install-shot-wrap { margin-bottom: 14px; }
+/* Accent ring that points the eye at the tap target inside each screenshot. */
+.install-hl {
+  position: absolute;
+  border: 3px solid var(--accent);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 0 16px 2px color-mix(in srgb, var(--accent) 55%, transparent);
+  pointer-events: none;
+}
+.install-hl-dock { left: 52.5%; top: 23%; width: 16%; height: 53%; }
+.install-hl-share { left: 37%; top: 15%; width: 24%; height: 29%; }
+.install-hl-add { left: 7.5%; top: 52%; width: 52%; height: 32%; }
+.install-hl-open { left: 79%; top: 52%; width: 18.5%; height: 31%; }
+:root[data-skin="pixel"] .install-hl { border-radius: 0; }
 .install-step-n {
   flex: 0 0 auto;
   width: 24px;

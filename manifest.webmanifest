@@ -8,7 +8,7 @@
   "description": "Fast bedside medical calculators with session memory, for night-shift ward rounds.",
   "icons": [
     {
-      "src": "icons/icon.svg",
+      "src": "assets/app-icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }

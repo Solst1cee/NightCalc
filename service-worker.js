@@ -1,23 +1,23 @@
-const CACHE_NAME = "nightcalc-v70";
+const CACHE_NAME = "nightcalc-v72";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
-  "./icons/icon.svg",
-  "./icons/favicon.svg",
-  "./icons/apple-touch-icon.png",
-  "./icons/icons8-menu.svg",
-  "./icons/icons8-github-logo.svg",
-  "./icons/icons8-gmail-logo.svg",
-  "./icons/icons8-pickaxe-24.png",
-  "./icons/icons8-check-24.svg",
-  "./icons/icons8-lightning-bolt-24.png",
-  "./img/install/dock.jpg",
-  "./img/install/share-menu.jpg",
-  "./img/install/add-to-home.jpg",
-  "./img/install/open-web-app.jpg",
+  "./assets/app-icons/icon.svg",
+  "./assets/app-icons/favicon.svg",
+  "./assets/app-icons/apple-touch-icon.png",
+  "./assets/icons/menu.svg",
+  "./assets/icons/github.svg",
+  "./assets/icons/gmail.svg",
+  "./assets/icons/pickaxe.png",
+  "./assets/icons/check.svg",
+  "./assets/icons/lightning-bolt.png",
+  "./assets/screenshots/install/dock.jpg",
+  "./assets/screenshots/install/share-menu.jpg",
+  "./assets/screenshots/install/add-to-home.jpg",
+  "./assets/screenshots/install/open-web-app.jpg",
 ];
 
 self.addEventListener("install", (event) => {
