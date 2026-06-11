@@ -191,6 +191,14 @@ const tools = [
   { id: "gbs", title: "Glasgow-Blatchford Score", description: "Upper-GI-bleed risk (0-23).", status: "ready", tags: ["glasgow-blatchford", "blatchford", "gi bleed", "melaena"] },
   { id: "nihss", title: "NIHSS", description: "NIH Stroke Scale severity (0-42).", status: "ready", tags: ["nihss", "stroke", "nih stroke scale"] },
   { id: "sofa", title: "SOFA Score", description: "Organ dysfunction severity (0-24).", status: "ready", tags: ["sofa", "organ failure", "icu", "sepsis"] },
+  { id: "urine-anion-gap", title: "Urine Anion Gap", description: "Localise a normal-anion-gap acidosis (renal vs GI).", status: "testing", tags: ["urine anion gap", "uag", "rta", "acid base", "nagma", "ammonium", "electrolyte"] },
+  { id: "pf-ratio", title: "P/F Ratio", description: "PaO₂/FiO₂ oxygenation and ARDS severity.", status: "testing", tags: ["p/f ratio", "pf ratio", "pao2", "fio2", "ards", "berlin", "oxygenation", "hypoxemia"] },
+  { id: "fib4", title: "FIB-4 Index", description: "Non-invasive liver fibrosis estimate.", status: "testing", tags: ["fib-4", "fib4", "fibrosis", "liver", "ast", "alt", "platelets", "nafld", "masld", "hepatology"] },
+  { id: "maddrey", title: "Maddrey Discriminant Function", description: "Alcohol-associated hepatitis severity.", status: "testing", tags: ["maddrey", "discriminant function", "mdf", "alcoholic hepatitis", "alcohol", "pt", "bilirubin", "hepatology"] },
+  { id: "hba1c-eag", title: "HbA1c → eAG", description: "Estimated average glucose from HbA1c.", status: "testing", tags: ["hba1c", "a1c", "eag", "estimated average glucose", "diabetes", "glucose", "adag"] },
+  { id: "hasbled", title: "HAS-BLED", description: "Bleeding risk on anticoagulation for AF (0-9).", status: "testing", tags: ["has-bled", "hasbled", "bleeding", "anticoagulation", "af", "atrial fibrillation", "cardiology"] },
+  { id: "sirs", title: "SIRS Criteria", description: "Systemic inflammatory response (0-4).", status: "testing", tags: ["sirs", "systemic inflammatory response", "sepsis", "screening", "infection"] },
+  { id: "fourts", title: "4Ts Score (HIT)", description: "Pretest probability of heparin-induced thrombocytopenia (0-8).", status: "testing", tags: ["4ts", "hit", "heparin induced thrombocytopenia", "heparin", "thrombocytopenia", "hematology"] },
   {
     id: "reference",
     title: "Reference",
@@ -1337,6 +1345,82 @@ SCORES.sofa = {
   notice: "Clinical check: a rise in SOFA ≥ 2 from baseline defines organ dysfunction in Sepsis-3. The original SOFA has no points for vasopressin/phenylephrine. Not the same as qSOFA.",
 };
 
+SCORES.hasbled = {
+  id: "hasbled",
+  title: "HAS-BLED",
+  description: "Major bleeding risk on anticoagulation for AF (0-9).",
+  maxLabel: "9",
+  tags: ["has-bled", "hasbled", "bleeding", "anticoagulation", "af", "atrial fibrillation", "cardiology", "warfarin"],
+  criteria: [
+    { name: "htn", label: "Uncontrolled hypertension (SBP > 160 mmHg)", type: "select", options: YN(1) },
+    { name: "renal", label: "Abnormal renal function (dialysis, transplant, or Cr ≥ 200 µmol/L / 2.26 mg/dL)", type: "select", options: YN(1) },
+    { name: "liver", label: "Abnormal liver function (cirrhosis, or bilirubin > 2× ULN with AST/ALT/ALP > 3× ULN)", type: "select", options: YN(1) },
+    { name: "stroke", label: "Prior stroke", type: "select", options: YN(1) },
+    { name: "bleeding", label: "Prior major bleeding or predisposition (incl. anaemia)", type: "select", options: YN(1) },
+    { name: "labileInr", label: "Labile INR (time in therapeutic range < 60%)", type: "select", options: YN(1) },
+    { name: "elderly", label: "Age > 65", type: "select", options: YN(1) },
+    { name: "drugs", label: "Antiplatelet agents or NSAIDs", type: "select", options: YN(1) },
+    { name: "alcohol", label: "Alcohol ≥ 8 drinks/week", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t <= 1, text: "0-1: low bleeding risk (≈1%/yr major bleeds)." },
+    { test: (t) => t === 2, text: "2: moderate bleeding risk (≈2%/yr)." },
+    { test: (t) => t >= 3, text: "≥3: high bleeding risk (≈3.7%+/yr, rising per point) — address modifiable factors; not by itself a contraindication to anticoagulation." },
+  ],
+  notice: "Clinical check: HAS-BLED flags modifiable bleeding risk to correct, not a reason to withhold anticoagulation on its own — weigh against CHA₂DS₂-VASc stroke risk.",
+};
+
+SCORES.sirs = {
+  id: "sirs",
+  title: "SIRS Criteria",
+  description: "Systemic Inflammatory Response Syndrome — 2 or more is positive (0-4).",
+  maxLabel: "4",
+  tags: ["sirs", "systemic inflammatory response", "sepsis", "screening", "infection"],
+  criteria: [
+    { name: "temp", label: "Temp > 38 °C or < 36 °C", type: "select", options: YN(1) },
+    { name: "hr", label: "Heart rate > 90/min", type: "select", options: YN(1) },
+    { name: "resp", label: "Resp rate > 20/min or PaCO₂ < 32 mmHg", type: "select", options: YN(1) },
+    { name: "wbc", label: "WBC > 12 or < 4 ×10⁹/L, or > 10% bands", type: "select", options: YN(1) },
+  ],
+  interpret: [
+    { test: (t) => t >= 2, text: "≥2: meets SIRS criteria — look for a source and assess for sepsis." },
+    { test: (t) => t < 2, text: "0-1: does not meet SIRS criteria." },
+  ],
+  notice: "Clinical check: SIRS is sensitive but non-specific; Sepsis-3 no longer uses it to define sepsis. Combine with clinical context and qSOFA/NEWS2.",
+};
+
+SCORES.fourts = {
+  id: "fourts",
+  title: "4Ts Score (HIT)",
+  description: "Pretest probability of heparin-induced thrombocytopenia (0-8).",
+  maxLabel: "8",
+  tags: ["4ts", "hit", "heparin induced thrombocytopenia", "heparin", "thrombocytopenia", "hematology"],
+  criteria: [
+    { name: "thrombocytopenia", label: "Thrombocytopenia (magnitude of fall)", type: "select", options: [
+        { label: "Fall < 30% or nadir < 10 ×10⁹/L", value: "0", points: 0 },
+        { label: "Fall 30–50% or nadir 10–19 ×10⁹/L", value: "1", points: 1 },
+        { label: "Fall > 50% and nadir ≥ 20 ×10⁹/L", value: "2", points: 2 } ] },
+    { name: "timing", label: "Timing of platelet fall", type: "select", options: [
+        { label: "Fall < 4 days, no recent heparin", value: "0", points: 0 },
+        { label: "Consistent with 5–10 but unclear, onset after day 10, or ≤ 1 day with heparin 31–100 days ago", value: "1", points: 1 },
+        { label: "Clear onset days 5–10, or ≤ 1 day with heparin in past 30 days", value: "2", points: 2 } ] },
+    { name: "thrombosis", label: "Thrombosis or sequelae", type: "select", options: [
+        { label: "None", value: "0", points: 0 },
+        { label: "Progressive/recurrent or suspected thrombosis, or non-necrotising skin lesions", value: "1", points: 1 },
+        { label: "New thrombosis, skin necrosis, or acute systemic reaction after IV bolus", value: "2", points: 2 } ] },
+    { name: "otherCause", label: "Other cause of thrombocytopenia (reverse-scored)", type: "select", options: [
+        { label: "Definite other cause present", value: "0", points: 0 },
+        { label: "Possible other cause present", value: "1", points: 1 },
+        { label: "None apparent", value: "2", points: 2 } ] },
+  ],
+  interpret: [
+    { test: (t) => t <= 3, text: "0-3: low probability (HIT ≈ 5%) — HIT effectively excluded." },
+    { test: (t) => t <= 5, text: "4-5: intermediate probability (≈ 14%)." },
+    { test: (t) => t >= 6, text: "6-8: high probability (≈ 64%)." },
+  ],
+  notice: "Clinical check: intermediate/high scores warrant stopping heparin and sending HIT antibody / functional testing. Note the 'other cause' item is reverse-scored (none apparent = 2 points).",
+};
+
 // CKD-EPI 2021 creatinine equation (race-free). Returns eGFR in mL/min/1.73 m^2.
 function calculateEgfrCkdEpi2021({ age, sex, serumCreatinine, serumCreatinineUnit }) {
   const scr = creatinineToMgDl(serumCreatinine, serumCreatinineUnit);
@@ -1605,6 +1689,188 @@ function inputField({ name, label, type = "number", value = "", hint = "", step 
   `;
 }
 
+// ===== P3 formulas =====
+
+// Urine anion gap (mEq/L) = UNa + UK - UCl. Surrogate for urinary NH4+ excretion.
+function calcUrineAnionGap({ una, uk, ucl }) {
+  return una + uk - ucl;
+}
+function renderUrineAnionGap() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Urine Anion Gap",
+    description: "Estimates urinary ammonium to localise a normal-anion-gap metabolic acidosis.",
+    body: `
+      <form id="urineAnionGapForm">
+        <div class="form-grid">
+          ${inputField({ name: "una", label: "Urine sodium (mEq/L)", value: s.urineNa ?? "", hint: "" })}
+          ${inputField({ name: "uk", label: "Urine potassium (mEq/L)", value: s.urineK ?? "", hint: "" })}
+          ${inputField({ name: "ucl", label: "Urine chloride (mEq/L)", value: s.urineCl ?? "", hint: "" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: only valid for normal-anion-gap (hyperchloraemic) acidosis; unreliable in CKD/AKI, ketoacidosis, or when NH₄⁺ pairs with a non-chloride anion (use the urine osmolar gap instead).",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#urineAnionGapForm");
+  bindLiveForm(form, () => {
+    const una = numberValue(form, "una");
+    const uk = numberValue(form, "uk");
+    const ucl = numberValue(form, "ucl");
+    if (una == null || uk == null || ucl == null) { showPending("Enter urine sodium, potassium, and chloride."); return; }
+    saveSession({ urineNa: una, urineK: uk, urineCl: ucl });
+    const uag = calcUrineAnionGap({ una, uk, ucl });
+    let detail;
+    if (uag <= -10) detail = "Negative gap: high urinary NH₄⁺ → appropriate renal acid excretion, pointing to a GI/extrarenal cause (e.g. diarrhoea). \"neGUTive\".";
+    else if (uag >= 10) detail = "Positive gap: low urinary NH₄⁺ → impaired renal acidification, suggesting distal (type 1) renal tubular acidosis.";
+    else detail = "Near-zero gap is indeterminate — interpret with the clinical picture and consider the urine osmolar gap.";
+    showResult("Urine anion gap", `${round(uag, 0)} mEq/L`, detail);
+  });
+}
+
+// P/F ratio = PaO2 (mmHg) / FiO2 (fraction). FiO2 entered as % is normalised by the caller.
+function calcPfRatio({ pao2, fio2 }) {
+  return pao2 / fio2;
+}
+function renderPfRatio() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "P/F Ratio",
+    description: "PaO₂/FiO₂ ratio for oxygenation and Berlin ARDS severity.",
+    body: `
+      <form id="pfRatioForm">
+        <div class="form-grid">
+          ${inputField({ name: "pao2", label: "PaO₂ (mmHg)", value: s.pao2 ?? "", hint: "" })}
+          ${inputField({ name: "fio2", label: "FiO₂", value: s.fio2 ?? "", hint: "fraction 0.21–1.0, or a % (e.g. 40)" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: ARDS severity bands assume PEEP/CPAP ≥ 5 cmH₂O and the other Berlin criteria (acute onset, bilateral opacities, not fully cardiogenic).",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#pfRatioForm");
+  bindLiveForm(form, () => {
+    const pao2 = numberValue(form, "pao2");
+    const fio2Raw = numberValue(form, "fio2");
+    if (!positive(pao2) || !positive(fio2Raw)) { showPending("Enter PaO₂ and FiO₂."); return; }
+    const fio2 = fio2Raw > 1 ? fio2Raw / 100 : fio2Raw; // accept FiO2 entered as a percentage
+    if (fio2 < 0.21 || fio2 > 1) { showPending("FiO₂ should be between 21% and 100%."); return; }
+    saveSession({ pao2, fio2: fio2Raw });
+    const pf = calcPfRatio({ pao2, fio2 });
+    let detail;
+    if (pf > 300) detail = "> 300: does not meet the P/F criterion for ARDS.";
+    else if (pf > 200) detail = "Mild ARDS (P/F 200–300, on PEEP/CPAP ≥ 5).";
+    else if (pf > 100) detail = "Moderate ARDS (P/F 100–200).";
+    else detail = "Severe ARDS (P/F ≤ 100).";
+    showResult("P/F ratio", `${round(pf, 0)} mmHg`, detail);
+  });
+}
+
+// FIB-4 = (age × AST) / (platelets × √ALT). Non-invasive liver fibrosis index.
+function calcFib4({ age, ast, alt, platelets }) {
+  return (age * ast) / (platelets * Math.sqrt(alt));
+}
+function renderFib4() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "FIB-4 Index",
+    description: "Non-invasive estimate of advanced liver fibrosis.",
+    body: `
+      <form id="fib4Form">
+        <div class="form-grid">
+          ${inputField({ name: "age", label: "Age (years)", value: s.age ?? "", hint: "" })}
+          ${inputField({ name: "ast", label: "AST (U/L)", value: s.ast ?? "", hint: "" })}
+          ${inputField({ name: "alt", label: "ALT (U/L)", value: s.alt ?? "", hint: "" })}
+          ${inputField({ name: "platelets", label: "Platelets (×10⁹/L)", value: s.platelets ?? "", hint: "e.g. 250" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: derived for chronic viral hepatitis / MASLD and less reliable in acute hepatitis. In patients > 65 the lower cut-off is sometimes raised to 2.0 to preserve specificity.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#fib4Form");
+  bindLiveForm(form, () => {
+    const age = numberValue(form, "age");
+    const ast = numberValue(form, "ast");
+    const alt = numberValue(form, "alt");
+    const platelets = numberValue(form, "platelets");
+    if (!positive(age) || !positive(ast) || !positive(alt) || !positive(platelets)) { showPending("Enter age, AST, ALT, and platelets."); return; }
+    saveSession({ age, ast, alt, platelets });
+    const fib4 = calcFib4({ age, ast, alt, platelets });
+    let detail;
+    if (fib4 < 1.45) detail = "< 1.45: advanced fibrosis unlikely (NPV ≈ 90%).";
+    else if (fib4 <= 3.25) detail = "1.45–3.25: indeterminate — consider transient elastography.";
+    else detail = "> 3.25: advanced fibrosis likely (specificity ≈ 97%) — refer for further assessment.";
+    showResult("FIB-4", round(fib4, 2), detail);
+  });
+}
+
+// Modified Maddrey discriminant function = 4.6 × (PT − control PT) + bilirubin (mg/dL).
+function calcMaddrey({ ptPatient, ptControl, bilirubin }) {
+  return 4.6 * (ptPatient - ptControl) + bilirubin;
+}
+function renderMaddrey() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "Maddrey Discriminant Function",
+    description: "Severity of alcohol-associated hepatitis and the steroid-treatment threshold.",
+    body: `
+      <form id="maddreyForm">
+        <div class="form-grid">
+          ${inputField({ name: "ptPatient", label: "Patient PT (seconds)", value: s.ptPatient ?? "", hint: "" })}
+          ${inputField({ name: "ptControl", label: "Control PT (seconds)", value: s.ptControl ?? "", hint: "your lab's reference, often 11–13 s" })}
+          ${inputField({ name: "bilirubin", label: "Total bilirubin (mg/dL)", value: s.bilirubin ?? "", hint: "µmol/L ÷ 17.1" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: patient and control PT must come from the same assay; do not substitute INR. Pair with MELD and the day-7 Lille score before/while treating.",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#maddreyForm");
+  bindLiveForm(form, () => {
+    const ptPatient = numberValue(form, "ptPatient");
+    const ptControl = numberValue(form, "ptControl");
+    const bilirubin = numberValue(form, "bilirubin");
+    if (!positive(ptPatient) || !positive(ptControl) || !positive(bilirubin)) { showPending("Enter patient PT, control PT, and bilirubin."); return; }
+    if (ptPatient < ptControl) { showPending("Patient PT is below the control — check the values."); return; }
+    saveSession({ ptPatient, ptControl, bilirubin });
+    const mdf = calcMaddrey({ ptPatient, ptControl, bilirubin });
+    const detail = mdf >= 32
+      ? "≥ 32: severe alcohol-associated hepatitis (high 30-day mortality) — consider corticosteroids if no contraindication."
+      : "< 32: non-severe — corticosteroids generally not indicated.";
+    showResult("Discriminant function", round(mdf, 1), detail);
+  });
+}
+
+// HbA1c (%) → estimated average glucose (ADAG). Returns both units.
+function calcEag(hba1c) {
+  return { mgdl: 28.7 * hba1c - 46.7, mmol: 1.59 * hba1c - 2.59 };
+}
+function renderHba1cEag() {
+  const s = state.session;
+  els.calculator.innerHTML = calcShell({
+    title: "HbA1c → eAG",
+    description: "Estimated average glucose from HbA1c (ADAG study).",
+    body: `
+      <form id="hba1cEagForm">
+        <div class="form-grid">
+          ${inputField({ name: "hba1c", label: "HbA1c (%)", value: s.hba1c ?? "", hint: "NGSP / DCCT-aligned" })}
+        </div>
+      </form>
+    `,
+    notice: "Clinical check: eAG is unreliable wherever HbA1c is (haemoglobinopathy, anaemia, recent transfusion, pregnancy, altered RBC turnover/CKD).",
+  });
+  document.querySelector("#backButton").addEventListener("click", () => history.back());
+  const form = document.querySelector("#hba1cEagForm");
+  bindLiveForm(form, () => {
+    const hba1c = numberValue(form, "hba1c");
+    if (!positive(hba1c)) { showPending("Enter HbA1c (%)."); return; }
+    saveSession({ hba1c });
+    const { mgdl, mmol } = calcEag(hba1c);
+    showResult("Estimated average glucose", `${round(mgdl, 0)} mg/dL · ${round(mmol, 1)} mmol/L`, "eAG ≈ average glucose over the prior ~3 months — not a spot reading.");
+  });
+}
+
 function renderCalculator() {
   if (!state.activeTool) {
     els.calculator.innerHTML = "";
@@ -1625,6 +1891,11 @@ function renderCalculator() {
   if (state.activeTool === "sodium-correction") renderSodiumCorrection();
   if (state.activeTool === "aa-gradient") renderAaGradient();
   if (state.activeTool === "meld") renderMeld();
+  if (state.activeTool === "urine-anion-gap") renderUrineAnionGap();
+  if (state.activeTool === "pf-ratio") renderPfRatio();
+  if (state.activeTool === "fib4") renderFib4();
+  if (state.activeTool === "maddrey") renderMaddrey();
+  if (state.activeTool === "hba1c-eag") renderHba1cEag();
   if (SCORES[state.activeTool]) return renderScore(SCORES[state.activeTool]);
   if (state.activeTool === "qtc") renderQtc();
   if (state.activeTool === "body-weight") renderBodyWeight();

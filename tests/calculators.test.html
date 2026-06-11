@@ -164,6 +164,34 @@
           // --- SOFA ---
           assertClose("SOFA example = 8", calcScore(SCORES.sofa, { resp: "2", coag: "2", liver: "1", cardio: "1", cns: "1", renal: "1" }), 8, 1e-9);
           assertClose("SOFA severe = 23", calcScore(SCORES.sofa, { resp: "4", coag: "4", liver: "4", cardio: "4", cns: "3", renal: "4" }), 23, 1e-9);
+
+          // ===== P3 wave =====
+          // --- Urine anion gap ---
+          assertEqual("UAG positive = 20", calcUrineAnionGap({ una: 40, uk: 30, ucl: 50 }), 20);
+          assertEqual("UAG negative = -20", calcUrineAnionGap({ una: 30, uk: 20, ucl: 70 }), -20);
+          // --- P/F ratio ---
+          assertClose("P/F 80/0.4 = 200", calcPfRatio({ pao2: 80, fio2: 0.4 }), 200, 1e-9);
+          assertClose("P/F 60/1.0 = 60 (severe)", calcPfRatio({ pao2: 60, fio2: 1.0 }), 60, 1e-9);
+          // --- FIB-4 ---
+          assertClose("FIB-4 example ≈ 5.06", calcFib4({ age: 60, ast: 80, alt: 40, platelets: 150 }), 5.06, 0.02);
+          assertClose("FIB-4 low ≈ 0.876", calcFib4({ age: 40, ast: 30, alt: 30, platelets: 250 }), 0.876, 0.02);
+          // --- Maddrey ---
+          assertClose("Maddrey 20/12/5 = 41.8", calcMaddrey({ ptPatient: 20, ptControl: 12, bilirubin: 5 }), 41.8, 1e-9);
+          assertClose("Maddrey below 32", calcMaddrey({ ptPatient: 15, ptControl: 12, bilirubin: 2 }), 15.8, 1e-9);
+          // --- HbA1c → eAG ---
+          assertClose("eAG mg/dL at 7% = 154.2", calcEag(7).mgdl, 154.2, 0.05);
+          assertClose("eAG mmol/L at 7% = 8.54", calcEag(7).mmol, 8.54, 0.05);
+          // --- HAS-BLED ---
+          assertEqual("HAS-BLED all yes = 9", calcScore(SCORES.hasbled, { htn: "y", renal: "y", liver: "y", stroke: "y", bleeding: "y", labileInr: "y", elderly: "y", drugs: "y", alcohol: "y" }), 9);
+          assertEqual("HAS-BLED renal+liver separate = 2", calcScore(SCORES.hasbled, { htn: "n", renal: "y", liver: "y", stroke: "n", bleeding: "n", labileInr: "n", elderly: "n", drugs: "n", alcohol: "n" }), 2);
+          assertEqual("HAS-BLED drugs+alcohol separate = 2", calcScore(SCORES.hasbled, { htn: "n", renal: "n", liver: "n", stroke: "n", bleeding: "n", labileInr: "n", elderly: "n", drugs: "y", alcohol: "y" }), 2);
+          // --- SIRS ---
+          assertEqual("SIRS temp+hr = 2 (meets)", calcScore(SCORES.sirs, { temp: "y", hr: "y", resp: "n", wbc: "n" }), 2);
+          assertEqual("SIRS one only = 1", calcScore(SCORES.sirs, { temp: "y", hr: "n", resp: "n", wbc: "n" }), 1);
+          // --- 4Ts ---
+          assertEqual("4Ts all max = 8", calcScore(SCORES.fourts, { thrombocytopenia: "2", timing: "2", thrombosis: "2", otherCause: "2" }), 8);
+          assertEqual("4Ts otherCause reverse: none apparent adds 2", calcScore(SCORES.fourts, { thrombocytopenia: "0", timing: "0", thrombosis: "0", otherCause: "2" }), 2);
+          assertEqual("4Ts low combo = 3", calcScore(SCORES.fourts, { thrombocytopenia: "1", timing: "1", thrombosis: "0", otherCause: "1" }), 3);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
