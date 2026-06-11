@@ -17,7 +17,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=65" />
+    <link rel="stylesheet" href="styles.css?v=66" />
   </head>
   <body>
     <div class="app-shell">
@@ -288,27 +288,83 @@
           <div class="install-sheet-handle" aria-hidden="true"></div>
           <button type="button" class="install-close" aria-label="Close">&times;</button>
           <h2 id="installTitle" class="install-title">Add NightCalc to your Home Screen</h2>
-          <p class="install-sub">One tap from your iPhone — full-screen, no Safari bars.</p>
+          <p class="install-sub">Pin it for one-tap, full-screen access &mdash; like a real app, no Safari bars.</p>
+          <svg class="install-ill install-dock" viewBox="0 0 300 60" role="img" aria-label="NightCalc's icon on the iOS Home Screen dock, alongside Safari and other apps">
+            <rect x="6" y="4" width="288" height="52" rx="20" fill="var(--ios-card)"></rect>
+            <rect x="33" y="11" width="38" height="38" rx="10" fill="#15161a"></rect>
+            <svg x="41" y="19" width="22" height="22" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="#34c759"></path></svg>
+            <rect x="98" y="11" width="38" height="38" rx="10" fill="#15161a"></rect>
+            <circle cx="117" cy="30" r="12" fill="#1e7fff"></circle><circle cx="117" cy="30" r="12" fill="none" stroke="#cfe3ff" stroke-width="1.1"></circle>
+            <g transform="rotate(-40 117 30)"><path d="M117 19.5 L120.5 30 L113.5 30 Z" fill="#fff"></path><path d="M117 40.5 L120.5 30 L113.5 30 Z" fill="#ff5b5b"></path></g>
+            <rect class="dock-glow" x="162" y="10" width="40" height="40" rx="11" fill="none" stroke="var(--accent)" stroke-width="3"></rect>
+            <svg x="164" y="12" width="36" height="36" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#0B1220"></rect><rect x="24" y="24" width="34" height="34" rx="9" fill="#2563EB"></rect><rect x="24" y="62" width="34" height="34" rx="9" fill="#2563EB"></rect><rect x="62" y="62" width="34" height="34" rx="9" fill="#2563EB"></rect><line x1="33" y1="41" x2="49" y2="41" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="41" y1="33" x2="41" y2="49" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="33" y1="79" x2="49" y2="79" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="72" y1="72" x2="86" y2="86" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="86" y1="72" x2="72" y2="86" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><circle cx="79" cy="41" r="17" fill="#F1F5F9"></circle><circle cx="87" cy="35" r="15" fill="#0B1220"></circle></svg>
+            <rect x="228" y="11" width="38" height="38" rx="10" fill="#15161a"></rect>
+            <path d="M247 17c5 2 8 8 8 15l-3 4h-10l-3-4c0-7 3-13 8-15z" fill="#e8584a"></path><circle cx="247" cy="27" r="3" fill="#0B1220"></circle><path d="M239 33l-5 9 6-2z" fill="#e8584a"></path><path d="M255 33l5 9-6-2z" fill="#e8584a"></path>
+          </svg>
           <ol class="install-steps">
             <li>
-              <span class="install-step-n">1</span>
-              <span>Tap <b>&ctdot;</b> (top-right of the address bar), then <b>Share</b>.</span>
-              <svg class="install-step-glyph" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4"></path><path d="M6 12H5a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2h-1"></path></svg>
+              <div class="install-step-head"><span class="install-step-n">1</span><span>Tap <b>&ctdot;</b> (bottom-right), then <b>Share</b>.</span></div>
+              <svg class="install-ill install-toolbar" viewBox="0 0 300 44" role="img" aria-label="Safari's bottom bar — the three-dot menu is the circle on the far right">
+                <rect x="10" y="6" width="62" height="32" rx="16" fill="var(--ios-card)"></rect>
+                <path d="M34 15l-7 7 7 7" fill="none" stroke="var(--ios-text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M48 15l7 7-7 7" fill="none" stroke="var(--ios-text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <rect x="82" y="6" width="166" height="32" rx="16" fill="var(--ios-card)"></rect>
+                <rect x="96" y="16" width="13" height="12" rx="2.5" fill="none" stroke="var(--ios-muted)" stroke-width="1.6"></rect><line x1="99" y1="20" x2="106" y2="20" stroke="var(--ios-muted)" stroke-width="1.4"></line><line x1="99" y1="24" x2="106" y2="24" stroke="var(--ios-muted)" stroke-width="1.4"></line>
+                <text x="118" y="22" font-size="10.5" dominant-baseline="central" fill="var(--ios-text)">solst1cee.github.io</text>
+                <path d="M227 16.5a5.5 5.5 0 1 0 4.5 2.6" fill="none" stroke="var(--ios-muted)" stroke-width="1.8" stroke-linecap="round"></path><path d="M232 12.5v4.5h-4.5" fill="none" stroke="var(--ios-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                <circle cx="274" cy="22" r="16" fill="var(--ios-card)"></circle><circle cx="274" cy="22" r="16" fill="none" stroke="var(--accent)" stroke-width="2.5"></circle>
+                <circle cx="266" cy="22" r="2.3" fill="var(--ios-text)"></circle><circle cx="274" cy="22" r="2.3" fill="var(--ios-text)"></circle><circle cx="282" cy="22" r="2.3" fill="var(--ios-text)"></circle>
+              </svg>
+              <svg class="install-ill" viewBox="0 0 300 106" role="img" aria-label="The Safari menu, with Share at the top highlighted">
+                <rect x="0" y="0" width="300" height="106" rx="14" fill="var(--ios-card)"></rect>
+                <rect x="5" y="5" width="290" height="33" rx="8" fill="none" stroke="var(--accent)" stroke-width="2.5"></rect>
+                <g transform="translate(18,13)" stroke="var(--ios-text)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V2.5M5.5 6 9 2.5 12.5 6"></path><path d="M4 8.5H3A1.5 1.5 0 0 0 1.5 10v3A1.5 1.5 0 0 0 3 14.5h12a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 15 8.5h-1"></path></g>
+                <text x="46" y="27" font-size="15" font-weight="700" fill="var(--ios-text)">Share</text>
+                <line x1="14" y1="45" x2="286" y2="45" stroke="var(--ios-line)"></line>
+                <path d="M20 52h11v16l-5.5-3.2L20 68z" fill="none" stroke="var(--ios-muted)" stroke-width="2" stroke-linejoin="round"></path>
+                <text x="46" y="64" font-size="14" fill="var(--ios-muted)">Add to Bookmarks</text>
+                <line x1="14" y1="80" x2="286" y2="80" stroke="var(--ios-line)"></line>
+                <rect x="20" y="87" width="17" height="14" rx="2.5" fill="none" stroke="var(--ios-muted)" stroke-width="2"></rect>
+                <text x="46" y="99" font-size="14" fill="var(--ios-muted)">Add Bookmark to&hellip;</text>
+              </svg>
             </li>
             <li>
-              <span class="install-step-n">2</span>
-              <span>Scroll down and tap <b>Add to Home Screen</b>.</span>
+              <div class="install-step-head"><span class="install-step-n">2</span><span>Scroll down and tap <b>Add to Home Screen</b>.</span></div>
+              <svg class="install-ill" viewBox="0 0 300 106" role="img" aria-label="The Share sheet, with Add to Home Screen highlighted">
+                <rect x="0" y="0" width="300" height="106" rx="14" fill="var(--ios-card)"></rect>
+                <rect x="18" y="13" width="19" height="15" rx="2.5" fill="none" stroke="var(--ios-muted)" stroke-width="2"></rect><circle cx="33" cy="24" r="3.2" fill="none" stroke="var(--ios-muted)" stroke-width="2"></circle>
+                <text x="46" y="27" font-size="14" fill="var(--ios-muted)">Find on Page</text>
+                <line x1="14" y1="45" x2="286" y2="45" stroke="var(--ios-line)"></line>
+                <rect x="5" y="49" width="290" height="34" rx="8" fill="none" stroke="var(--accent)" stroke-width="2.5"></rect>
+                <g transform="translate(18,58)" stroke="var(--ios-text)" stroke-width="2" fill="none" stroke-linecap="round"><rect x="0" y="0" width="17" height="17" rx="4"></rect><path d="M8.5 4.5v8M4.5 8.5h8"></path></g>
+                <text x="46" y="72" font-size="15" font-weight="700" fill="var(--ios-text)">Add to Home Screen</text>
+                <line x1="14" y1="90" x2="286" y2="90" stroke="var(--ios-line)"></line>
+                <circle cx="27" cy="99" r="8" fill="none" stroke="var(--ios-muted)" stroke-width="2"></circle>
+                <text x="46" y="103" font-size="14" fill="var(--ios-muted)">Markup</text>
+              </svg>
             </li>
             <li>
-              <span class="install-step-n">3</span>
-              <span>Keep <b>Open as Web App</b> on, then tap <b>Add</b>.</span>
+              <div class="install-step-head"><span class="install-step-n">3</span><span>Keep <b>Open as Web App</b> on, then tap <b>Add</b>.</span></div>
+              <svg class="install-ill" viewBox="0 0 300 118" role="img" aria-label="The Add to Home Screen dialog, with Open as Web App switched on and Add in the corner">
+                <rect x="0" y="0" width="300" height="118" rx="14" fill="var(--ios-card)"></rect>
+                <circle cx="20" cy="20" r="10" fill="none" stroke="var(--ios-muted)" stroke-width="1.8"></circle><path d="M16.5 16.5l7 7M23.5 16.5l-7 7" stroke="var(--ios-muted)" stroke-width="1.8" stroke-linecap="round"></path>
+                <text x="150" y="25" font-size="13" font-weight="700" fill="var(--ios-text)" text-anchor="middle">Add to Home Screen</text>
+                <rect x="250" y="9" width="42" height="23" rx="11.5" fill="var(--accent)"></rect><text x="271" y="25" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">Add</text>
+                <line x1="0" y1="42" x2="300" y2="42" stroke="var(--ios-line)"></line>
+                <svg x="14" y="50" width="32" height="32" viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#0B1220"></rect><rect x="24" y="24" width="34" height="34" rx="9" fill="#2563EB"></rect><rect x="24" y="62" width="34" height="34" rx="9" fill="#2563EB"></rect><rect x="62" y="62" width="34" height="34" rx="9" fill="#2563EB"></rect><line x1="33" y1="41" x2="49" y2="41" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="41" y1="33" x2="41" y2="49" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="33" y1="79" x2="49" y2="79" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="72" y1="72" x2="86" y2="86" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><line x1="86" y1="72" x2="72" y2="86" stroke="#F1F5F9" stroke-width="7" stroke-linecap="round"></line><circle cx="79" cy="41" r="17" fill="#F1F5F9"></circle><circle cx="87" cy="35" r="15" fill="#0B1220"></circle></svg>
+                <text x="54" y="63" font-size="14" font-weight="700" fill="var(--ios-text)">NightCalc</text>
+                <text x="54" y="78" font-size="11" fill="var(--ios-muted)">solst1cee.github.io/NightCalc</text>
+                <line x1="0" y1="88" x2="300" y2="88" stroke="var(--ios-line)"></line>
+                <rect x="5" y="90" width="290" height="26" rx="8" fill="none" stroke="var(--accent)" stroke-width="2.5"></rect>
+                <text x="16" y="107" font-size="14" font-weight="700" fill="var(--ios-text)">Open as Web App</text>
+                <rect x="250" y="95" width="40" height="20" rx="10" fill="#34c759"></rect><circle cx="280" cy="105" r="7.5" fill="#fff"></circle>
+              </svg>
             </li>
           </ol>
-          <p class="install-foot">That&rsquo;s it — NightCalc launches like a native app, with its own icon.</p>
         </div>
       </div>
     </div>
 
-    <script src="app.js?v=65"></script>
+    <script src="app.js?v=66"></script>
   </body>
 </html>
