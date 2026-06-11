@@ -181,7 +181,7 @@ const tools = [
   { id: "osmolality", title: "Serum Osmolality + Gap", description: "Calculated osmolality and osmolar gap.", status: "ready", tags: ["osmolality", "osmolar gap", "osmol gap", "toxic alcohol", "methanol", "ethylene glycol"] },
   { id: "free-water-deficit", title: "Free Water Deficit", description: "Free-water deficit in hypernatremia.", status: "ready", tags: ["free water deficit", "hypernatremia", "water deficit", "sodium", "tbw"] },
   { id: "sodium-correction", title: "Sodium Correction (Adrogué–Madias)", description: "Δ serum Na per 1 L of infusate.", status: "ready", tags: ["adrogue", "madias", "sodium correction", "hyponatremia", "hypertonic saline", "infusate"] },
-  { id: "aa-gradient", title: "A–a Oxygen Gradient", description: "Alveolar–arterial O₂ gradient vs age-expected.", status: "ready", tags: ["a-a gradient", "aa gradient", "alveolar arterial", "oxygenation", "hypoxemia", "pe"] },
+  { id: "aa-gradient", title: "A–a Oxygen Gradient", description: "Alveolar–arterial O₂ gradient vs age-expected.", status: "ready", tags: ["a-a gradient", "aa gradient", "alveolar arterial", "oxygenation", "hypoxemia", "shunt", "v/q mismatch"] },
   {
     id: "reference",
     title: "Reference",
@@ -2356,7 +2356,7 @@ function renderAaGradient() {
     if (positive(age)) patch.age = age;
     saveSession(patch);
     const detail = positive(age)
-      ? `Age-expected ≈ ${round(expected, 1)} mmHg (2.5 + 0.21 × age). ${gradient > expected ? "Above expected — abnormal gas exchange." : "Within the expected range."}`
+      ? `Age-expected ≈ ${round(expected, 1)} mmHg (2.5 + 0.21 × age). ${gradient > expected ? "Above expected — abnormal gas exchange." : gradient < 0 ? "Gradient is negative — check the inputs." : "Within the expected range."}`
       : "Enter age for the expected-normal comparison.";
     showResult("A–a gradient", `${round(gradient, 1)} mmHg`, detail);
   });
