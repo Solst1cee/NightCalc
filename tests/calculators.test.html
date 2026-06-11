@@ -110,6 +110,60 @@
           assertClose("Child-Pugh B example = 7", calcScore(SCORES.childpugh, { bilirubin: "2", albumin: "1", inr: "1", ascites: "2", enceph: "1" }), 7, 1e-9);
           assertClose("Wells-PE DVT+PE+HR = 7.5", calcScore(SCORES.wellspe, { dvt: "y", peLikely: "y", hr: "y", immob: "n", priorVte: "n", hemoptysis: "n", malignancy: "n" }), 7.5, 1e-9);
           assertClose("Wells-PE HR+prior+hemoptysis = 4", calcScore(SCORES.wellspe, { dvt: "n", peLikely: "n", hr: "y", immob: "n", priorVte: "y", hemoptysis: "y", malignancy: "n" }), 4, 1e-9);
+          // --- Adrogué–Madias: ΔNa per 1 L = (infusateNa - serumNa)/(TBW+1) ; TBW = wt*frac ---
+          assertClose("Adrogue 70M Na120 3%saline", calcAdrogue({ weightKg: 70, sex: "male", sodium: 120, infusateNa: 513 }), 9.14, 0.01);
+          assertClose("Adrogue 60F Na122 NS", calcAdrogue({ weightKg: 60, sex: "female", sodium: 122, infusateNa: 154 }), 1.032, 0.01);
+          // --- A–a gradient: PAO2 = FiO2*(760-47) - PaCO2/0.8 ; A-a = PAO2 - PaO2 ; expected = 2.5 + 0.21*age ---
+          var aa1 = calcAaGradient({ fio2: 0.21, paco2: 40, pao2: 95, age: 40 });
+          assertClose("A-a gradient young", aa1.gradient, 4.73, 0.05);
+          assertClose("A-a expected age40", aa1.expected, 10.9, 1e-6);
+          assertClose("A-a gradient elevated", calcAaGradient({ fio2: 0.21, paco2: 30, pao2: 60, age: 70 }).gradient, 52.23, 0.05);
+          // --- Osmolality: 2*Na + glu/18 + BUN/2.8 (+ EtOH/3.7) ; gap = measured - calc ---
+          assertClose("Osm calc no EtOH", calcOsmolality({ sodium: 140, glucose: 90, bun: 14 }).calculated, 290, 1e-6);
+          assertClose("Osm calc with EtOH", calcOsmolality({ sodium: 135, glucose: 180, bun: 28, ethanol: 100 }).calculated, 317.027, 0.01);
+          assertClose("Osm gap", calcOsmolality({ sodium: 140, glucose: 90, bun: 14, measured: 290 }).gap, 0, 1e-6);
+          // --- Free water deficit: TBW*(Na/140 - 1); TBW = wt*frac (0.6 M / 0.5 F / 0.5 elderly M / 0.45 elderly F) ---
+          assertClose("FWD 70kg M Na160", calcFreeWaterDeficit({ weightKg: 70, sex: "male", sodium: 160 }), 6.0, 0.01);
+          assertClose("FWD 60kg elderly F Na154", calcFreeWaterDeficit({ weightKg: 60, sex: "female", sodium: 154, elderly: true }), 2.7, 0.01);
+          // --- MAP = (SBP + 2*DBP)/3 ---
+          assertClose("MAP 120/80", calcMap({ sbp: 120, dbp: 80 }), 93.333, 0.01);
+          assertClose("MAP 90/60", calcMap({ sbp: 90, dbp: 60 }), 70, 1e-6);
+          // --- Winter's: expected PaCO2 = 1.5*HCO3 + 8 (±2) ---
+          assertClose("Winters HCO3 12", calcWinters({ bicarbonate: 12 }).expected, 26, 1e-6);
+          assertClose("Winters HCO3 8 low", calcWinters({ bicarbonate: 8 }).low, 18, 1e-6);
+          // --- MELD-Na ---
+          assertEqual("MELD-Na Cr2 bili3 INR1.5 Na130", calcMeld({ creatinine: 2.0, bilirubin: 3.0, inr: 1.5, sodium: 130, albumin: 3.0, sex: "male" }).meldNa, 26);
+          assertEqual("MELD-Na all-1 Na120 floors to 6", calcMeld({ creatinine: 1.0, bilirubin: 1.0, inr: 1.0, sodium: 120, albumin: 3.5, sex: "male" }).meldNa, 6);
+          // Boundary: raw MELD(i) ≈ 11.34 must stay decimal so the >11 Na adjustment fires (OPTN/MDCalc) → 23, not 11.
+          assertEqual("MELD-Na boundary raw-11.3 + Na125", calcMeld({ creatinine: 1.0, bilirubin: 1.0, inr: 1.55, sodium: 125, albumin: 3.5, sex: "male" }).meldNa, 23);
+          // --- MELD 3.0 ---
+          assertEqual("MELD3 male Cr2 bili3 INR1.5 Na130 alb3.0", calcMeld({ creatinine: 2.0, bilirubin: 3.0, inr: 1.5, sodium: 130, albumin: 3.0, sex: "male" }).meld3, 27);
+          assertEqual("MELD3 female Cr1 bili2 INR1.2 Na135 alb2.5", calcMeld({ creatinine: 1.0, bilirubin: 2.0, inr: 1.2, sodium: 135, albumin: 2.5, sex: "female" }).meld3, 15);
+          // --- HEART (H/E/A/R/T each 0/1/2) ---
+          assertClose("HEART low example = 2", calcScore(SCORES.heart, { history: "1", ecg: "1", age: "0", risk: "0", troponin: "0" }), 2, 1e-9);
+          assertClose("HEART high example = 7", calcScore(SCORES.heart, { history: "2", ecg: "2", age: "2", risk: "1", troponin: "0" }), 7, 1e-9);
+          // --- RCRI (6 binary) ---
+          assertClose("RCRI insulin only = 1", calcScore(SCORES.rcri, { surgery: "n", ihd: "n", chf: "n", cvd: "n", insulin: "y", creat: "n" }), 1, 1e-9);
+          assertClose("RCRI three = 3", calcScore(SCORES.rcri, { surgery: "y", ihd: "y", chf: "n", cvd: "n", insulin: "n", creat: "y" }), 3, 1e-9);
+          // --- Wells DVT (eight +1 items, one -2 item) ---
+          assertClose("Wells-DVT alt-dx makes -1", calcScore(SCORES.wellsdvt, { cancer: "n", paralysis: "n", bedridden: "n", tenderness: "y", legSwollen: "n", calf: "n", edema: "n", veins: "n", priorDvt: "n", altDx: "y" }), -1, 1e-9);
+          assertClose("Wells-DVT three = 3", calcScore(SCORES.wellsdvt, { cancer: "y", paralysis: "n", bedridden: "n", tenderness: "n", legSwollen: "y", calf: "y", edema: "n", veins: "n", priorDvt: "n", altDx: "n" }), 3, 1e-9);
+          // --- PERC (count of FAILED criteria; 0 = rule-out) ---
+          assertClose("PERC all pass = 0", calcScore(SCORES.perc, { age: "n", hr: "n", spo2: "n", hemoptysis: "n", estrogen: "n", priorVte: "n", legSwelling: "n", surgery: "n" }), 0, 1e-9);
+          assertClose("PERC age fails = 1", calcScore(SCORES.perc, { age: "y", hr: "n", spo2: "n", hemoptysis: "n", estrogen: "n", priorVte: "n", legSwelling: "n", surgery: "n" }), 1, 1e-9);
+          // --- ABCD2 ---
+          assertClose("ABCD2 example = 4", calcScore(SCORES.abcd2, { age: "y", bp: "y", clinical: "1", duration: "1", diabetes: "n" }), 4, 1e-9);
+          assertClose("ABCD2 weakness+long+dm = 5", calcScore(SCORES.abcd2, { age: "n", bp: "n", clinical: "2", duration: "2", diabetes: "y" }), 5, 1e-9);
+          // --- Glasgow-Blatchford ---
+          assertClose("GBS example A = 7", calcScore(SCORES.gbs, { urea: "3", hb: "1", sbp: 105, pulse: "y", melaena: "y", syncope: "n", hepatic: "n", cardiac: "n" }), 7, 1e-9);
+          assertClose("GBS example B = 20", calcScore(SCORES.gbs, { urea: "6", hb: "6", sbp: 88, pulse: "y", melaena: "n", syncope: "y", hepatic: "y", cardiac: "n" }), 20, 1e-9);
+          assertClose("GBS all-normal = 0", calcScore(SCORES.gbs, { urea: "0", hb: "0", sbp: 120, pulse: "n", melaena: "n", syncope: "n", hepatic: "n", cardiac: "n" }), 0, 1e-9);
+          // --- NIHSS ---
+          assertClose("NIHSS minor = 3", calcScore(SCORES.nihss, { loc: "0", locQ: "0", locC: "0", gaze: "0", visual: "0", facial: "1", lArm: "1", rArm: "0", lLeg: "0", rLeg: "0", ataxia: "0", sensory: "0", language: "0", dysarthria: "1", extinction: "0" }), 3, 1e-9);
+          assertClose("NIHSS severe = 27", calcScore(SCORES.nihss, { loc: "2", locQ: "2", locC: "2", gaze: "2", visual: "3", facial: "3", lArm: "0", rArm: "4", lLeg: "0", rLeg: "4", ataxia: "0", sensory: "2", language: "3", dysarthria: "0", extinction: "0" }), 27, 1e-9);
+          // --- SOFA ---
+          assertClose("SOFA example = 8", calcScore(SCORES.sofa, { resp: "2", coag: "2", liver: "1", cardio: "1", cns: "1", renal: "1" }), 8, 1e-9);
+          assertClose("SOFA severe = 23", calcScore(SCORES.sofa, { resp: "4", coag: "4", liver: "4", cardio: "4", cns: "3", renal: "4" }), 23, 1e-9);
         } catch (err) {
           bad("suite", err && err.message ? err.message : String(err));
         }
