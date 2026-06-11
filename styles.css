@@ -1238,16 +1238,19 @@ select {
   position: fixed;
   inset: 0;
   z-index: 50;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   background: rgba(2, 6, 16, 0.55);
 }
 .install-overlay[hidden] { display: none; }
 .install-sheet {
-  position: relative;
-  width: 100%;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin-inline: auto;
   max-width: 460px;
+  max-height: calc(100dvh - 12px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 14px 18px calc(18px + env(safe-area-inset-bottom, 0px));
   background: var(--panel);
   color: var(--ink);
@@ -1255,6 +1258,17 @@ select {
   border-bottom: 0;
   border-radius: 18px 18px 0 0;
   box-shadow: var(--shadow);
+  /* iOS UI colors for the step illustrations (light defaults; dark below) */
+  --ios-card: #f2f2f7;
+  --ios-text: #1c1c1e;
+  --ios-muted: #8e8e93;
+  --ios-line: #d6d6db;
+}
+:root[data-theme="dark"] .install-sheet {
+  --ios-card: #2c2c2e;
+  --ios-text: #ffffff;
+  --ios-muted: #8e8e93;
+  --ios-line: #3a3a3c;
 }
 .install-sheet-handle {
   width: 38px;
@@ -1285,10 +1299,17 @@ select {
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
-.install-steps li { display: flex; align-items: center; gap: 10px; }
-.install-steps li > span:nth-child(2) { font-size: 14px; line-height: 1.35; }
+.install-steps li { display: block; }
+.install-step-head { display: flex; align-items: center; gap: 9px; margin: 0 0 8px; }
+.install-step-head > span:last-child { font-size: 13.5px; line-height: 1.3; }
+.install-ill { display: block; width: 100%; max-width: 100%; height: auto; }
+.install-ill text { font-family: -apple-system, system-ui, "Segoe UI", sans-serif; }
+.install-toolbar { margin-bottom: 8px; }
+.install-dock { margin-bottom: 14px; }
+.dock-glow { filter: drop-shadow(0 0 3px var(--accent)) drop-shadow(0 0 7px var(--accent)); }
 .install-step-n {
   flex: 0 0 auto;
   width: 24px;
@@ -1302,8 +1323,6 @@ select {
   font-size: 13px;
   font-weight: 700;
 }
-.install-step-glyph { flex: 0 0 auto; margin-left: auto; color: var(--muted); }
-.install-foot { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
 
 .a2hs-menu-row[hidden] { display: none; }
 .a2hs-menu-item {

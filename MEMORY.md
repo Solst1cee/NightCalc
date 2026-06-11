@@ -7,9 +7,12 @@ Update this file at the end of every session. This is the living record of proje
 ## Last Session
 
 - Date: 2026-06-11
-- What was done: **P1 wave 2 — scoring engine + 10 calculators** (v64). Added a data-driven scoring engine (`SCORES` registry + pure `calcScore` + generic `renderScore`; `select` and NEWS2-style `numericBand` criteria) and the 8 point-scores qSOFA, CURB-65, CHA₂DS₂-VASc, GCS, NEWS2, CIWA-Ar, Child-Pugh, Wells (PE), plus the QTc and Ideal/Adjusted Body Weight formulas. Test harness now 34 assertions. Bumped to `v64` / `nightcalc-v64` (after merging main's v63 iOS work). From the plan in `docs/superpowers/plans/2026-06-11-p1-wave-2-formulas-and-scores.md`. **This completes the P1 calculator tier.**
+- What was done: **iOS install-guide visual pass** (follow-up to PR #12, which had merged the text-only guide). Added per-step iOS illustrations to the "Add to Home Screen" sheet: a home-screen **dock** with NightCalc's icon highlighted (glowing accent ring) next to Phone/Safari/Rocket; a Liquid-Glass **Safari bottom bar** with the ••• highlighted; and the **Share menu / Add to Home Screen / Open-as-Web-App** dialog illustrations. Cards use themeable iOS-gray (adapts light/dark). Corrected step 1 to "bottom-right" (iOS 26 default **Compact** Safari layout) and sharpened the subtitle. Sheet is now bottom-anchored with `max-height` + internal scroll so it fits an iPhone 15 Pro. Shipped as a fresh PR off v65 `main` (the visuals weren't part of #12). Bumped to **v66 / nightcalc-v66**.
+- Files changed: `index.html`, `styles.css`, `service-worker.js`, `MEMORY.md`
+
+### Earlier same day — P1 wave 2: scoring engine + 10 calculators (v64)
+- What was done: **P1 wave 2 — scoring engine + 10 calculators** (v64). Added a data-driven scoring engine (`SCORES` registry + pure `calcScore` + generic `renderScore`; `select` and NEWS2-style `numericBand` criteria) and the 8 point-scores qSOFA, CURB-65, CHA₂DS₂-VASc, GCS, NEWS2, CIWA-Ar, Child-Pugh, Wells (PE), plus the QTc and Ideal/Adjusted Body Weight formulas. Test harness now 34 assertions. From the plan in `docs/superpowers/plans/2026-06-11-p1-wave-2-formulas-and-scores.md`. **This completes the P1 calculator tier.**
 - Files changed: `app.js`, `index.html`, `service-worker.js`, `tests/calculators.test.html`, `MEMORY.md`, `AGENTS.md`, `docs/superpowers/plans/` (plan).
-- Pending human check: open the app + `tests/calculators.test.html` — expect 34/34 pass, zero console errors, OK at 390px & 1280px, Pixel skin still toggles, SW updates to `nightcalc-v64`.
 
 ### Earlier same day — iOS Add to Home Screen guide (PR #12)
 - Date: 2026-06-10
@@ -37,7 +40,7 @@ Update this file at the end of every session. This is the living record of proje
 ## Current Version
 
 Check `index.html` for current version string.
-Last known: `v64` / `nightcalc-v64`
+Last known: `v66` / `nightcalc-v66`
 
 ---
 
